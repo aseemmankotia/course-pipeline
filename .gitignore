@@ -1,0 +1,6 @@
+.env
+node_modules/
+render/temp/
+render/slides/*.html
+render/slides/*.png
+docs/courses/

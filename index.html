@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TechNuggets Academy — Course Pipeline</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ── Top navigation ─────────────────────────────────────────────────────── -->
+  <nav class="topbar">
+    <a class="brand" href="#">
+      <div class="brand-dot"></div>
+      <div class="brand-name">
+        TechNuggets Academy
+        <span>by Aseem</span>
+      </div>
+    </a>
+
+    <div class="tab-nav">
+      <button class="tab-btn active" data-tab="curriculum">📚 Curriculum</button>
+      <button class="tab-btn"        data-tab="chapters">✏️ Chapters</button>
+      <button class="tab-btn"        data-tab="render">🎬 Render</button>
+      <button class="tab-btn"        data-tab="publish">📤 Publish</button>
+      <button class="tab-btn"        data-tab="settings">⚙️ Settings</button>
+    </div>
+  </nav>
+
+  <!-- ── Tab panels ─────────────────────────────────────────────────────────── -->
+  <main class="main-content">
+
+    <div id="tab-curriculum" class="tab-panel active"></div>
+    <div id="tab-chapters"   class="tab-panel"></div>
+    <div id="tab-render"     class="tab-panel"></div>
+    <div id="tab-publish"    class="tab-panel"></div>
+    <div id="tab-settings"   class="tab-panel"></div>
+
+  </main>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
