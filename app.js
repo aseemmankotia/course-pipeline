@@ -96,13 +96,19 @@ function renderSettings(container) {
 
       <div class="settings-section">
         <div class="settings-label">🎭 HeyGen Avatar</div>
+        <div class="form-row single">
+          <div class="form-group">
+            <label>API Key ${s.heygenApiKey ? '<span style="color:#16a34a;">✓</span>' : ''}</label>
+            <input type="password" id="st-heygen-key" placeholder="HeyGen API key" value="${esc(s.heygenApiKey || '')}" />
+          </div>
+        </div>
         <div class="form-row">
           <div class="form-group">
-            <label>Avatar ID</label>
+            <label>Avatar ID ${s.heygenAvatarId ? '<span style="color:#16a34a;">✓</span>' : ''}</label>
             <input type="text" id="st-avatar-id" placeholder="avatar_…" value="${esc(s.heygenAvatarId || '')}" />
           </div>
           <div class="form-group">
-            <label>Voice ID</label>
+            <label>Voice ID ${s.heygenVoiceId ? '<span style="color:#16a34a;">✓</span>' : ''}</label>
             <input type="text" id="st-voice-id" placeholder="voice_…" value="${esc(s.heygenVoiceId || '')}" />
           </div>
         </div>
@@ -147,6 +153,7 @@ function renderSettings(container) {
       youtubeClientId:   container.querySelector('#st-yt-client-id').value.trim(),
       youtubeClientSecret: container.querySelector('#st-yt-client-secret').value.trim(),
       youtubeToken:      container.querySelector('#st-yt-token').value.trim(),
+      heygenApiKey:      container.querySelector('#st-heygen-key').value.trim(),
       heygenAvatarId:    container.querySelector('#st-avatar-id').value.trim(),
       heygenVoiceId:     container.querySelector('#st-voice-id').value.trim(),
       academyName:       container.querySelector('#st-academy-name').value.trim() || 'TechNuggets Academy',
