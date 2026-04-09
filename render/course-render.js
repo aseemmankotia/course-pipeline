@@ -148,16 +148,24 @@ async function splitChapterScript(script, input) {
       system: `You are a course slide designer. Split a chapter video script into slides for a professional online learning platform.
 
 Slide types available:
-- "concept"  : explanation slide with title + bullets (use for theory)
-- "code"     : code example with syntax highlighting (use when showing code)
-- "analogy"  : split-pane analogy vs technical (use for real-world comparisons)
-- "diagram"  : Mermaid.js diagram (flowchart/sequence only, never placeholder text)
+- "concept"   : explanation slide with title + bullets (use for theory)
+- "code"      : static code display with syntax highlight (use for showing a finished snippet)
+- "live_code" : animated Jupyter-style cell — choose this when the script says "let me show you", "let's try", "let's write", "here's how we do this", or is demonstrating a function, walking through execution, or showing input → output
+- "analogy"   : split-pane analogy vs technical (use for real-world comparisons)
+- "diagram"   : Mermaid.js diagram (flowchart/sequence only, never placeholder text)
+
+For live_code slides:
+- Write syntactically correct Python (or the course language) that actually runs
+- output must look authentic: realistic column names, plausible numbers, real error tracebacks
+- output_type choices: "text" (print output), "dataframe" (tabular data), "plot" ("[matplotlib plot displayed]"), "error" (intentional mistake when teaching error handling)
+- Keep code_lines to 8 lines max so it fits the slide
+- setup_comment is a single # comment line explaining intent
 
 Rules:
 - 6-10 slides per chapter
 - Each slide covers ONE focused idea
 - Keep bullets to 3-5 per slide
-- Code blocks must be complete, self-contained, runnable examples
+- Prefer "live_code" over "code" whenever demonstrating execution
 - Return ONLY a JSON array, no markdown`,
       messages: [{
         role: 'user',
@@ -197,6 +205,22 @@ Return JSON array of slides:
     "title": "Diagram title",
     "mermaid_code": "flowchart LR\\n  A[Start] --> B[End]",
     "duration_seconds": 35
+  },
+  {
+    "type": "live_code",
+    "title": "Loading Our Dataset",
+    "language": "python",
+    "setup_comment": "# Let's load our first dataset",
+    "code_lines": [
+      "import pandas as pd",
+      "",
+      "df = pd.read_csv('sales_data.csv')",
+      "df.head()"
+    ],
+    "output": "   name  age  salary\\n0  Alice   28   75000\\n1  Bob     32   82000\\n2  Carol   25   68000",
+    "output_type": "dataframe",
+    "explanation": "Pandas loaded our CSV into a DataFrame with 3 columns",
+    "duration_seconds": 50
   }
 ]`,
       }],
@@ -222,6 +246,7 @@ async function generateSlides(sections, input) {
   const WAIT_MS = {
     chapter_title: 600, concept: 1000, code: 1200,
     analogy: 800, diagram: 3000, quiz: 800, chapter_summary: 800,
+    live_code: 0, // computed dynamically below
   };
 
   for (let i = 0; i < total; i++) {
@@ -250,7 +275,11 @@ async function generateSlides(sections, input) {
       }
     }
 
-    const wait = WAIT_MS[s.type] || 1000;
+    let wait = WAIT_MS[s.type] ?? 1000;
+    if (s.type === 'live_code') {
+      const totalChars = (s.code_lines || []).join('').length;
+      wait = Math.min(totalChars * 70 + 2000, 8000);
+    }
     await new Promise(r => setTimeout(r, wait));
 
     await page.screenshot({
@@ -272,6 +301,7 @@ function buildSlideHTML(section, index, total, input) {
     case 'chapter_summary': return buildChapterSummarySlide(section, input);
     case 'concept':        return buildConceptSlide(section, index, total, input);
     case 'code':           return buildCodeSlide(section, index, total, input);
+    case 'live_code':      return buildLiveCodeSlide(section, index, total, input);
     case 'analogy':        return buildAnalogySlide(section, index, total, input);
     case 'diagram':        return buildDiagramSlide(section, index, total, input);
     case 'quiz':           return buildQuizSlide(section, input);
@@ -394,6 +424,188 @@ ${accentBar()}
 </div>
 <div style="position:absolute;bottom:22px;left:56px;display:flex;gap:5px;">${progressDots(index, total)}</div>
 ${chapterBadge(input)}
+</body></html>`;
+}
+
+function buildLiveCodeSlide(s, index, total, input) {
+  const codeLines   = s.code_lines || [];
+  const output      = s.output || '';
+  const outputType  = s.output_type || 'text';
+  const setupCmt    = s.setup_comment || '';
+  const explanation = s.explanation || '';
+
+  // Build output HTML based on type
+  function buildOutputHtml(out, type) {
+    if (!out) return '';
+    const escaped = out.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    if (type === 'dataframe') {
+      const rows = escaped.split('\\n');
+      const header = rows[0];
+      const body   = rows.slice(1).join('<br>');
+      return `<div style="font-family:'JetBrains Mono',monospace;font-size:14px;line-height:1.8;color:#e2e8f0;">
+        <div style="color:#63b3ed;border-bottom:1px solid #2d3748;margin-bottom:4px;padding-bottom:4px;">${header}</div>
+        <div>${body}</div></div>`;
+    }
+    if (type === 'error') {
+      return `<div style="font-family:'JetBrains Mono',monospace;font-size:14px;color:#fc8181;line-height:1.6;">${escaped.replace(/\\n/g,'<br>')}</div>`;
+    }
+    if (type === 'plot') {
+      return `<div style="font-size:15px;color:#68d391;font-style:italic;">${escaped}</div>`;
+    }
+    return `<div style="font-family:'JetBrains Mono',monospace;font-size:15px;color:#e2e8f0;line-height:1.6;white-space:pre;">${escaped}</div>`;
+  }
+
+  const outputHtml = buildOutputHtml(output, outputType);
+
+  // Inject data as JSON so the in-browser script can type it out
+  const codeLinesJson = JSON.stringify(codeLines);
+  const setupJson     = JSON.stringify(setupCmt);
+  const explainJson   = JSON.stringify(explanation);
+  const outputJson    = JSON.stringify(output);
+
+  const LIVE_FONT = `https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap`;
+
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+<link href="${LIVE_FONT}" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{width:1280px;height:720px;background:#1a1a2e;font-family:'Inter',sans-serif;overflow:hidden;position:relative;}
+.top-bar{position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#e94560,#0f3460,#e94560);}
+.nb-header{position:absolute;top:3px;left:0;right:0;height:44px;background:#16213e;
+  border-bottom:1px solid #0f3460;display:flex;align-items:center;padding:0 20px;gap:12px;}
+.nb-title{font-size:14px;color:#a0aec0;}
+.kernel{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:12px;color:#68d391;}
+.kdot{width:8px;height:8px;border-radius:50%;background:#68d391;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.nb-body{position:absolute;top:47px;left:0;right:0;bottom:200px;padding:14px 20px;overflow:hidden;}
+.cell{margin-bottom:8px;display:flex;gap:10px;align-items:flex-start;}
+.cell-num{font-family:'JetBrains Mono',monospace;font-size:12px;color:#4a5568;min-width:44px;
+  padding-top:12px;text-align:right;flex-shrink:0;}
+.cell-num.running{color:#e94560;}
+.cell-content{flex:1;min-width:0;}
+.input-cell{background:#0d1117;border:1px solid #30363d;border-left:3px solid #e94560;
+  border-radius:4px;padding:10px 14px;}
+.code-line{font-family:'JetBrains Mono',monospace;font-size:16px;line-height:1.65;
+  color:#e6edf3;white-space:pre;min-height:26px;}
+.cursor{display:inline-block;width:2px;height:17px;background:#e94560;
+  vertical-align:text-bottom;animation:blink 1s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.output-cell{background:#0a0e1a;border:1px solid #1a2744;border-left:3px solid #0f3460;
+  border-radius:4px;padding:10px 14px;margin-top:4px;display:none;}
+.output-cell.show{display:block;}
+.expl-bar{position:absolute;bottom:200px;left:0;right:0;background:rgba(233,69,96,.1);
+  border-top:1px solid rgba(233,69,96,.3);padding:7px 20px;font-size:14px;
+  color:#feb2c0;display:none;}
+.expl-bar.show{display:flex;align-items:center;gap:8px;}
+.slide-brand{position:absolute;bottom:208px;right:18px;font-size:11px;color:#2d3748;}
+.slide-dots{position:absolute;bottom:180px;left:20px;display:flex;gap:5px;}
+/* syntax colours */
+.kw{color:#ff7b72}.fn{color:#d2a8ff}.st{color:#a5d6ff}
+.cm{color:#6e7681;font-style:italic}.nm{color:#79c0ff}
+</style>
+</head><body>
+<div class="top-bar"></div>
+<div class="nb-header">
+  <span style="font-size:18px;">📓</span>
+  <span class="nb-title">Chapter ${input.chapter_number} — ${esc(input.chapter_title || '')}.ipynb</span>
+  <div class="kernel"><div class="kdot"></div>Python 3 (ipykernel)</div>
+</div>
+<div class="nb-body">
+  <div class="cell">
+    <div class="cell-num">[ ]:</div>
+    <div class="cell-content">
+      <div class="input-cell">
+        <div class="code-line cm" id="setup-line"></div>
+      </div>
+    </div>
+  </div>
+  <div class="cell">
+    <div class="cell-num running" id="cell-num">[ ]:</div>
+    <div class="cell-content">
+      <div class="input-cell">
+        <div id="code-display"></div>
+        <span class="cursor" id="cursor"></span>
+      </div>
+      <div class="output-cell" id="output-cell">
+        <div id="output-content"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="expl-bar" id="expl-bar">💡 <span id="expl-text"></span></div>
+<div class="slide-brand">TechNuggets Academy · Ch ${input.chapter_number}</div>
+<div class="slide-dots">${progressDots(index, total)}</div>
+<script>
+const CODE_LINES  = ${codeLinesJson};
+const SETUP_CMT   = ${setupJson};
+const OUTPUT      = ${outputJson};
+const OUTPUT_TYPE = ${JSON.stringify(outputType)};
+const EXPLANATION = ${explainJson};
+
+function hl(line) {
+  if (!line.trim()) return '\\u00a0';
+  let h = line.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  if (h.trim().startsWith('#')) return '<span class="cm">'+h+'</span>';
+  h = h.replace(/(['"])(.*?)\\1/g,'<span class="st">$1$2$1</span>');
+  ['import','from','as','def','class','return','if','elif','else',
+   'for','while','in','not','and','or','True','False','None',
+   'with','try','except','raise','lambda'].forEach(k => {
+    h = h.replace(new RegExp('\\\\b('+k+')\\\\b','g'),'<span class="kw">$1</span>');
+  });
+  h = h.replace(/\\b(\\d+\\.?\\d*)\\b/g,'<span class="nm">$1</span>');
+  return h;
+}
+
+function buildOutput(out, type) {
+  if (!out) return '';
+  const e = out.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  if (type === 'dataframe') {
+    const rows = e.split('\\n');
+    return '<div style="font-family:JetBrains Mono,monospace;font-size:14px;line-height:1.8;color:#e2e8f0;">'
+      + '<div style="color:#63b3ed;border-bottom:1px solid #2d3748;padding-bottom:4px;margin-bottom:4px;">'+rows[0]+'</div>'
+      + rows.slice(1).map(r=>'<div>'+r+'</div>').join('')+'</div>';
+  }
+  if (type === 'error') return '<div style="font-family:JetBrains Mono,monospace;font-size:14px;color:#fc8181;line-height:1.6;">'+e.replace(/\\n/g,'<br>')+'</div>';
+  if (type === 'plot')  return '<div style="font-size:15px;color:#68d391;font-style:italic;">'+e+'</div>';
+  return '<div style="font-family:JetBrains Mono,monospace;font-size:15px;color:#e2e8f0;line-height:1.6;white-space:pre;">'+e+'</div>';
+}
+
+async function run() {
+  const display = document.getElementById('code-display');
+  const cursor  = document.getElementById('cursor');
+  const cellNum = document.getElementById('cell-num');
+
+  document.getElementById('setup-line').innerHTML = hl(SETUP_CMT);
+
+  for (let i = 0; i < CODE_LINES.length; i++) {
+    const line = CODE_LINES[i];
+    const el = document.createElement('div');
+    el.className = 'code-line';
+    display.appendChild(el);
+    for (let c = 0; c <= line.length; c++) {
+      el.innerHTML = c === 0 ? '\\u00a0' : hl(line.substring(0, c));
+      await new Promise(r => setTimeout(r, 28 + Math.random()*44));
+    }
+    await new Promise(r => setTimeout(r, 90));
+  }
+
+  cursor.style.display = 'none';
+  cellNum.textContent = '[*]:';
+  await new Promise(r => setTimeout(r, 600));
+
+  cellNum.textContent = '[1]:';
+  const outEl = document.getElementById('output-cell');
+  document.getElementById('output-content').innerHTML = buildOutput(OUTPUT, OUTPUT_TYPE);
+  outEl.classList.add('show');
+
+  await new Promise(r => setTimeout(r, 350));
+  const explBar = document.getElementById('expl-bar');
+  document.getElementById('expl-text').textContent = EXPLANATION;
+  explBar.classList.add('show');
+}
+
+run();
+</script>
 </body></html>`;
 }
 

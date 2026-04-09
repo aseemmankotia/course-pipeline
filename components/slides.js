@@ -69,7 +69,26 @@ function mountRender(container) {
         <li>Output: <code>chapter-01-title-slug.mp4</code> in the project root</li>
         <li>Repeat per chapter or use <code>npm run render:all</code> for batch</li>
       </ol>
-      <div style="margin-top:14px;font-size:.8rem;color:var(--muted);">
+      <div style="margin-top:16px;">
+        <div style="font-size:.8rem;font-weight:600;color:var(--primary);margin-bottom:8px;">Slide types Claude generates:</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          ${[
+            ['🏷️','concept','Theory + bullets'],
+            ['💻','code','Static code snippet'],
+            ['⚡','live_code','Animated Jupyter cell'],
+            ['🔀','analogy','Side-by-side comparison'],
+            ['🔷','diagram','Mermaid flowchart'],
+            ['❓','quiz','Multiple-choice check'],
+          ].map(([icon, type, tip]) =>
+            `<span title="${tip}" style="display:inline-flex;align-items:center;gap:4px;
+              background:var(--code-bg);border:1px solid #e5e7eb;border-radius:20px;
+              padding:3px 10px;font-size:.78rem;font-weight:500;color:var(--primary);">
+              ${icon} ${type}
+            </span>`
+          ).join('')}
+        </div>
+      </div>
+      <div style="margin-top:12px;font-size:.8rem;color:var(--muted);">
         Requires: ffmpeg · Node.js · npm install · ANTHROPIC_API_KEY in .env
       </div>
     </div>

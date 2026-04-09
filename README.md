@@ -83,6 +83,7 @@ course-pipeline/
 | `chapter_title` | Dark navy hero, chapter number, progress dots |
 | `concept` | White bg, red-pink accent bullets |
 | `code` | Light gray code block, JetBrains Mono, language badge |
+| `live_code` | Dark Jupyter-aesthetic cell with animated typing + output (dataframe / text / plot / error) |
 | `analogy` | Split pane: everyday thing ↔ technical concept |
 | `diagram` | Mermaid.js with light theme, red-pink primary nodes |
 | `quiz` | 4-option MCQ, correct answer highlighted |
