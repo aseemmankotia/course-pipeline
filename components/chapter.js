@@ -26,18 +26,23 @@ function buildShell() {
     <div class="card">
       <div class="section-header">
         <h2>✏️ Chapter Script Editor</h2>
-        <div style="display:flex;gap:8px;align-items:center;">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
           <select id="ch-selector" style="padding:7px 12px;border-radius:6px;border:1.5px solid var(--border);
             background:var(--surface);font-size:.875rem;color:var(--text);">
             <option value="">— select chapter —</option>
           </select>
           <button class="btn btn-secondary btn-sm" id="ch-prev">← Prev</button>
           <button class="btn btn-secondary btn-sm" id="ch-next">Next →</button>
+          <button class="btn btn-outline btn-sm" id="ch-batch-btn"
+            style="border-color:var(--accent);color:var(--accent);">
+            📦 Batch Export
+          </button>
         </div>
       </div>
       <div id="ch-status"></div>
     </div>
 
+    <div id="ch-batch-area"></div>
     <div id="ch-editor-area"></div>
   `;
 }
@@ -64,6 +69,15 @@ function mountControls(container) {
 
   container.querySelector('#ch-prev').addEventListener('click', () => navigate(container, cur, sel, -1));
   container.querySelector('#ch-next').addEventListener('click', () => navigate(container, cur, sel, +1));
+
+  container.querySelector('#ch-batch-btn').addEventListener('click', () => {
+    const batchArea = container.querySelector('#ch-batch-area');
+    if (batchArea.children.length) {
+      batchArea.innerHTML = ''; // toggle off
+    } else {
+      renderBatchExport(batchArea, cur);
+    }
+  });
 }
 
 function navigate(container, cur, sel, dir) {
@@ -672,4 +686,327 @@ function esc(str) {
   return String(str || '')
     .replace(/&/g,'&amp;').replace(/</g,'&lt;')
     .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Batch HeyGen Export ───────────────────────────────────────────────────────
+
+const BATCH_KEY = n => `course_batch_submitted_ch${n}`;
+const BATCH_TS_KEY = 'course_batch_all_submitted_at';
+
+function renderBatchExport(container, cur) {
+  if (!cur) {
+    container.innerHTML = `
+      <div class="card">
+        <div class="empty-state">
+          <div class="empty-icon">📚</div>
+          <p>Generate a curriculum first.</p>
+        </div>
+      </div>`;
+    return;
+  }
+
+  const chapters      = cur.chapters;
+  const totalCount    = chapters.length;
+  const submittedNums = chapters.map(ch => ch.number).filter(n => localStorage.getItem(BATCH_KEY(n)));
+  const submittedCount = submittedNums.length;
+  const allDone       = submittedCount === totalCount;
+  const batchSubmittedAt = localStorage.getItem(BATCH_TS_KEY);
+
+  container.innerHTML = `
+    <div class="card" style="margin-bottom:20px;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+        <div>
+          <h2 style="margin-bottom:4px;">📦 Batch HeyGen Export</h2>
+          <div style="font-size:.875rem;color:var(--muted);">Submit all chapters to HeyGen web UI quickly</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <a href="https://app.heygen.com" target="_blank" rel="noopener"
+            class="btn btn-primary btn-sm">
+            🎬 Open HeyGen ↗
+          </a>
+          <button class="btn btn-secondary btn-sm" id="batch-reset-btn">
+            ↩ Reset All
+          </button>
+        </div>
+      </div>
+
+      <!-- Progress -->
+      <div style="margin-bottom:16px;">
+        <div style="display:flex;justify-content:space-between;font-size:.85rem;font-weight:600;margin-bottom:6px;">
+          <span id="batch-progress-label" style="color:${allDone ? '#16a34a' : 'var(--primary)'};">
+            ${allDone ? '🎉 All' : submittedCount} of ${totalCount} submitted to HeyGen
+          </span>
+          <span style="color:var(--muted);">${Math.round((submittedCount / totalCount) * 100)}%</span>
+        </div>
+        <div style="height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;">
+          <div id="batch-progress-bar"
+            style="height:100%;background:${allDone ? '#16a34a' : 'var(--accent)'};border-radius:3px;
+                   width:${Math.round((submittedCount / totalCount) * 100)}%;transition:width .3s;">
+          </div>
+        </div>
+      </div>
+
+      ${allDone ? buildAllDoneBanner(batchSubmittedAt) : ''}
+
+      <!-- Instructions -->
+      <details style="margin-bottom:16px;" ${allDone ? '' : 'open'}>
+        <summary style="cursor:pointer;font-weight:600;font-size:.875rem;color:var(--secondary);
+          padding:8px 0;user-select:none;">
+          How to batch submit
+        </summary>
+        <ol style="margin-top:10px;padding-left:20px;font-size:.85rem;color:var(--muted);line-height:2.2;">
+          <li>Click <strong>Copy Script</strong> for Chapter 1</li>
+          <li>In HeyGen: New Video → Paste script → Select avatar → Click Generate</li>
+          <li>Come back here → Click <strong>Mark Submitted</strong></li>
+          <li>Repeat for each chapter</li>
+          <li>All ${totalCount} will render in parallel in HeyGen (~15 mins total)</li>
+        </ol>
+      </details>
+
+      <!-- Chapter rows -->
+      <div style="display:flex;flex-direction:column;gap:8px;" id="batch-chapter-list">
+        ${chapters.map(ch => buildBatchRow(ch)).join('')}
+      </div>
+    </div>
+
+    <!-- Download tracking (shown after all submitted) -->
+    ${allDone ? buildDownloadSection(chapters) : ''}
+  `;
+
+  // ── Wire reset ──
+  container.querySelector('#batch-reset-btn').addEventListener('click', () => {
+    if (!confirm(`Reset all submission status for ${totalCount} chapters?`)) return;
+    chapters.forEach(ch => localStorage.removeItem(BATCH_KEY(ch.number)));
+    localStorage.removeItem(BATCH_TS_KEY);
+    renderBatchExport(container, cur);
+  });
+
+  // ── Wire per-chapter buttons ──
+  chapters.forEach(ch => {
+    const data = getChapterData(ch.number);
+    const script = data?.script || '';
+
+    // Copy Script button
+    const copyBtn = container.querySelector(`#batch-copy-${ch.number}`);
+    copyBtn?.addEventListener('click', () => {
+      const cleaned = cleanChapterScript(script);
+      if (!cleaned) { showToast(`Chapter ${ch.number} has no script yet.`); return; }
+      navigator.clipboard.writeText(cleaned).then(() => {
+        copyBtn.textContent = '✅ Copied!';
+        copyBtn.style.background = '#f0fdf4';
+        copyBtn.style.borderColor = '#86efac';
+        setTimeout(() => {
+          copyBtn.textContent = '📋 Copy Script';
+          copyBtn.style.background = '';
+          copyBtn.style.borderColor = '';
+        }, 2500);
+        showToast(`Ch ${ch.number} copied — ${cleaned.trim().split(/\s+/).length} words`);
+      });
+    });
+
+    // Mark Submitted button
+    const markBtn = container.querySelector(`#batch-mark-${ch.number}`);
+    markBtn?.addEventListener('click', () => {
+      const isSubmitted = !!localStorage.getItem(BATCH_KEY(ch.number));
+      if (isSubmitted) {
+        localStorage.removeItem(BATCH_KEY(ch.number));
+      } else {
+        localStorage.setItem(BATCH_KEY(ch.number), Date.now());
+        showToast(`Chapter ${ch.number} marked as submitted`);
+      }
+      // Check if all submitted now
+      const nowSubmitted = chapters.filter(c => localStorage.getItem(BATCH_KEY(c.number))).length;
+      if (nowSubmitted === totalCount && !localStorage.getItem(BATCH_TS_KEY)) {
+        localStorage.setItem(BATCH_TS_KEY, Date.now());
+      }
+      renderBatchExport(container, cur);
+    });
+  });
+
+  // ── Wire file inputs (download tracking) ──
+  if (allDone) {
+    chapters.forEach(ch => {
+      const drop  = container.querySelector(`#batch-drop-${ch.number}`);
+      const input = container.querySelector(`#batch-file-${ch.number}`);
+      const selectBtn = container.querySelector(`#batch-select-${ch.number}`);
+
+      selectBtn?.addEventListener('click', () => input?.click());
+
+      const handleFile = (file) => {
+        if (!file) return;
+        const expectedName = `heygen-chapter-${String(ch.number).padStart(2, '0')}.mp4`;
+        const statusEl = container.querySelector(`#batch-file-status-${ch.number}`);
+        if (statusEl) {
+          statusEl.innerHTML = `
+            <div class="status-bar success" style="margin-top:8px;">
+              ✅ <strong>${esc(file.name)}</strong> selected
+              (save as <code>${expectedName}</code> in project root)
+            </div>`;
+        }
+        saveChapterData(ch.number, { ...(getChapterData(ch.number) || {}), status: 'rendered' });
+        checkAllVideosReady(container, chapters);
+      };
+
+      input?.addEventListener('change', () => handleFile(input.files[0]));
+
+      drop?.addEventListener('dragover', e => { e.preventDefault(); drop.style.borderColor = 'var(--accent)'; });
+      drop?.addEventListener('dragleave', () => { drop.style.borderColor = ''; });
+      drop?.addEventListener('drop', e => {
+        e.preventDefault();
+        drop.style.borderColor = '';
+        handleFile(e.dataTransfer.files[0]);
+      });
+    });
+  }
+}
+
+function buildBatchRow(ch) {
+  const data      = getChapterData(ch.number);
+  const script    = data?.script || '';
+  const isSubmitted = !!localStorage.getItem(BATCH_KEY(ch.number));
+  const hasScript = script.length > 10;
+  const words     = hasScript ? script.trim().split(/\s+/).filter(Boolean).length : 0;
+  const mins      = Math.round(words / 150);
+  const padded    = String(ch.number).padStart(2, '0');
+
+  return `
+    <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;
+      border:1.5px solid ${isSubmitted ? '#bbf7d0' : 'var(--border)'};
+      background:${isSubmitted ? '#f0fdf4' : 'var(--bg)'};
+      border-radius:8px;transition:all .15s;" id="batch-row-${ch.number}">
+      <div style="width:30px;height:30px;border-radius:50%;
+        background:${isSubmitted ? '#16a34a' : 'var(--accent)'};
+        color:#fff;display:flex;align-items:center;justify-content:center;
+        font-family:'Poppins',sans-serif;font-weight:700;font-size:.8rem;flex-shrink:0;">
+        ${isSubmitted ? '✓' : ch.number}
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:600;font-size:.9rem;color:var(--primary);
+          white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+          ${esc(ch.title)}
+        </div>
+        <div style="font-size:.78rem;color:var(--muted);margin-top:1px;">
+          ${hasScript
+            ? `${words.toLocaleString()} words · ~${mins} min · Save as: <code>heygen-chapter-${padded}.mp4</code>`
+            : '<span style="color:#dc2626;">No script yet — generate in editor first</span>'}
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0;">
+        <button id="batch-copy-${ch.number}"
+          class="btn btn-outline btn-sm" ${!hasScript ? 'disabled' : ''}
+          style="font-size:.78rem;padding:4px 10px;">
+          📋 Copy Script
+        </button>
+        <button id="batch-mark-${ch.number}"
+          class="btn btn-sm"
+          style="font-size:.78rem;padding:4px 10px;
+            background:${isSubmitted ? '#16a34a' : 'transparent'};
+            color:${isSubmitted ? '#fff' : 'var(--accent)'};
+            border:1.5px solid ${isSubmitted ? '#16a34a' : 'var(--accent)'};">
+          ${isSubmitted ? '✅ Submitted' : '☐ Mark Submitted'}
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function buildAllDoneBanner(batchSubmittedAt) {
+  const minsRemaining = batchSubmittedAt
+    ? Math.max(0, 15 - Math.round((Date.now() - parseInt(batchSubmittedAt)) / 60000))
+    : 15;
+  const isReady = minsRemaining === 0;
+
+  return `
+    <div style="background:${isReady ? '#f0fdf4' : '#fffbeb'};
+      border:1.5px solid ${isReady ? '#86efac' : '#fde68a'};
+      border-radius:8px;padding:14px 18px;margin-bottom:16px;">
+      <div style="font-weight:700;font-size:.95rem;color:${isReady ? '#166534' : '#92400e'};">
+        ${isReady
+          ? '🎉 All chapters submitted and likely ready in HeyGen!'
+          : '🎉 All chapters submitted! HeyGen is rendering them in parallel.'}
+      </div>
+      ${!isReady ? `
+        <div style="font-size:.85rem;color:#92400e;margin-top:4px;">
+          Come back in ~${minsRemaining} minute${minsRemaining !== 1 ? 's' : ''} to download.
+        </div>` : ''}
+    </div>
+  `;
+}
+
+function buildDownloadSection(chapters) {
+  const rows = chapters.map(ch => {
+    const padded = String(ch.number).padStart(2, '0');
+    const d      = getChapterData(ch.number);
+    const isReady = d?.status === 'rendered' || d?.status === 'published';
+
+    return `
+      <div style="border:1.5px solid ${isReady ? '#bbf7d0' : 'var(--border)'};
+        border-radius:8px;padding:14px 16px;background:${isReady ? '#f0fdf4' : 'var(--bg)'};">
+        <div style="display:flex;align-items:center;justify-content:space-between;
+          flex-wrap:wrap;gap:8px;margin-bottom:${isReady ? '0' : '10px'};">
+          <div>
+            <div style="font-weight:600;font-size:.9rem;color:var(--primary);">
+              ${isReady ? '✅' : '⬇'} Chapter ${ch.number}: ${esc(ch.title)}
+            </div>
+            <div style="font-size:.78rem;color:var(--muted);margin-top:2px;">
+              Save download as: <code style="background:var(--code-bg);padding:1px 5px;border-radius:3px;">
+                heygen-chapter-${padded}.mp4</code>
+            </div>
+          </div>
+          <a href="https://app.heygen.com" target="_blank" rel="noopener"
+            class="btn btn-secondary btn-sm" style="font-size:.78rem;">
+            Open HeyGen ↗
+          </a>
+        </div>
+        ${!isReady ? `
+        <div id="batch-drop-${ch.number}"
+          style="border:2px dashed var(--border);border-radius:6px;padding:14px;
+            text-align:center;cursor:pointer;font-size:.825rem;color:var(--muted);
+            transition:border-color .15s;">
+          Drop <strong>heygen-chapter-${padded}.mp4</strong> here
+          <br>
+          <button id="batch-select-${ch.number}"
+            class="btn btn-secondary btn-sm" style="margin-top:8px;font-size:.78rem;">
+            📁 Select file
+          </button>
+          <input type="file" id="batch-file-${ch.number}" accept="video/mp4"
+            style="display:none;">
+        </div>
+        <div id="batch-file-status-${ch.number}"></div>
+        ` : ''}
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;
+        flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+        <h2 style="margin:0;">⬇ Download Rendered Videos</h2>
+        <button id="batch-render-all-btn" class="btn btn-primary" disabled>
+          🎬 Render All Chapters
+        </button>
+      </div>
+      <p style="font-size:.85rem;color:var(--muted);margin-bottom:16px;">
+        Download each video from HeyGen and drop it below.
+        When all are ready, click Render All.
+      </p>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        ${rows}
+      </div>
+    </div>
+  `;
+}
+
+function checkAllVideosReady(container, chapters) {
+  const allReady = chapters.every(ch => {
+    const d = getChapterData(ch.number);
+    return d?.status === 'rendered' || d?.status === 'published';
+  });
+  const renderBtn = container.querySelector('#batch-render-all-btn');
+  if (renderBtn && allReady) {
+    renderBtn.disabled = false;
+    renderBtn.addEventListener('click', () => {
+      showToast('Run: npm run render:all in your terminal');
+    });
+  }
 }
