@@ -167,6 +167,125 @@ function renderSettings(container) {
   });
 }
 
+// ── Script generation shared helpers ─────────────────────────────────────────
+
+export const TOKENS_BY_DURATION = { 10: 3000, 15: 4500, 20: 6000, 25: 7500, 30: 9000 };
+
+const CHAPTER_SYSTEM_PROMPT = `You are an expert tech educator creating video scripts for online courses. Your teaching style is:
+- Clear and encouraging, never condescending
+- Uses simple analogies before technical terms
+- Builds confidence with small wins
+- Speaks directly to the viewer using you
+- Celebrates progress
+- Makes complex things feel achievable
+
+Voice: conversational, enthusiastic, patient. Occasional light humor.
+Never use markdown formatting or bracketed stage directions in the spoken text.
+
+CRITICAL: Always write a complete script with a proper ending.
+Never stop mid-sentence or mid-section.
+The script MUST end with:
+1. A recap of 3 key things learned
+2. A subscribe and like CTA
+3. A preview of the next chapter
+4. A sign-off ("See you in the next one!")
+
+If you are running long, condense the middle sections rather than omitting the ending.`;
+
+export async function generateFullScript(userMsg, apiKey, maxTokens) {
+  let fullScript = '';
+  let continueGenerating = true;
+  let attempt = 0;
+  const maxAttempts = 3;
+
+  while (continueGenerating && attempt < maxAttempts) {
+    attempt++;
+
+    const messages = attempt === 1
+      ? [{ role: 'user', content: userMsg }]
+      : [
+          { role: 'user', content: userMsg },
+          { role: 'assistant', content: fullScript },
+          {
+            role: 'user',
+            content: 'Continue the script exactly from where you left off. Do not repeat anything. Do not add any headers or preamble. Just continue naturally until the complete ending including the subscribe CTA and sign-off.',
+          },
+        ];
+
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-opus-4-5',
+        max_tokens: maxTokens,
+        system: CHAPTER_SYSTEM_PROMPT,
+        messages,
+      }),
+    });
+
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      throw new Error(`API error (${resp.status}): ${err?.error?.message || resp.statusText}`);
+    }
+
+    const data = await resp.json();
+    const text  = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+    fullScript += (attempt > 1 ? '\n' : '') + text;
+
+    if (data.stop_reason === 'end_turn') {
+      continueGenerating = false;
+    } else if (data.stop_reason === 'max_tokens') {
+      console.log(`Script truncated at attempt ${attempt}, continuing…`);
+    } else {
+      continueGenerating = false;
+    }
+  }
+
+  // Force a closing CTA if the script ended without one
+  const hasEnding =
+    fullScript.toLowerCase().includes('subscribe') ||
+    fullScript.toLowerCase().includes('next chapter') ||
+    fullScript.toLowerCase().includes('see you');
+
+  if (!hasEnding) {
+    const finalResp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-opus-4-5',
+        max_tokens: 1000,
+        system: CHAPTER_SYSTEM_PROMPT,
+        messages: [
+          { role: 'user', content: userMsg },
+          { role: 'assistant', content: fullScript },
+          {
+            role: 'user',
+            content: 'Complete the script now with just the closing recap, subscribe CTA, and sign-off. Keep it brief.',
+          },
+        ],
+      }),
+    });
+
+    if (finalResp.ok) {
+      const finalData = await finalResp.json();
+      const finalText = (finalData.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+      fullScript += '\n' + finalText;
+    }
+  }
+
+  return fullScript;
+}
+
 // ── Boot ──────────────────────────────────────────────────────────────────────
 
 function esc(str) {

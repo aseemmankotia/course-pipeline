@@ -3,7 +3,7 @@
  * Features: script generation, cleaned copy, preview toggle, HeyGen API submit
  */
 
-import { getSettings, getCurriculum, getChapterData, saveChapterData } from '../app.js';
+import { getSettings, getCurriculum, getChapterData, saveChapterData, generateFullScript, TOKENS_BY_DURATION } from '../app.js';
 
 // ── Public render ─────────────────────────────────────────────────────────────
 
@@ -530,6 +530,7 @@ async function generateScript(container, editorEl, cur, ch, mode) {
   const wordCount    = editorEl.querySelector('#word-count');
   const scriptStatus = editorEl.querySelector('#script-gen-status');
   const wordTarget   = (ch.duration_mins || 15) * 150;
+  const maxTokens    = TOKENS_BY_DURATION[ch.duration_mins] || 4500;
   const prevChapter  = cur.chapters.find(c => c.number === ch.number - 1);
 
   let userMsg;
@@ -593,38 +594,7 @@ IMPORTANT:
   }, 2000);
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': claudeApiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
-      },
-      body: JSON.stringify({
-        model: 'claude-opus-4-5',
-        max_tokens: 6000,
-        system: `You are an expert tech educator creating video scripts for online courses. Your teaching style is:
-- Clear and encouraging, never condescending
-- Uses simple analogies before technical terms
-- Builds confidence with small wins
-- Speaks directly to the viewer using you
-- Celebrates progress
-- Makes complex things feel achievable
-
-Voice: conversational, enthusiastic, patient. Occasional light humor.
-Never use markdown formatting or bracketed stage directions in the spoken text.`,
-        messages: [{ role: 'user', content: userMsg }],
-      }),
-    });
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(`API error (${res.status}): ${err?.error?.message || res.statusText}`);
-    }
-
-    const data   = await res.json();
-    const script = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n\n');
+    const script = await generateFullScript(userMsg, claudeApiKey, maxTokens);
 
     textarea.value = script;
     wordCount.textContent = wordCountLabel(script);

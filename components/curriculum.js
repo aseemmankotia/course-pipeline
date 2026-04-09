@@ -2,7 +2,7 @@
  * curriculum.js — Tab 1: Course Curriculum Generator
  */
 
-import { getSettings, saveCurriculum, getCurriculum, getChapterData } from '../app.js';
+import { getSettings, saveCurriculum, getCurriculum, getChapterData, saveChapterData, generateFullScript, TOKENS_BY_DURATION } from '../app.js';
 
 const DEPTH_COUNTS = {
   'Quick start (4-6 chapters)':        5,
@@ -270,6 +270,10 @@ function showCurriculum(container, cur, onReady) {
         </div>
       </div>
 
+      <div id="batch-gen-progress" style="display:none;margin-bottom:14px;
+        background:var(--code-bg);border:1px solid #e5e7eb;border-radius:8px;padding:14px 16px;">
+      </div>
+
       <div class="chapters-list" id="chapters-list">
         ${chaptersHtml}
       </div>
@@ -287,12 +291,58 @@ function showCurriculum(container, cur, onReady) {
 
   // Generate All
   container.querySelector('#gen-all-btn').addEventListener('click', async () => {
-    for (let i = 0; i < cur.chapters.length; i++) {
-      window.dispatchEvent(new CustomEvent('generate-chapter-script', {
-        detail: { n: cur.chapters[i].number, cur, autoAdvance: true }
-      }));
-      await delay(500);
+    const genAllBtn  = container.querySelector('#gen-all-btn');
+    const progressEl = container.querySelector('#batch-gen-progress');
+    const { claudeApiKey } = getSettings();
+
+    if (!claudeApiKey) {
+      progressEl.style.display = 'block';
+      progressEl.innerHTML = `<div class="status-bar error">API key missing — add it in ⚙ Settings.</div>`;
+      return;
     }
+
+    genAllBtn.disabled = true;
+    genAllBtn.innerHTML = '<span class="loader"></span> Generating…';
+    progressEl.style.display = 'block';
+
+    for (let i = 0; i < cur.chapters.length; i++) {
+      const ch        = cur.chapters[i];
+      const maxTokens = TOKENS_BY_DURATION[ch.duration_mins] || 4500;
+
+      progressEl.innerHTML = batchProgressHtml(i, cur.chapters.length, `Generating Chapter ${ch.number}: ${ch.title}…`);
+      updateStatusIcon(container, ch.number, '🔄');
+      saveChapterData(ch.number, { ...(getChapterData(ch.number) || {}), status: 'generating' });
+
+      try {
+        const script = await generateFullScript(buildBatchPrompt(ch, cur), claudeApiKey, maxTokens);
+        const words  = script.trim().split(/\s+/).filter(Boolean).length;
+        const mins   = Math.round(words / 150);
+
+        saveChapterData(ch.number, { script, status: 'ready', generatedAt: Date.now() });
+        refreshChapterStatuses(container, cur);
+        progressEl.innerHTML = batchProgressHtml(i + 1, cur.chapters.length,
+          `✅ Chapter ${ch.number} done — ${words.toLocaleString()} words · ~${mins} min`);
+
+      } catch (e) {
+        saveChapterData(ch.number, { ...(getChapterData(ch.number) || {}), status: 'not_started' });
+        updateStatusIcon(container, ch.number, '❌');
+        progressEl.innerHTML = batchProgressHtml(i, cur.chapters.length,
+          `❌ Chapter ${ch.number} failed: ${esc(e.message)}`);
+      }
+
+      if (i < cur.chapters.length - 1) {
+        for (let s = 5; s > 0; s--) {
+          progressEl.innerHTML = batchProgressHtml(i + 1, cur.chapters.length,
+            `⏳ Waiting ${s}s before Chapter ${ch.number + 1}…`);
+          await delay(1000);
+        }
+      }
+    }
+
+    progressEl.innerHTML = batchProgressHtml(cur.chapters.length, cur.chapters.length,
+      `🎉 All ${cur.chapters.length} scripts generated!`);
+    genAllBtn.disabled = false;
+    genAllBtn.innerHTML = '⚡ Generate All Scripts';
     onReady && onReady();
   });
 
@@ -303,11 +353,18 @@ function showCurriculum(container, cur, onReady) {
 }
 
 function chapterCardHtml(ch, i, cur) {
-  const data = getChapterData(ch.number);
+  const data   = getChapterData(ch.number);
   const status = data?.status || 'not_started';
-  const icons = {
+  const icons  = {
     not_started: '⬜', generating: '🔄', ready: '✅', rendered: '🎬', published: '📤',
   };
+
+  let wordStr = '';
+  if ((status === 'ready' || status === 'rendered' || status === 'published') && data?.script) {
+    const words = data.script.trim().split(/\s+/).filter(Boolean).length;
+    const mins  = Math.round(words / 150);
+    wordStr = `${words.toLocaleString()} words · ~${mins} min`;
+  }
 
   return `
     <div class="chapter-card" id="ch-card-${ch.number}">
@@ -315,6 +372,8 @@ function chapterCardHtml(ch, i, cur) {
       <div class="chapter-info">
         <div class="chapter-title-text">${esc(ch.title)}</div>
         <div class="chapter-subtitle-text">${esc(ch.subtitle || ch.concepts?.join(', ') || '')}</div>
+        <div id="word-label-${ch.number}" style="font-size:.75rem;color:#16a34a;margin-top:2px;
+          ${wordStr ? '' : 'display:none;'}">${esc(wordStr)}</div>
       </div>
       <div class="chapter-actions">
         <span class="duration-badge">${ch.duration_mins || 15}m</span>
@@ -332,11 +391,66 @@ function refreshChapterStatuses(container, cur) {
     not_started: '⬜', generating: '🔄', ready: '✅', rendered: '🎬', published: '📤',
   };
   cur.chapters.forEach(ch => {
-    const el = container.querySelector(`#status-icon-${ch.number}`);
-    if (!el) return;
-    const data = getChapterData(ch.number);
-    el.textContent = icons[data?.status || 'not_started'];
+    const iconEl = container.querySelector(`#status-icon-${ch.number}`);
+    const wordEl = container.querySelector(`#word-label-${ch.number}`);
+    if (!iconEl) return;
+    const data   = getChapterData(ch.number);
+    const status = data?.status || 'not_started';
+    iconEl.textContent = icons[status];
+    if (wordEl) {
+      if (['ready','rendered','published'].includes(status) && data?.script) {
+        const words = data.script.trim().split(/\s+/).filter(Boolean).length;
+        const mins  = Math.round(words / 150);
+        wordEl.textContent = `${words.toLocaleString()} words · ~${mins} min`;
+        wordEl.style.display = 'block';
+      } else {
+        wordEl.style.display = 'none';
+      }
+    }
   });
+}
+
+// ── Batch generation helpers ──────────────────────────────────────────────────
+
+function buildBatchPrompt(ch, cur) {
+  const wordTarget  = (ch.duration_mins || 15) * 150;
+  const prevChapter = cur.chapters.find(c => c.number === ch.number - 1);
+
+  return `Write a complete video script for Chapter ${ch.number} of "${cur.course_title}".
+
+Chapter: ${ch.title}
+Subtitle: ${ch.subtitle || ''}
+Concepts to cover: ${(ch.concepts || []).join(', ')}
+Hands-on exercise: ${ch.hands_on || ''}
+Real world example: ${ch.real_world_example || ''}
+Key takeaway: ${ch.key_takeaway || ''}
+Duration target: ${ch.duration_mins || 15} minutes (~${wordTarget} words)
+${prevChapter ? `Previous chapter: "${prevChapter.title}"` : ''}
+
+Script structure:
+1. CHAPTER INTRO (60 seconds): welcome, what we'll learn and why it matters
+2. CONCEPT EXPLANATION (30%): real-world analogy first, then technical definition
+3. DEMONSTRATION (40%): step-by-step hands-on, explain WHY not just HOW
+4. REAL WORLD APPLICATION (15%): where used in production, real tools/companies
+5. CHAPTER WRAP UP (15%): recap 3 key things, preview next chapter, CTA
+
+IMPORTANT: No markdown symbols, no brackets, write as spoken aloud, use ... for pauses, always say "you".`;
+}
+
+function batchProgressHtml(current, total, message) {
+  const pct = Math.round((current / total) * 100);
+  return `
+    <div style="font-size:.875rem;color:var(--primary);margin-bottom:8px;">${esc(message)}</div>
+    <div style="background:#e5e7eb;border-radius:4px;height:6px;overflow:hidden;">
+      <div style="background:var(--accent);height:100%;width:${pct}%;transition:width .4s;border-radius:4px;"></div>
+    </div>
+    <div style="font-size:.78rem;color:var(--muted);margin-top:5px;">${current} of ${total} chapters</div>
+  `;
+}
+
+function updateStatusIcon(container, n, icon) {
+  const el = container.querySelector(`#status-icon-${n}`);
+  if (el) el.textContent = icon;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
