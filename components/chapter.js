@@ -381,6 +381,24 @@ function cleanChapterScript(script) {
   cleaned = cleaned.replace(/^[\s]*[-•*]\s+/gm, '');
   cleaned = cleaned.replace(/^[\s]*\d+\.\s+/gm,  '');
 
+  // ── Step 9b: Remove code-reading artifacts ────────────────────────────────────
+  // "type 'something' then/next/and" → remove
+  cleaned = cleaned.replace(/type\s+(['"`])?[a-z_]+(['"`])?\s*(then|next|and)/gi, '');
+  // Spelled-out syntax symbols
+  [
+    'open parenthesis', 'close parenthesis',
+    'open bracket', 'close bracket',
+    'open curly brace', 'close curly brace',
+    'semicolon', 'colon here', 'dot notation',
+    'double colon', 'backslash', 'forward slash',
+    'equals sign', 'assignment operator',
+    'open paren', 'close paren',
+  ].forEach(sw => {
+    cleaned = cleaned.replace(new RegExp(sw, 'gi'), '');
+  });
+  // "line by line", "each line", etc.
+  cleaned = cleaned.replace(/line by line|each line|every line|line \d+/gi, '');
+
   // ── Step 10: Final whitespace collapse ────────────────────────────────────────
   cleaned = cleaned.split('\n')
     .map(l => l.trim())
@@ -530,7 +548,7 @@ async function generateScript(container, editorEl, cur, ch, mode) {
   const wordCount    = editorEl.querySelector('#word-count');
   const scriptStatus = editorEl.querySelector('#script-gen-status');
   const wordTarget   = (ch.duration_mins || 15) * 150;
-  const maxTokens    = TOKENS_BY_DURATION[ch.duration_mins] || 4500;
+  const maxTokens    = Math.min(TOKENS_BY_DURATION[ch.duration_mins] || 4500, 6000);
   const prevChapter  = cur.chapters.find(c => c.number === ch.number - 1);
 
   let userMsg;
@@ -576,6 +594,42 @@ Script structure:
    - Preview next chapter with a hook
    - Call to action
 
+STRICT LENGTH RULE:
+- Maximum video length: 30 minutes
+- Maximum word count: 4,500 words
+- Target word count: 3,000–4,000 words (20–25 mins)
+- If content exceeds this, prioritize depth over breadth
+- Cover fewer concepts thoroughly rather than many superficially
+- Quality over quantity always
+
+CRITICAL RULES FOR CODE IN SCRIPTS:
+1. NEVER read code line by line
+   BAD: "First we type import pandas as p d, then on the next line..."
+   GOOD: "We start by importing the two libraries we need."
+2. NEVER spell out variable names character by character
+   BAD: "We create a variable called d, f which stores..."
+   GOOD: "We store our data in a variable called df — short for DataFrame"
+3. NEVER read out syntax symbols
+   BAD: "We type df dot head open parenthesis five close parenthesis"
+   GOOD: "We call the head function to peek at the first five rows"
+4. DO describe what the code DOES, not what it SAYS
+   Focus on: purpose, result, why this approach
+5. DO use natural language for code concepts:
+   - "We import the library" not "we type import"
+   - "We create a function" not "def function_name colon"
+   - "We loop through each item" not "for item in list colon"
+   - "We store the result" not "we assign to variable"
+6. DO reference the screen naturally:
+   - "As you can see on screen..." / "Notice how the output shows..."
+   - "The slide shows the full code — you can pause here to copy it."
+7. For complex code blocks: explain the CONCEPT first (30 sec),
+   then say "Here is the code on screen" (1 sec),
+   then explain what the OUTPUT means (30 sec).
+   Never walk through the code word by word.
+8. Use analogies instead of syntax:
+   - "Think of it like a spreadsheet" not "a DataFrame is a 2D labeled data structure"
+   - "Like a recipe with steps" not "a function with parameters"
+
 IMPORTANT:
 - No markdown symbols in spoken text
 - No brackets or stage directions
@@ -600,7 +654,16 @@ IMPORTANT:
     wordCount.textContent = wordCountLabel(script);
     saveChapterData(ch.number, { script, status: 'ready', generatedAt: Date.now() });
 
-    scriptStatus.innerHTML = `<div class="status-bar success">✓ Script ready — ${script.trim().split(/\s+/).length} words</div>`;
+    const { words, estimatedMins, isValid } = validateScriptLength(script);
+    const lengthColor  = words <= 3500 ? '#16a34a' : words <= 4500 ? '#d97706' : '#dc2626';
+    const lengthIcon   = words <= 3500 ? '✅' : words <= 4500 ? '⚠️' : '❌';
+    const lengthNote   = words > 4500
+      ? ` — Script exceeds 30 mins. Use <strong>Make Shorter</strong> to trim.` : '';
+    scriptStatus.innerHTML = `
+      <div class="status-bar" style="background:${words <= 3500 ? '#f0fdf4' : words <= 4500 ? '#fffbeb' : '#fef2f2'};
+        border-color:${lengthColor};color:${lengthColor};">
+        ${lengthIcon} Script ready — ${words.toLocaleString()} words · ~${estimatedMins} min${lengthNote}
+      </div>`;
 
     ['shorten-btn','lengthen-btn','copy-script-btn','copy-cleaned-btn',
      'preview-clean-btn','mark-ready-btn','heygen-submit-btn'].forEach(id => {
@@ -634,6 +697,14 @@ function splitIntoChunks(text, maxLen = 4500) {
   }
   if (current.trim()) chunks.push(current.trim());
   return chunks.length ? chunks : [text];
+}
+
+function validateScriptLength(script) {
+  const words        = script.trim().split(/\s+/).filter(Boolean).length;
+  const estimatedMins = Math.round(words / 150);
+  if (words > 4500) console.warn(`Script too long (${words} words). Should be max 4,500.`);
+  else console.log(`Script: ${words} words, ~${estimatedMins} mins`);
+  return { words, estimatedMins, isValid: words <= 4500 };
 }
 
 function wordCountLabel(text) {
