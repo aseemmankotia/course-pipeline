@@ -286,16 +286,70 @@ function loadChapter(container, cur, n, autoGenerate) {
 function cleanChapterScript(script) {
   let cleaned = script;
 
-  // Remove bracketed stage directions
+  // ── Step 1: Replace code blocks with spoken reference (before other passes) ──
+  const codeBlockPhrases = [
+    "Here's the code example on screen",
+    "As shown in the code on screen",
+    "Take a look at this on screen",
+    "Check out this example on screen",
+    "Here's what that looks like on screen",
+  ];
+  let codeIdx = 0;
+  cleaned = cleaned.replace(/```[\s\S]*?```/g, () => {
+    return codeBlockPhrases[codeIdx++ % codeBlockPhrases.length] + '.';
+  });
+
+  // ── Step 2: DELETE entire lines that are pure metadata/labels ────────────────
+  const deleteLinePatterns = [
+    // Script metadata headers (any # heading that contains script/spoken keywords)
+    /^#+\s*(chapter\s*\d+[:\s-].*script.*)$/gim,
+    /^#+\s*(video\s*script.*)$/gim,
+    /^#+\s*(complete\s*spoken.*)$/gim,
+    /^#+\s*(spoken\s*text.*)$/gim,
+    /^#+\s*(script\s*text.*)$/gim,
+    // "# Chapter 1: ..." heading lines used as metadata labels
+    /^#+\s*chapter\s*\d+[:\s]/gim,
+    // Bold-only section labels (the whole line is just a label in caps)
+    /^\*{1,2}(CHAPTER INTRO|OPENING|HOOK|INTRO|INTRODUCTION|MAIN CONTENT|BODY|SECTION \d+|TRANSITION|CONCLUSION|OUTRO|CTA|CALL TO ACTION|SUBSCRIBE|RECAP|SUMMARY|CLOSE|END|WRAP UP|CLOSING)\*{0,2}$/gim,
+    // Horizontal rules
+    /^[-=*_]{2,}$/gm,
+    // Lines containing only asterisks/underscores
+    /^\*+\s*\*+$/gm,
+    // Standalone metadata lines
+    /^video\s*script.*$/gim,
+    /^complete\s*spoken\s*text.*$/gim,
+    /^chapter\s*\d+\s*[:|-]?\s*$/gim,
+    /^duration\s*:.*$/gim,
+    /^word\s*count\s*:.*$/gim,
+    /^target\s*(audience)?\s*:.*$/gim,
+    // Lines that are just a number and colon/period (orphaned list markers)
+    /^\d+[.:]\s*$/gm,
+  ];
+
+  deleteLinePatterns.forEach(pattern => {
+    cleaned = cleaned.replace(pattern, '');
+  });
+
+  // ── Step 3: Strip heading symbols from content lines, keep the text ──────────
+  // e.g. "## What is Python?" → "What is Python?"
+  cleaned = cleaned.replace(/^#{1,6}\s+(.+)$/gm, '$1');
+
+  // ── Step 4: Strip bold/italic markers, keep text ─────────────────────────────
+  cleaned = cleaned.replace(/\*{1,3}([^*\n]+)\*{1,3}/g, '$1');
+  cleaned = cleaned.replace(/_{1,3}([^_\n]+)_{1,3}/g,   '$1');
+  // Remove any remaining lone asterisks or underscores
+  cleaned = cleaned.replace(/\*+/g, '');
+  cleaned = cleaned.replace(/\b_+\b/g, '');
+
+  // ── Step 5: Remove inline code backticks, keep text ──────────────────────────
+  cleaned = cleaned.replace(/`([^`]+)`/g, '$1');
+
+  // ── Step 6: Remove brackets and curly-brace directions ───────────────────────
   cleaned = cleaned.replace(/\[([^\]]*)\]/g, '');
+  cleaned = cleaned.replace(/\{([^}]*)\}/g,  '');
 
-  // Remove curly brace directions
-  cleaned = cleaned.replace(/\{([^}]*)\}/g, '');
-
-  // Remove parenthetical stage directions on their own line
+  // ── Step 7: Remove parenthetical stage/delivery directions ───────────────────
   cleaned = cleaned.replace(/^\s*\([^)]*\)\s*$/gm, '');
-
-  // Remove delivery directions in parentheses
   const deliveryWords = [
     'pause', 'smile', 'laugh', 'energetic', 'serious', 'slow', 'fast',
     'loud', 'soft', 'whisper', 'emphasize', 'dramatic', 'excited', 'calm',
@@ -306,54 +360,20 @@ function cleanChapterScript(script) {
     cleaned = cleaned.replace(new RegExp(`\\([^)]*${word}[^)]*\\)`, 'gi'), '');
   });
 
-  // Remove markdown headers
-  cleaned = cleaned.replace(/^#{1,6}\s+/gm, '');
-
-  // Remove markdown bold/italic
-  cleaned = cleaned.replace(/\*\*([^*]+)\*\*/g, '$1');
-  cleaned = cleaned.replace(/\*([^*]+)\*/g,     '$1');
-  cleaned = cleaned.replace(/__([^_]+)__/g,      '$1');
-  cleaned = cleaned.replace(/_([^_]+)_/g,        '$1');
-
-  // Replace code blocks with spoken reference
-  const codeBlockPhrases = [
-    "Here's the code example on screen",
-    "As shown in the code on screen",
-    "Take a look at this on screen",
-    "Check out this example on screen",
-    "Here's what that looks like on screen",
-  ];
-  let codeIdx = 0;
-  cleaned = cleaned.replace(/```[\s\S]*?```/g, () => {
-    const phrase = codeBlockPhrases[codeIdx % codeBlockPhrases.length];
-    codeIdx++;
-    return phrase + '.';
-  });
-
-  // Remove inline code backticks, keep text
-  cleaned = cleaned.replace(/`([^`]+)`/g, '$1');
-
-  // Remove horizontal rules
-  cleaned = cleaned.replace(/^[-=*]{3,}$/gm, '');
-
-  // Remove chapter metadata lines
-  cleaned = cleaned.replace(/^.*chapter \d+.*script.*$/gim, '');
-  cleaned = cleaned.replace(/^.*duration:.*$/gim, '');
-  cleaned = cleaned.replace(/^.*target.*audience.*$/gim, '');
-  cleaned = cleaned.replace(/^.*word.*count.*$/gim, '');
-
-  // Remove URLs
+  // ── Step 8: Remove URLs ───────────────────────────────────────────────────────
   cleaned = cleaned.replace(/https?:\/\/[^\s]*/g, '');
 
-  // Remove bullet symbols, keep text
+  // ── Step 9: Remove bullet/list symbols, keep the text ────────────────────────
   cleaned = cleaned.replace(/^[\s]*[-•*]\s+/gm, '');
-  cleaned = cleaned.replace(/^[\s]*\d+\.\s+/gm, '');
+  cleaned = cleaned.replace(/^[\s]*\d+\.\s+/gm,  '');
 
-  // Collapse blank lines
+  // ── Step 10: Final whitespace collapse ────────────────────────────────────────
+  cleaned = cleaned.split('\n')
+    .map(l => l.trim())
+    .filter(l => l.length > 1)   // drop empty lines and single-char orphans
+    .join('\n');
+
   cleaned = cleaned.replace(/\n{3,}/g, '\n\n');
-
-  // Trim each line and drop empty ones
-  cleaned = cleaned.split('\n').map(l => l.trim()).filter(l => l.length > 0).join('\n');
 
   return cleaned.trim();
 }
