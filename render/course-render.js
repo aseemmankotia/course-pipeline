@@ -152,7 +152,7 @@ Slide types available:
 - "code"      : static code display with syntax highlight (use for showing a finished snippet)
 - "live_code" : animated Jupyter-style cell — choose this when the script says "let me show you", "let's try", "let's write", "here's how we do this", or is demonstrating a function, walking through execution, or showing input → output
 - "analogy"   : split-pane analogy vs technical (use for real-world comparisons)
-- "diagram"   : Mermaid.js diagram (flowchart/sequence only, never placeholder text)
+- "diagram"   : Mermaid.js diagram — use flowchart LR (left-to-right) for process flows, flowchart TD for hierarchies. Maximum 8 nodes, short labels (2-4 words). No subgraphs, no style blocks, simple arrows only. LR fills horizontal space better.
 
 For live_code slides:
 - Write syntactically correct Python (or the course language) that actually runs
@@ -203,7 +203,7 @@ Return JSON array of slides:
   {
     "type": "diagram",
     "title": "Diagram title",
-    "mermaid_code": "flowchart LR\\n  A[Start] --> B[End]",
+    "mermaid_code": "flowchart LR\\n  A[Input] --> B[Process]\\n  B --> C[Output]\\n  B --> D[Log]",
     "duration_seconds": 35
   },
   {
@@ -245,7 +245,7 @@ async function generateSlides(sections, input) {
 
   const WAIT_MS = {
     chapter_title: 600, concept: 1000, code: 1200,
-    analogy: 800, diagram: 3000, quiz: 800, chapter_summary: 800,
+    analogy: 800, diagram: 4000, quiz: 800, chapter_summary: 800,
     live_code: 0, // computed dynamically below
   };
 
@@ -260,12 +260,44 @@ async function generateSlides(sections, input) {
     await new Promise(r => setTimeout(r, 500));
 
     if (s.type === 'diagram') {
-      const svgOk = await page.evaluate(() => {
-        const svg = document.querySelector('.mermaid svg');
-        return svg && svg.getBoundingClientRect().height > 60;
+      // Wait for Mermaid to render, then scale SVG to fill the container
+      await new Promise(r => setTimeout(r, 2500));
+
+      const diagramSize = await page.evaluate(() => {
+        const svg       = document.querySelector('.mermaid svg');
+        if (!svg) return { width: 0, height: 0 };
+
+        const container = document.querySelector('.diagram-container');
+        const cW = container ? container.clientWidth  - 32 : 1160;
+        const cH = container ? container.clientHeight - 32 : 380;
+
+        // Read natural dimensions from viewBox or bbox
+        let svgW = 0, svgH = 0;
+        const vb = svg.viewBox?.baseVal;
+        if (vb && vb.width) { svgW = vb.width; svgH = vb.height; }
+        if (!svgW) {
+          try { const bb = svg.getBBox(); svgW = bb.width; svgH = bb.height; } catch {}
+        }
+        if (!svgW) { svgW = svg.clientWidth || 400; svgH = svg.clientHeight || 300; }
+
+        if (svgW > 0 && svgH > 0) {
+          // Ensure viewBox is set
+          if (!svg.getAttribute('viewBox')) {
+            svg.setAttribute('viewBox', `0 0 ${svgW} ${svgH}`);
+          }
+          const scale = Math.min((cW / svgW), (cH / svgH), 2.5);
+          svg.style.width    = (svgW * scale) + 'px';
+          svg.style.height   = (svgH * scale) + 'px';
+          svg.style.maxWidth  = 'none';
+          svg.style.maxHeight = 'none';
+        }
+
+        const rect = svg.getBoundingClientRect();
+        return { width: rect.width, height: rect.height };
       });
-      if (!svgOk) {
-        log(`     ⚠ Mermaid failed for slide ${i} — converting to concept`);
+
+      if (diagramSize.width < 300) {
+        log(`     ⚠ Diagram too small (${diagramSize.width}px) — converting to concept`);
         sections[i] = { type: 'concept', title: s.title, bullets: s.bullets || [], duration_seconds: s.duration_seconds };
         const fallbackHtml = buildSlideHTML(sections[i], i, total, input);
         fs.writeFileSync(htmlPath, fallbackHtml, 'utf8');
@@ -643,27 +675,61 @@ ${chapterBadge(input)}
 }
 
 function buildDiagramSlide(s, index, total, input) {
-  const mermaidCode = esc(s.mermaid_code || 'flowchart LR\n  A[Start] --> B[End]');
+  // Raw code — do NOT html-escape, Mermaid needs the literal characters
+  const mermaidCode = (s.mermaid_code || 'flowchart LR\n  A[Start] --> B[End]').trim();
+
+  const dots = progressDots(index, total);
 
   return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
 <link href="${BRAND_FONT}" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
-<script>mermaid.initialize({startOnLoad:true,theme:'default',themeVariables:{primaryColor:'${ACCENT}',primaryTextColor:'#ffffff',primaryBorderColor:'${ACCENT}',lineColor:'${NAVY}',fontFamily:'DM Sans'}});</script>
-<style>${BASE_CSS}
-.diagram-wrap{flex:1;display:flex;justify-content:center;align-items:center;padding:8px;}
-</style></head><body>
-${accentBar()}
-<div style="padding:36px 56px 80px;height:100%;display:flex;flex-direction:column;">
-  <div style="font-size:12px;font-weight:600;color:${ACCENT};letter-spacing:.1em;
-    text-transform:uppercase;margin-bottom:10px;">Diagram</div>
-  <h1 style="font-family:'Poppins',sans-serif;font-weight:700;font-size:32px;
-    color:${NAVY};margin-bottom:16px;">${esc(s.title)}</h1>
-  <div class="diagram-wrap">
-    <div class="mermaid">${mermaidCode}</div>
-  </div>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{width:1280px;height:720px;background:#ffffff;font-family:'DM Sans',system-ui,sans-serif;
+  overflow:hidden;position:relative;}
+.top-bar{position:absolute;top:0;left:0;right:0;height:4px;
+  background:linear-gradient(90deg,${ACCENT},${DEEP_BLUE});}
+.type-label{position:absolute;top:16px;left:60px;font-size:12px;font-weight:600;
+  color:${ACCENT};letter-spacing:.12em;text-transform:uppercase;}
+.slide-title{position:absolute;top:34px;left:60px;right:360px;
+  font-family:'Poppins',sans-serif;font-weight:700;font-size:30px;
+  color:${NAVY};line-height:1.2;}
+.diagram-container{position:absolute;top:96px;left:40px;right:40px;bottom:215px;
+  display:flex;align-items:center;justify-content:center;
+  background:#fafafa;border-radius:8px;border:1px solid #f0f0f0;
+  overflow:hidden;padding:16px;}
+.mermaid{width:100%;height:100%;display:flex;align-items:center;justify-content:center;}
+.mermaid svg{max-width:100%!important;max-height:100%!important;}
+.progress{position:absolute;bottom:185px;left:60px;display:flex;gap:6px;align-items:center;}
+.brand{position:absolute;bottom:188px;right:60px;font-size:12px;color:#d1d5db;font-weight:500;}
+</style>
+</head><body>
+<div class="top-bar"></div>
+<div class="type-label">Diagram</div>
+<div class="slide-title">${esc(s.title)}</div>
+<div class="diagram-container">
+  <div class="mermaid">${mermaidCode}</div>
 </div>
-<div style="position:absolute;bottom:22px;left:56px;display:flex;gap:5px;">${progressDots(index, total)}</div>
-${chapterBadge(input)}
+<div class="progress">${dots}</div>
+<div class="brand">${esc(input.course_title || 'TechNuggets Academy')} · Ch ${input.chapter_number}</div>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+mermaid.initialize({
+  startOnLoad: true,
+  theme: 'default',
+  fontSize: 20,
+  flowchart: { nodeSpacing: 60, rankSpacing: 80, padding: 24, useMaxWidth: false, htmlLabels: true },
+  themeVariables: {
+    fontSize: '20px',
+    fontFamily: 'Inter, sans-serif',
+    primaryColor: '#fde8ec',
+    primaryTextColor: '${NAVY}',
+    primaryBorderColor: '${ACCENT}',
+    lineColor: '${DEEP_BLUE}',
+    secondaryColor: '#e8f0fe',
+    tertiaryColor: '#f0fdf4',
+  }
+});
+</script>
 </body></html>`;
 }
 
