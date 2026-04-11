@@ -1,6 +1,20 @@
 .env
 node_modules/
+
+# Chapter output artifacts (keep directory structure, ignore binaries)
+render/chapters/*/slides/*.png
+render/chapters/*/slides/*.html
+render/chapters/*/temp/
+render/chapters/*/*-final.mp4
+
+# HeyGen source videos and render inputs (too large / machine-specific)
+heygen-chapter-*.mp4
+course-render-input.json
+course-render-input-*.json
+
+# Legacy paths (pre-chapter-dir structure)
 render/temp/
 render/slides/*.html
 render/slides/*.png
+
 docs/courses/

@@ -23,13 +23,79 @@
 
 const fs           = require('fs');
 const path         = require('path');
+const os           = require('os');
 const axios        = require('axios');
 const puppeteer    = require('puppeteer');
 const { execSync, spawn } = require('child_process');
 
-const INPUT_FILE = path.join(__dirname, '..', 'course-render-input.json');
-const SLIDES_DIR = path.join(__dirname, 'slides');
-const TEMP_DIR   = path.join(__dirname, 'temp');
+// Chapter number can be passed as argv: node course-render.js 2
+const chapterArg = process.argv[2] ? parseInt(process.argv[2]) : null;
+
+// Set in main() once the chapter number is known
+let SLIDES_DIR, TEMP_DIR;
+
+// ── Path helpers ──────────────────────────────────────────────────────────────
+
+function getInputPath(chapterNum) {
+  if (chapterNum) {
+    const chapterInput = path.join(
+      __dirname, 'chapters', `chapter-${String(chapterNum).padStart(2,'0')}`,
+      'course-render-input.json'
+    );
+    if (fs.existsSync(chapterInput)) return chapterInput;
+  }
+  const rootInput = path.join(__dirname, '..', 'course-render-input.json');
+  if (fs.existsSync(rootInput)) return rootInput;
+  throw new Error(
+    'No course-render-input.json found.\n' +
+    'Download it from the Render tab or place it in the project root.'
+  );
+}
+
+function setupChapterPaths(chapterNum) {
+  const paddedNum  = String(chapterNum).padStart(2, '0');
+  const chapterDir = path.join(__dirname, 'chapters', `chapter-${paddedNum}`);
+  return {
+    chapterDir,
+    slidesDir:  path.join(chapterDir, 'slides'),
+    tempDir:    path.join(chapterDir, 'temp'),
+    finalVideo: path.join(chapterDir, `chapter-${paddedNum}-final.mp4`),
+  };
+}
+
+function ensureChapterDirs(paths) {
+  [paths.chapterDir, paths.slidesDir, paths.tempDir].forEach(dir => {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+      console.log(`📁 Created: ${dir}`);
+    }
+  });
+}
+
+function findHeygenVideo(chapterNum, heygenLocalFile) {
+  const paddedNum = String(chapterNum).padStart(2, '0');
+  const locations = [
+    path.join(__dirname, 'chapters', `chapter-${paddedNum}`, `heygen-chapter-${paddedNum}.mp4`),
+    path.join(__dirname, 'chapters', `chapter-${paddedNum}`, 'heygen-raw.mp4'),
+    path.join(__dirname, '..', heygenLocalFile),
+    path.join(__dirname, '..', `heygen-chapter-${paddedNum}.mp4`),
+    path.join(os.homedir(), 'Downloads', `heygen-chapter-${paddedNum}.mp4`),
+    path.join(os.homedir(), 'Downloads', heygenLocalFile),
+  ].filter((v, i, a) => a.indexOf(v) === i); // deduplicate
+
+  for (const loc of locations) {
+    if (fs.existsSync(loc)) {
+      console.log(`   ✓ Found HeyGen video: ${loc}`);
+      return loc;
+    }
+  }
+
+  throw new Error(
+    `HeyGen video not found. Looked in:\n` +
+    locations.map(l => `  - ${l}`).join('\n') +
+    `\n\nPlace the MP4 in any of these locations.`
+  );
+}
 
 // ── PIP config ────────────────────────────────────────────────────────────────
 const PIP_WIDTH    = 300;
@@ -46,11 +112,10 @@ const DEEP_BLUE  = '#16213e';
 
 async function main() {
   log('📖 Reading course-render-input.json…');
-  if (!fs.existsSync(INPUT_FILE)) {
-    die('course-render-input.json not found.\nDownload it from the Render tab in the app.');
-  }
 
-  const input = JSON.parse(fs.readFileSync(INPUT_FILE, 'utf8'));
+  const inputFile = getInputPath(chapterArg);
+  log(`   Using: ${inputFile}`);
+  const input = JSON.parse(fs.readFileSync(inputFile, 'utf8'));
   const {
     course_title, chapter_number, chapter_title, chapter_subtitle,
     total_chapters, script, duration_mins, key_takeaway,
@@ -61,8 +126,11 @@ async function main() {
   if (!script) die('script is missing from course-render-input.json');
   if (!heygen_local_file) die('heygen_local_file is missing.');
 
-  fs.mkdirSync(SLIDES_DIR, { recursive: true });
-  fs.mkdirSync(TEMP_DIR,   { recursive: true });
+  // Set up chapter-specific directory structure
+  const PATHS = setupChapterPaths(chapter_number);
+  SLIDES_DIR = PATHS.slidesDir;
+  TEMP_DIR   = PATHS.tempDir;
+  ensureChapterDirs(PATHS);
 
   const ffmpeg  = findBinary('ffmpeg');
   const ffprobe = findBinary('ffprobe');
@@ -112,12 +180,9 @@ async function main() {
   // ── Step 4: Locate HeyGen video ──────────────────────────────────────────
   log('\n⬇  Step 4 — Locating HeyGen video…');
   const heygenPath = path.join(TEMP_DIR, 'heygen-raw.mp4');
-  const localPath  = path.join(__dirname, '..', heygen_local_file);
-  if (!fs.existsSync(localPath)) {
-    die(`HeyGen video not found: ${heygen_local_file}\nPlace the MP4 in the project root.`);
-  }
-  fs.copyFileSync(localPath, heygenPath);
-  log(`   ✓ Using: ${heygen_local_file}`);
+  const sourcePath = findHeygenVideo(chapter_number, heygen_local_file);
+  fs.copyFileSync(sourcePath, heygenPath);
+  log(`   ✓ Copied to temp/heygen-raw.mp4`);
 
   // ── Step 5: Duration + timings ───────────────────────────────────────────
   log('\n⏱  Step 5 — Getting video duration and distributing timings…');
@@ -128,10 +193,10 @@ async function main() {
 
   // ── Step 6: Composite ────────────────────────────────────────────────────
   log('\n🎬 Step 6 — Compositing with FFmpeg…');
-  const outPath = path.join(__dirname, '..', output_filename);
+  const outPath = PATHS.finalVideo;
   await composite(ffmpeg, ffprobe, timed, heygenPath, outPath);
 
-  log(`\n✅ Done: ${output_filename}`);
+  log(`\n✅ Done: ${outPath}`);
 }
 
 // ── Step 1: Split script into sections ───────────────────────────────────────
@@ -252,7 +317,7 @@ async function generateSlides(sections, input) {
   for (let i = 0; i < total; i++) {
     const s       = sections[i];
     const html    = buildSlideHTML(s, i, total, input);
-    const htmlPath = path.join(SLIDES_DIR, `slide-${i}.html`);
+    const htmlPath = path.join(SLIDES_DIR, `slide-${String(i).padStart(2,'0')}.html`);
     fs.writeFileSync(htmlPath, html, 'utf8');
 
     await page.goto(`file://${htmlPath}`, { waitUntil: 'networkidle0', timeout: 30_000 });
@@ -315,11 +380,11 @@ async function generateSlides(sections, input) {
     await new Promise(r => setTimeout(r, wait));
 
     await page.screenshot({
-      path: path.join(SLIDES_DIR, `slide-${i}.png`),
+      path: path.join(SLIDES_DIR, `slide-${String(i).padStart(2,'0')}.png`),
       type: 'png',
       clip: { x: 0, y: 0, width: 1280, height: 720 },
     });
-    log(`   ✓ slide-${i}.png (${s.type})`);
+    log(`   ✓ slide-${String(i).padStart(2,'0')}.png (${s.type})`);
   }
 
   await browser.close();
@@ -853,7 +918,7 @@ async function composite(ffmpeg, ffprobe, sections, heygenPath, outPath) {
     const fadeOutStart = Math.max(0, dur - FADE).toFixed(3);
 
     execSync(
-      `"${ffmpeg}" -y -loop 1 -framerate ${FPS} -i "${path.join(SLIDES_DIR, `slide-${i}.png`)}" ` +
+      `"${ffmpeg}" -y -loop 1 -framerate ${FPS} -i "${path.join(SLIDES_DIR, `slide-${String(i).padStart(2,'0')}.png`)}" ` +
       `-vf "scale=1280:720:flags=lanczos,fade=t=in:st=0:d=${FADE},fade=t=out:st=${fadeOutStart}:d=${FADE}" ` +
       `-t ${dur.toFixed(3)} -c:v libx264 -preset slow -crf 18 -pix_fmt yuv420p "${seg}"`,
       { stdio: 'pipe' }

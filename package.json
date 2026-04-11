@@ -6,6 +6,11 @@
   "scripts": {
     "start": "open index.html",
     "render:chapter": "node render/course-render.js",
+    "render:chapter:1": "node render/course-render.js 1",
+    "render:chapter:2": "node render/course-render.js 2",
+    "render:chapter:3": "node render/course-render.js 3",
+    "render:chapter:4": "node render/course-render.js 4",
+    "render:chapter:5": "node render/course-render.js 5",
     "render:all": "node render/course-render-all.js"
   },
   "repository": {
