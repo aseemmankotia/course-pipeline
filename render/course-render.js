@@ -127,10 +127,17 @@ async function main() {
   log(`   Using: ${inputFile}`);
   const input = JSON.parse(fs.readFileSync(inputFile, 'utf8'));
 
-  // argv chapter number WINS over what's in the JSON
-  if (CHAPTER_NUM && CHAPTER_NUM !== input.chapter_number) {
-    log(`   Overriding chapter number: JSON says ${input.chapter_number}, using arg ${CHAPTER_NUM}`);
-    input.chapter_number = CHAPTER_NUM;
+  // Validate chapter number matches argument — wrong JSON = hard fail
+  if (CHAPTER_NUM && input.chapter_number !== CHAPTER_NUM) {
+    const p = String(CHAPTER_NUM).padStart(2, '0');
+    console.error(`\n⚠️  Chapter mismatch!`);
+    console.error(`   Argument says: Chapter ${CHAPTER_NUM}`);
+    console.error(`   JSON file says: Chapter ${input.chapter_number}`);
+    console.error(`   The render input file contains data for the wrong chapter.`);
+    console.error(`   Fix: click "📋 Prepare" for Chapter ${CHAPTER_NUM} in the app,`);
+    console.error(`   then move the downloaded file to:`);
+    console.error(`   render/chapters/chapter-${p}/course-render-input.json`);
+    process.exit(1);
   }
 
   const {
