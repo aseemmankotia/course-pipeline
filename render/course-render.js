@@ -28,22 +28,32 @@ const axios        = require('axios');
 const puppeteer    = require('puppeteer');
 const { execSync, spawn } = require('child_process');
 
-// Chapter number can be passed as argv: node course-render.js 2
-const chapterArg = process.argv[2] ? parseInt(process.argv[2]) : null;
+// Chapter number: argv wins over whatever is in the JSON
+const CHAPTER_NUM  = process.argv[2] ? parseInt(process.argv[2]) : null;
+const PADDED_NUM   = CHAPTER_NUM ? String(CHAPTER_NUM).padStart(2, '0') : null;
+const CHAPTER_DIR  = CHAPTER_NUM
+  ? path.join(__dirname, 'chapters', `chapter-${PADDED_NUM}`)
+  : null;
 
-// Set in main() once the chapter number is known
+console.log(`\n📚 Course Render${CHAPTER_NUM ? ` — Chapter ${CHAPTER_NUM}` : ''}`);
+
+// Set in main() once chapter paths are resolved
 let SLIDES_DIR, TEMP_DIR;
 
 // ── Path helpers ──────────────────────────────────────────────────────────────
 
-function getInputPath(chapterNum) {
-  if (chapterNum) {
-    const chapterInput = path.join(
-      __dirname, 'chapters', `chapter-${String(chapterNum).padStart(2,'0')}`,
-      'course-render-input.json'
-    );
+function getInputPath() {
+  // Check chapter-specific dir first (argv chapter number)
+  if (CHAPTER_DIR) {
+    const chapterInput = path.join(CHAPTER_DIR, 'course-render-input.json');
     if (fs.existsSync(chapterInput)) return chapterInput;
   }
+  // Numbered root file: course-render-input-2.json
+  if (CHAPTER_NUM) {
+    const numberedRoot = path.join(__dirname, '..', `course-render-input-${CHAPTER_NUM}.json`);
+    if (fs.existsSync(numberedRoot)) return numberedRoot;
+  }
+  // Plain root fallback
   const rootInput = path.join(__dirname, '..', 'course-render-input.json');
   if (fs.existsSync(rootInput)) return rootInput;
   throw new Error(
@@ -54,7 +64,7 @@ function getInputPath(chapterNum) {
 
 function setupChapterPaths(chapterNum) {
   const paddedNum  = String(chapterNum).padStart(2, '0');
-  const chapterDir = path.join(__dirname, 'chapters', `chapter-${paddedNum}`);
+  const chapterDir = CHAPTER_DIR || path.join(__dirname, 'chapters', `chapter-${paddedNum}`);
   return {
     chapterDir,
     slidesDir:  path.join(chapterDir, 'slides'),
@@ -72,16 +82,16 @@ function ensureChapterDirs(paths) {
   });
 }
 
-function findHeygenVideo(chapterNum, heygenLocalFile) {
+// chapterNum comes from argv (wins) or JSON — never from heygen_local_file in the JSON
+function findHeygenVideo(chapterNum) {
   const paddedNum = String(chapterNum).padStart(2, '0');
+  const canonicalName = `heygen-chapter-${paddedNum}.mp4`;
   const locations = [
-    path.join(__dirname, 'chapters', `chapter-${paddedNum}`, `heygen-chapter-${paddedNum}.mp4`),
+    path.join(__dirname, 'chapters', `chapter-${paddedNum}`, canonicalName),
     path.join(__dirname, 'chapters', `chapter-${paddedNum}`, 'heygen-raw.mp4'),
-    path.join(__dirname, '..', heygenLocalFile),
-    path.join(__dirname, '..', `heygen-chapter-${paddedNum}.mp4`),
-    path.join(os.homedir(), 'Downloads', `heygen-chapter-${paddedNum}.mp4`),
-    path.join(os.homedir(), 'Downloads', heygenLocalFile),
-  ].filter((v, i, a) => a.indexOf(v) === i); // deduplicate
+    path.join(__dirname, '..', canonicalName),
+    path.join(os.homedir(), 'Downloads', canonicalName),
+  ];
 
   for (const loc of locations) {
     if (fs.existsSync(loc)) {
@@ -91,7 +101,7 @@ function findHeygenVideo(chapterNum, heygenLocalFile) {
   }
 
   throw new Error(
-    `HeyGen video not found. Looked in:\n` +
+    `HeyGen video not found. Expected: ${canonicalName}\nLooked in:\n` +
     locations.map(l => `  - ${l}`).join('\n') +
     `\n\nPlace the MP4 in any of these locations.`
   );
@@ -113,9 +123,16 @@ const DEEP_BLUE  = '#16213e';
 async function main() {
   log('📖 Reading course-render-input.json…');
 
-  const inputFile = getInputPath(chapterArg);
+  const inputFile = getInputPath();
   log(`   Using: ${inputFile}`);
   const input = JSON.parse(fs.readFileSync(inputFile, 'utf8'));
+
+  // argv chapter number WINS over what's in the JSON
+  if (CHAPTER_NUM && CHAPTER_NUM !== input.chapter_number) {
+    log(`   Overriding chapter number: JSON says ${input.chapter_number}, using arg ${CHAPTER_NUM}`);
+    input.chapter_number = CHAPTER_NUM;
+  }
+
   const {
     course_title, chapter_number, chapter_title, chapter_subtitle,
     total_chapters, script, duration_mins, key_takeaway,
@@ -124,13 +141,16 @@ async function main() {
   } = input;
 
   if (!script) die('script is missing from course-render-input.json');
-  if (!heygen_local_file) die('heygen_local_file is missing.');
 
-  // Set up chapter-specific directory structure
+  // Set up chapter-specific directory structure using the effective chapter number
   const PATHS = setupChapterPaths(chapter_number);
   SLIDES_DIR = PATHS.slidesDir;
   TEMP_DIR   = PATHS.tempDir;
   ensureChapterDirs(PATHS);
+
+  log(`   Chapter: ${chapter_number} — ${chapter_title}`);
+  log(`   Slides:  ${PATHS.slidesDir}`);
+  log(`   Output:  ${PATHS.finalVideo}`);
 
   const ffmpeg  = findBinary('ffmpeg');
   const ffprobe = findBinary('ffprobe');
@@ -180,7 +200,7 @@ async function main() {
   // ── Step 4: Locate HeyGen video ──────────────────────────────────────────
   log('\n⬇  Step 4 — Locating HeyGen video…');
   const heygenPath = path.join(TEMP_DIR, 'heygen-raw.mp4');
-  const sourcePath = findHeygenVideo(chapter_number, heygen_local_file);
+  const sourcePath = findHeygenVideo(chapter_number); // uses argv-overridden chapter number
   fs.copyFileSync(sourcePath, heygenPath);
   log(`   ✓ Copied to temp/heygen-raw.mp4`);
 

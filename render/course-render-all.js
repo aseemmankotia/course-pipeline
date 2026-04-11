@@ -49,15 +49,15 @@ function findInputFile(n) {
   return null;
 }
 
-function findHeygenVideo(n, heygenLocalFile) {
+function findHeygenVideo(n) {
   const paddedNum = String(n).padStart(2, '0');
+  const canonicalName = `heygen-chapter-${paddedNum}.mp4`;
   const locations = [
-    path.join(CHAPTERS_DIR, `chapter-${paddedNum}`, `heygen-chapter-${paddedNum}.mp4`),
+    path.join(CHAPTERS_DIR, `chapter-${paddedNum}`, canonicalName),
     path.join(CHAPTERS_DIR, `chapter-${paddedNum}`, 'heygen-raw.mp4'),
-    path.join(ROOT, heygenLocalFile || `heygen-chapter-${paddedNum}.mp4`),
-    path.join(ROOT, `heygen-chapter-${paddedNum}.mp4`),
-    path.join(os.homedir(), 'Downloads', `heygen-chapter-${paddedNum}.mp4`),
-  ].filter((v, i, a) => a.indexOf(v) === i);
+    path.join(ROOT, canonicalName),
+    path.join(os.homedir(), 'Downloads', canonicalName),
+  ];
 
   for (const loc of locations) {
     if (fs.existsSync(loc)) return loc;
@@ -97,7 +97,7 @@ async function main() {
       continue;
     }
 
-    const heygenFile = findHeygenVideo(n, input.heygen_local_file);
+    const heygenFile = findHeygenVideo(n);
     if (!heygenFile) {
       log(`⏭  Skipping Chapter ${n} — HeyGen video not found`);
       log(`   Expected: heygen-chapter-${paddedNum}.mp4 (project root, chapters dir, or ~/Downloads)`);
