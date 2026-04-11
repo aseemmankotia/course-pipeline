@@ -4,13 +4,17 @@
   "description": "TechNuggets Academy — multi-chapter course creation pipeline",
   "type": "commonjs",
   "scripts": {
-    "start": "open index.html",
+    "start": "python3 -m http.server 8080",
     "render:chapter": "node render/course-render.js",
     "render:chapter:1": "node render/course-render.js 1",
     "render:chapter:2": "node render/course-render.js 2",
     "render:chapter:3": "node render/course-render.js 3",
     "render:chapter:4": "node render/course-render.js 4",
     "render:chapter:5": "node render/course-render.js 5",
+    "render:chapter:6": "node render/course-render.js 6",
+    "render:chapter:7": "node render/course-render.js 7",
+    "render:chapter:8": "node render/course-render.js 8",
+    "render:chapter:9": "node render/course-render.js 9",
     "render:all": "node render/course-render-all.js"
   },
   "repository": {
