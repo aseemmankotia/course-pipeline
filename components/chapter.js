@@ -298,9 +298,9 @@ function loadChapter(container, cur, n, autoGenerate) {
 // ── Feature 1: Clean script ───────────────────────────────────────────────────
 
 function cleanChapterScript(script) {
-  let cleaned = script;
+  if (!script) return '';
 
-  // ── Step 1: Replace code blocks with spoken reference (before other passes) ──
+  // ── Step 1: Replace fenced code blocks with a spoken reference ───────────────
   const codeBlockPhrases = [
     "Here's the code example on screen",
     "As shown in the code on screen",
@@ -309,105 +309,104 @@ function cleanChapterScript(script) {
     "Here's what that looks like on screen",
   ];
   let codeIdx = 0;
-  cleaned = cleaned.replace(/```[\s\S]*?```/g, () => {
-    return codeBlockPhrases[codeIdx++ % codeBlockPhrases.length] + '.';
-  });
+  let cleaned = script.replace(/```[\s\S]*?```/g, () =>
+    codeBlockPhrases[codeIdx++ % codeBlockPhrases.length] + '.'
+  );
 
-  // ── Step 2: DELETE entire lines that are pure metadata/labels ────────────────
-  const deleteLinePatterns = [
-    // Script metadata headers (any # heading that contains script/spoken keywords)
-    /^#+\s*(chapter\s*\d+[:\s-].*script.*)$/gim,
-    /^#+\s*(video\s*script.*)$/gim,
-    /^#+\s*(complete\s*spoken.*)$/gim,
-    /^#+\s*(spoken\s*text.*)$/gim,
-    /^#+\s*(script\s*text.*)$/gim,
-    // "# Chapter 1: ..." heading lines used as metadata labels
-    /^#+\s*chapter\s*\d+[:\s]/gim,
-    // Bold-only section labels (the whole line is just a label in caps)
-    /^\*{1,2}(CHAPTER INTRO|OPENING|HOOK|INTRO|INTRODUCTION|MAIN CONTENT|BODY|SECTION \d+|TRANSITION|CONCLUSION|OUTRO|CTA|CALL TO ACTION|SUBSCRIBE|RECAP|SUMMARY|CLOSE|END|WRAP UP|CLOSING)\*{0,2}$/gim,
-    // Horizontal rules
-    /^[-=*_]{2,}$/gm,
-    // Lines containing only asterisks/underscores
-    /^\*+\s*\*+$/gm,
-    // Standalone metadata lines
-    /^video\s*script.*$/gim,
-    /^complete\s*spoken\s*text.*$/gim,
-    /^chapter\s*\d+\s*[:|-]?\s*$/gim,
-    /^duration\s*:.*$/gim,
-    /^word\s*count\s*:.*$/gim,
-    /^target\s*(audience)?\s*:.*$/gim,
-    // Lines that are just a number and colon/period (orphaned list markers)
-    /^\d+[.:]\s*$/gm,
+  // ── Step 2: Line-by-line — DELETE or clean each line ─────────────────────────
+  const metadataLinePatterns = [
+    /^word\s+count[:：]/i,
+    /^estimated\s+runtime[:：]/i,
+    /^target\s+audience[:：]/i,
+    /^duration[:：]/i,
+    /^tone[:：]/i,
+    /^chapter\s+\d+\s*$/i,
+    /^\[end\s+of\s+chapter/i,
+    /^\[chapter\s+\d+/i,
+    /^video\s+script/i,
+    /^complete\s+spoken/i,
+    /^spoken\s+text/i,
   ];
 
-  deleteLinePatterns.forEach(pattern => {
-    cleaned = cleaned.replace(pattern, '');
-  });
-
-  // ── Step 3: Strip heading symbols from content lines, keep the text ──────────
-  // e.g. "## What is Python?" → "What is Python?"
-  cleaned = cleaned.replace(/^#{1,6}\s+(.+)$/gm, '$1');
-
-  // ── Step 4: Strip bold/italic markers, keep text ─────────────────────────────
-  cleaned = cleaned.replace(/\*{1,3}([^*\n]+)\*{1,3}/g, '$1');
-  cleaned = cleaned.replace(/_{1,3}([^_\n]+)_{1,3}/g,   '$1');
-  // Remove any remaining lone asterisks or underscores
-  cleaned = cleaned.replace(/\*+/g, '');
-  cleaned = cleaned.replace(/\b_+\b/g, '');
-
-  // ── Step 5: Remove inline code backticks, keep text ──────────────────────────
-  cleaned = cleaned.replace(/`([^`]+)`/g, '$1');
-
-  // ── Step 6: Remove brackets and curly-brace directions ───────────────────────
-  cleaned = cleaned.replace(/\[([^\]]*)\]/g, '');
-  cleaned = cleaned.replace(/\{([^}]*)\}/g,  '');
-
-  // ── Step 7: Remove parenthetical stage/delivery directions ───────────────────
-  cleaned = cleaned.replace(/^\s*\([^)]*\)\s*$/gm, '');
   const deliveryWords = [
     'pause', 'smile', 'laugh', 'energetic', 'serious', 'slow', 'fast',
     'loud', 'soft', 'whisper', 'emphasize', 'dramatic', 'excited', 'calm',
     'urgent', 'delivery', 'tone', 'voice', 'speaking', 'beat', 'chuckle',
     'warmly', 'firmly', 'gently', 'clearly',
   ];
-  deliveryWords.forEach(word => {
-    cleaned = cleaned.replace(new RegExp(`\\([^)]*${word}[^)]*\\)`, 'gi'), '');
+
+  let lines = cleaned.split('\n').map(line => {
+    const trimmed = line.trim();
+
+    // DELETE: any heading line (## Title → gone, not kept as "Title")
+    if (/^#{1,6}\s/.test(trimmed)) return null;
+
+    // DELETE: line that is ONLY bold or italic text (e.g. **CHAPTER INTRO**)
+    if (/^\*{1,3}[^*\n]+\*{1,3}$/.test(trimmed)) return null;
+
+    // DELETE: bold-wrapped bracket content (e.g. **[END OF CHAPTER 1]**)
+    if (/^\*{1,2}\[.*\]\*{1,2}$/.test(trimmed)) return null;
+
+    // DELETE: separator lines (---, ===, ___)
+    if (/^[-=*_]{2,}$/.test(trimmed)) return null;
+
+    // DELETE: lines containing ONLY a bracketed label ([HOOK], [END OF CHAPTER 1])
+    if (/^\[[^\]]+\]$/.test(trimmed)) return null;
+
+    // DELETE: known metadata lines
+    if (metadataLinePatterns.some(p => p.test(trimmed))) return null;
+
+    // CLEAN: strip inline markdown symbols from mixed-content lines
+    let out = line;
+    out = out.replace(/\*\*([^*\n]+)\*\*/g, '$1');  // **bold** → bold
+    out = out.replace(/\*([^*\n]+)\*/g,     '$1');  // *italic* → italic
+    out = out.replace(/__([^_\n]+)__/g,     '$1');
+    out = out.replace(/_([^_\n]+)_/g,       '$1');
+    out = out.replace(/\*+/g, '');                   // stray asterisks
+    out = out.replace(/\[[^\]]*\]/g, '');            // [bracketed] inline
+    out = out.replace(/`([^`]+)`/g, '$1');           // `code` → code
+    out = out.replace(/https?:\/\/[^\s]*/g, '');     // URLs
+
+    // Remove parenthetical delivery directions
+    deliveryWords.forEach(word => {
+      out = out.replace(new RegExp(`\\([^)]*\\b${word}\\b[^)]*\\)`, 'gi'), '');
+    });
+
+    if (!out.trim()) return null;
+    return out;
   });
 
-  // ── Step 8: Remove URLs ───────────────────────────────────────────────────────
-  cleaned = cleaned.replace(/https?:\/\/[^\s]*/g, '');
+  // Remove deleted lines
+  lines = lines.filter(l => l !== null);
 
-  // ── Step 9: Remove bullet/list symbols, keep the text ────────────────────────
-  cleaned = cleaned.replace(/^[\s]*[-•*]\s+/gm, '');
-  cleaned = cleaned.replace(/^[\s]*\d+\.\s+/gm,  '');
-
-  // ── Step 9b: Remove code-reading artifacts ────────────────────────────────────
-  // "type 'something' then/next/and" → remove
-  cleaned = cleaned.replace(/type\s+(['"`])?[a-z_]+(['"`])?\s*(then|next|and)/gi, '');
-  // Spelled-out syntax symbols
-  [
-    'open parenthesis', 'close parenthesis',
-    'open bracket', 'close bracket',
-    'open curly brace', 'close curly brace',
-    'semicolon', 'colon here', 'dot notation',
-    'double colon', 'backslash', 'forward slash',
-    'equals sign', 'assignment operator',
-    'open paren', 'close paren',
-  ].forEach(sw => {
-    cleaned = cleaned.replace(new RegExp(sw, 'gi'), '');
+  // ── Step 3: Remove code-reading artifacts ─────────────────────────────────────
+  lines = lines.map(line => {
+    let out = line;
+    out = out.replace(/type\s+(['"`])?[a-z_]+(['"`])?\s*(then|next|and)/gi, '');
+    [
+      'open parenthesis', 'close parenthesis', 'open bracket', 'close bracket',
+      'open curly brace', 'close curly brace', 'semicolon', 'colon here',
+      'dot notation', 'double colon', 'backslash', 'forward slash',
+      'equals sign', 'assignment operator', 'open paren', 'close paren',
+    ].forEach(sw => { out = out.replace(new RegExp(sw, 'gi'), ''); });
+    out = out.replace(/line by line|each line|every line|line \d+/gi, '');
+    return out;
   });
-  // "line by line", "each line", etc.
-  cleaned = cleaned.replace(/line by line|each line|every line|line \d+/gi, '');
 
-  // ── Step 10: Final whitespace collapse ────────────────────────────────────────
-  cleaned = cleaned.split('\n')
-    .map(l => l.trim())
-    .filter(l => l.length > 1)   // drop empty lines and single-char orphans
-    .join('\n');
+  // ── Step 4: Collapse consecutive blank lines (max 2) ──────────────────────────
+  const result = [];
+  let blankCount = 0;
+  for (const line of lines) {
+    if (line.trim() === '') {
+      blankCount++;
+      if (blankCount <= 2) result.push(line);
+    } else {
+      blankCount = 0;
+      result.push(line);
+    }
+  }
 
-  cleaned = cleaned.replace(/\n{3,}/g, '\n\n');
-
-  return cleaned.trim();
+  return result.join('\n').trim();
 }
 
 // ── Feature 2: HeyGen API ─────────────────────────────────────────────────────
