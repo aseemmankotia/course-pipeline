@@ -1,0 +1,182 @@
+{
+  "course_title": "Python for Data Science",
+  "course_subtitle": "From beginner to data analyst",
+  "difficulty": "Beginner",
+  "estimated_hours": 12,
+  "prerequisites": ["Basic programming knowledge"],
+  "skills_learned": [
+    "Python fundamentals",
+    "Data manipulation with Pandas",
+    "Visualisation with Matplotlib"
+  ],
+  "chapters": [
+    {
+      "number": 1,
+      "title": "Welcome to the Data-Powered World",
+      "subtitle": "Why Python and data science matter",
+      "duration_mins": 18,
+      "concepts": ["What is data science", "Python basics", "Course overview"],
+      "hands_on": "Install Python and run first script",
+      "real_world_example": "Netflix uses data science for recommendations",
+      "quiz_questions": [
+        {
+          "question": "What is data science?",
+          "options": [
+            "Only statistics",
+            "Extracting insights from data using programming",
+            "Just making charts",
+            "Database management"
+          ],
+          "correct": 1
+        }
+      ],
+      "key_takeaway": "Data science combines coding, statistics and domain knowledge"
+    },
+    {
+      "number": 2,
+      "title": "Setting Up Your Python Environment",
+      "subtitle": "Jupyter, Anaconda, and your first notebook",
+      "duration_mins": 20,
+      "concepts": ["Jupyter notebooks", "Anaconda", "Python packages"],
+      "hands_on": "Create and run your first Jupyter notebook",
+      "real_world_example": "Data scientists at Google use Jupyter notebooks daily",
+      "quiz_questions": [
+        {
+          "question": "What is Jupyter?",
+          "options": ["A database", "An interactive coding environment", "A cloud service", "A chart library"],
+          "correct": 1
+        }
+      ],
+      "key_takeaway": "Jupyter notebooks make data exploration interactive and reproducible"
+    },
+    {
+      "number": 3,
+      "title": "Python Fundamentals for Data Science",
+      "subtitle": "Variables, loops and functions you actually need",
+      "duration_mins": 22,
+      "concepts": ["Variables", "Lists", "Dictionaries", "Functions", "List comprehensions"],
+      "hands_on": "Write functions to clean a dataset",
+      "real_world_example": "Python scripts automate data pipelines at Airbnb",
+      "quiz_questions": [
+        {
+          "question": "Which Python type stores key-value pairs?",
+          "options": ["List", "Tuple", "Dictionary", "Set"],
+          "correct": 2
+        }
+      ],
+      "key_takeaway": "Mastering Python basics unlocks all data science tools"
+    },
+    {
+      "number": 4,
+      "title": "Loading and Exploring Data with Pandas",
+      "subtitle": "Your first real dataset",
+      "duration_mins": 25,
+      "concepts": ["DataFrames", "read_csv", "head/tail", "info/describe", "filtering"],
+      "hands_on": "Load a CSV, explore it and filter rows",
+      "real_world_example": "Financial analysts use Pandas to process trading data",
+      "quiz_questions": [
+        {
+          "question": "Which Pandas function loads a CSV file?",
+          "options": ["pd.load()", "pd.read_csv()", "pd.open()", "pd.import()"],
+          "correct": 1
+        }
+      ],
+      "key_takeaway": "Pandas is the backbone of data manipulation in Python"
+    },
+    {
+      "number": 5,
+      "title": "Cleaning Messy Data",
+      "subtitle": "The skill that separates good analysts from great ones",
+      "duration_mins": 22,
+      "concepts": ["Missing values", "Duplicates", "Data types", "String cleaning", "Outliers"],
+      "hands_on": "Clean a real-world messy dataset end to end",
+      "real_world_example": "80% of a data scientist's time is spent cleaning data",
+      "quiz_questions": [
+        {
+          "question": "Which Pandas method removes duplicate rows?",
+          "options": ["drop_dupes()", "remove_duplicates()", "drop_duplicates()", "deduplicate()"],
+          "correct": 2
+        }
+      ],
+      "key_takeaway": "Clean data is the foundation of reliable analysis"
+    },
+    {
+      "number": 6,
+      "title": "Data Visualisation with Matplotlib and Seaborn",
+      "subtitle": "Turning numbers into insights",
+      "duration_mins": 20,
+      "concepts": ["Line charts", "Bar charts", "Histograms", "Scatter plots", "Seaborn themes"],
+      "hands_on": "Build a dashboard of charts from a dataset",
+      "real_world_example": "The New York Times data team creates visualisations for millions of readers",
+      "quiz_questions": [
+        {
+          "question": "Which chart type best shows distribution of a single variable?",
+          "options": ["Line chart", "Bar chart", "Histogram", "Pie chart"],
+          "correct": 2
+        }
+      ],
+      "key_takeaway": "Visualisation is how data tells its story"
+    },
+    {
+      "number": 7,
+      "title": "Grouping, Aggregating and Pivoting",
+      "subtitle": "Summarising data like a pro",
+      "duration_mins": 20,
+      "concepts": ["groupby", "agg", "pivot_table", "merge", "join"],
+      "hands_on": "Aggregate sales data by region and product",
+      "real_world_example": "Amazon aggregates sales data to optimise inventory",
+      "quiz_questions": [
+        {
+          "question": "What does groupby() do in Pandas?",
+          "options": ["Sorts data", "Groups rows by a column value", "Filters rows", "Merges dataframes"],
+          "correct": 1
+        }
+      ],
+      "key_takeaway": "Aggregation reveals patterns hidden in raw data"
+    },
+    {
+      "number": 8,
+      "title": "Introduction to Machine Learning",
+      "subtitle": "Teaching computers to find patterns",
+      "duration_mins": 25,
+      "concepts": ["Supervised learning", "Train/test split", "Linear regression", "scikit-learn"],
+      "hands_on": "Build your first prediction model",
+      "real_world_example": "Spotify uses machine learning to recommend songs",
+      "quiz_questions": [
+        {
+          "question": "What is the purpose of a train/test split?",
+          "options": [
+            "To speed up training",
+            "To evaluate how well a model generalises to new data",
+            "To clean the data",
+            "To visualise the model"
+          ],
+          "correct": 1
+        }
+      ],
+      "key_takeaway": "Machine learning finds patterns that humans cannot"
+    },
+    {
+      "number": 9,
+      "title": "Your First End-to-End Data Science Project",
+      "subtitle": "Putting it all together",
+      "duration_mins": 28,
+      "concepts": ["Project structure", "EDA", "Feature engineering", "Model evaluation", "Presentation"],
+      "hands_on": "Complete a Kaggle-style project from raw data to insights",
+      "real_world_example": "Data science portfolios are what get you hired",
+      "quiz_questions": [
+        {
+          "question": "What does EDA stand for?",
+          "options": [
+            "Extended Data Analysis",
+            "Exploratory Data Analysis",
+            "Extrapolation and Data Aggregation",
+            "Experimental Design Approach"
+          ],
+          "correct": 1
+        }
+      ],
+      "key_takeaway": "A complete project demonstrates all your skills in one place"
+    }
+  ]
+}

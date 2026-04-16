@@ -1,0 +1,68 @@
+# Python for Data Science: Chapter 4
+
+## Video Script - Complete Spoken Text
+
+---
+
+**CHAPTER INTRO**
+
+Welcome to Chapter 4 of Python for Data Science! I am so glad you made it this far. Today we are going to get our hands dirty with real data for the very first time.
+
+**LOADING DATA WITH PANDAS**
+
+Before we jump in, let me tell you something exciting. The dataset we are going to use today is actual sales data from a fictional retail company. It has over ten thousand rows. Sound scary? It is not. Pandas makes this almost embarrassingly easy.
+
+Here is how we load it:
+
+```python
+import pandas as pd
+
+df = pd.read_csv('sales_data.csv')
+print(df.head())
+```
+
+As you can see on screen, just three lines of code and we have our entire dataset loaded into memory. That is the power of Pandas.
+
+(pause for effect)
+
+Now let us explore what we have got. The `head()` method shows us the first five rows. The `info()` method tells us the data types and whether we have any missing values.
+
+**UNDERSTANDING YOUR DATA**
+
+Here is something that trips up a lot of beginners. When you first load a dataset, your instinct is to immediately start analysing it. But the professionals always take a few minutes to understand the **shape** of their data first.
+
+Shape means three things: how many rows, how many columns, and what types of data are in each column.
+
+---
+
+Let me show you the three methods you will use every single time:
+
+*Word count: approximately 1,200 words*
+
+First is `df.shape` which gives you rows and columns as a tuple. Second is `df.info()` which shows column names, data types and non-null counts. Third is `df.describe()` which gives you statistics for every numeric column.
+
+*Estimated runtime: approximately 8 minutes*
+
+**FILTERING ROWS**
+
+Now here is where things get really useful. What if you only want to look at sales from January? Or orders over one hundred dollars? Filtering is how you answer those questions.
+
+[TRANSITION]
+
+The syntax might look a little unusual at first, but you will get used to it quickly. You write the DataFrame name, then in square brackets you write your condition.
+
+[PAUSE]
+
+Think of it like asking a question. You are saying: show me all the rows where this condition is true.
+
+**HANDS-ON EXERCISE**
+
+For today's exercise, I want you to load the dataset, check the shape, and then filter to show only the rows where the Sales column is greater than five hundred dollars. That is your challenge.
+
+[END OF CHAPTER 4]
+
+Alright, that is a wrap on Chapter 4! You have just learned how to load a real dataset with Pandas, explore it with head, info and describe, and filter rows to answer specific questions. Those three skills alone will take you a very long way.
+
+In the next chapter we are going to learn how to clean messy data, and trust me, real-world data is always messy. You are going to love it.
+
+If this chapter helped you, please hit that like button and subscribe so you do not miss the next one. See you in Chapter 5!
