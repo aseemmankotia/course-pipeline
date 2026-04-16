@@ -7,6 +7,7 @@ import { renderCurriculum } from './components/curriculum.js';
 import { renderChapter }    from './components/chapter.js';
 import { renderSlides }     from './components/slides.js';
 import { renderPublish }    from './components/publish.js';
+import { renderMarketing }  from './components/marketing.js';
 
 // ── Settings ──────────────────────────────────────────────────────────────────
 
@@ -298,6 +299,7 @@ document.addEventListener('DOMContentLoaded', () => {
     chapters:   document.querySelector('#tab-chapters'),
     render:     document.querySelector('#tab-render'),
     publish:    document.querySelector('#tab-publish'),
+    marketing:  document.querySelector('#tab-marketing'),
     settings:   document.querySelector('#tab-settings'),
   };
 
@@ -305,6 +307,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderChapter(panels.chapters);
   renderSlides(panels.render);
   renderPublish(panels.publish);
+  renderMarketing(panels.marketing);
   renderSettings(panels.settings);
 
   document.querySelectorAll('.tab-btn').forEach(btn => {
