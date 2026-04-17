@@ -97,23 +97,47 @@ function renderSettings(container) {
       </div>
 
       <div class="settings-section">
-        <div class="settings-label">🎭 HeyGen Avatar</div>
+        <div class="settings-label">🎙️ ElevenLabs TTS</div>
         <div class="form-row single">
           <div class="form-group">
-            <label>API Key ${s.heygenApiKey ? '<span style="color:#16a34a;">✓</span>' : ''}</label>
-            <input type="password" id="st-heygen-key" placeholder="HeyGen API key" value="${esc(s.heygenApiKey || '')}" />
+            <label>API Key ${s.elevenLabsApiKey ? '<span style="color:#16a34a;">✓</span>' : ''}</label>
+            <input type="password" id="st-el-key" placeholder="ElevenLabs API key" value="${esc(s.elevenLabsApiKey || '')}" />
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label>Avatar ID ${s.heygenAvatarId ? '<span style="color:#16a34a;">✓</span>' : ''}</label>
-            <input type="text" id="st-avatar-id" placeholder="avatar_…" value="${esc(s.heygenAvatarId || '')}" />
+            <label>Voice ID ${s.elevenLabsVoiceId ? '<span style="color:#16a34a;">✓</span>' : ''}</label>
+            <input type="text" id="st-el-voice" placeholder="Your cloned voice ID" value="${esc(s.elevenLabsVoiceId || '')}" />
           </div>
           <div class="form-group">
-            <label>Voice ID ${s.heygenVoiceId ? '<span style="color:#16a34a;">✓</span>' : ''}</label>
-            <input type="text" id="st-voice-id" placeholder="voice_…" value="${esc(s.heygenVoiceId || '')}" />
+            <label>Model</label>
+            <select id="st-el-model">
+              ${[
+                ['eleven_monolingual_v1', 'English v1 (fastest, cheapest)'],
+                ['eleven_multilingual_v2', 'Multilingual v2 (70 languages, best quality)'],
+                ['eleven_turbo_v2', 'Turbo v2 (fast, good quality)'],
+              ].map(([val, label]) =>
+                `<option value="${val}" ${(s.elevenLabsModel || 'eleven_monolingual_v1') === val ? 'selected' : ''}>${label}</option>`
+              ).join('')}
+            </select>
           </div>
         </div>
+        <div class="form-row single">
+          <div class="form-group">
+            <label>Presenter Photo Path (for PIP overlay)</label>
+            <input type="text" id="st-presenter-photo" placeholder="presenter.jpg" value="${esc(s.presenterPhoto || 'presenter.jpg')}" />
+            <div style="font-size:.78rem;color:var(--muted);margin-top:4px;">
+              Place a square headshot in your project root as <code>presenter.jpg</code> (400×400px+, looking at camera).
+            </div>
+          </div>
+        </div>
+        ${s.elevenLabsApiKey && s.elevenLabsVoiceId ? `
+        <div style="font-size:.82rem;color:#16a34a;margin-top:4px;">
+          ✅ ElevenLabs configured — audio will be auto-generated during render
+        </div>` : `
+        <div style="font-size:.82rem;color:var(--muted);margin-top:4px;">
+          ⚠️ Add API key + Voice ID to enable automatic narration. Without it, videos will be silent.
+        </div>`}
       </div>
 
       <div class="settings-section">
@@ -172,9 +196,10 @@ function renderSettings(container) {
       youtubeClientId:   container.querySelector('#st-yt-client-id').value.trim(),
       youtubeClientSecret: container.querySelector('#st-yt-client-secret').value.trim(),
       youtubeToken:      container.querySelector('#st-yt-token').value.trim(),
-      heygenApiKey:      container.querySelector('#st-heygen-key').value.trim(),
-      heygenAvatarId:    container.querySelector('#st-avatar-id').value.trim(),
-      heygenVoiceId:     container.querySelector('#st-voice-id').value.trim(),
+      elevenLabsApiKey:   container.querySelector('#st-el-key').value.trim(),
+      elevenLabsVoiceId:  container.querySelector('#st-el-voice').value.trim(),
+      elevenLabsModel:    container.querySelector('#st-el-model').value,
+      presenterPhoto:     container.querySelector('#st-presenter-photo').value.trim() || 'presenter.jpg',
       academyName:          container.querySelector('#st-academy-name').value.trim() || 'TechNuggets Academy',
       defaultAudience:      container.querySelector('#st-audience').value,
       defaultDepth:         container.querySelector('#st-depth').value,

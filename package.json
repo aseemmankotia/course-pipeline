@@ -4,22 +4,21 @@
   "description": "TechNuggets Academy — multi-chapter course creation pipeline",
   "type": "commonjs",
   "scripts": {
+    "start": "python3 -m http.server 8080",
+    "render:1": "node render/course-render.js 1",
+    "render:2": "node render/course-render.js 2",
+    "render:3": "node render/course-render.js 3",
+    "render:4": "node render/course-render.js 4",
+    "render:5": "node render/course-render.js 5",
+    "render:6": "node render/course-render.js 6",
+    "render:7": "node render/course-render.js 7",
+    "render:8": "node render/course-render.js 8",
+    "render:9": "node render/course-render.js 9",
+    "render:all": "node render/course-render-all.js",
     "test": "node tests/test-runner.js",
     "test:watch": "node --watch --test tests/e2e.test.js",
     "test:verbose": "node --test --test-reporter=spec tests/e2e.test.js",
-    "predeploy": "bash scripts/pre-deploy-check.sh",
-    "start": "python3 -m http.server 8080",
-    "render:chapter": "node render/course-render.js",
-    "render:chapter:1": "node render/course-render.js 1",
-    "render:chapter:2": "node render/course-render.js 2",
-    "render:chapter:3": "node render/course-render.js 3",
-    "render:chapter:4": "node render/course-render.js 4",
-    "render:chapter:5": "node render/course-render.js 5",
-    "render:chapter:6": "node render/course-render.js 6",
-    "render:chapter:7": "node render/course-render.js 7",
-    "render:chapter:8": "node render/course-render.js 8",
-    "render:chapter:9": "node render/course-render.js 9",
-    "render:all": "node render/course-render-all.js"
+    "predeploy": "bash scripts/pre-deploy-check.sh"
   },
   "repository": {
     "type": "git",
@@ -27,6 +26,7 @@
   },
   "dependencies": {
     "axios": "^1.14.0",
+    "node-fetch": "^2.7.0",
     "puppeteer": "^24.40.0"
   }
 }

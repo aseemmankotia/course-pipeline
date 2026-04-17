@@ -23,7 +23,6 @@
 
 const fs           = require('fs');
 const path         = require('path');
-const os           = require('os');
 const axios        = require('axios');
 const puppeteer    = require('puppeteer');
 const { execSync, spawn } = require('child_process');
@@ -82,35 +81,12 @@ function ensureChapterDirs(paths) {
   });
 }
 
-// chapterNum comes from argv (wins) or JSON — never from heygen_local_file in the JSON
-function findHeygenVideo(chapterNum) {
-  const paddedNum = String(chapterNum).padStart(2, '0');
-  const canonicalName = `heygen-chapter-${paddedNum}.mp4`;
-  const locations = [
-    path.join(__dirname, 'chapters', `chapter-${paddedNum}`, canonicalName),
-    path.join(__dirname, 'chapters', `chapter-${paddedNum}`, 'heygen-raw.mp4'),
-    path.join(__dirname, '..', canonicalName),
-    path.join(os.homedir(), 'Downloads', canonicalName),
-  ];
-
-  for (const loc of locations) {
-    if (fs.existsSync(loc)) {
-      console.log(`   ✓ Found HeyGen video: ${loc}`);
-      return loc;
-    }
-  }
-
-  throw new Error(
-    `HeyGen video not found. Expected: ${canonicalName}\nLooked in:\n` +
-    locations.map(l => `  - ${l}`).join('\n') +
-    `\n\nPlace the MP4 in any of these locations.`
-  );
-}
-
-// ── PIP config ────────────────────────────────────────────────────────────────
-const PIP_WIDTH    = 300;
-const PIP_HEIGHT   = 340;
-const PIP_POSITION = 'bottom-right';
+// ── ElevenLabs / presenter photo config ──────────────────────────────────────
+const ELEVENLABS_API_KEY  = process.env.ELEVENLABS_API_KEY  || '';
+const ELEVENLABS_VOICE_ID = process.env.ELEVENLABS_VOICE_ID || '';
+const ELEVENLABS_MODEL    = process.env.ELEVENLABS_MODEL    || 'eleven_monolingual_v1';
+const PRESENTER_PHOTO     = process.env.PRESENTER_PHOTO
+  || path.join(__dirname, '..', 'presenter.jpg');
 
 // ── Brand ─────────────────────────────────────────────────────────────────────
 const BRAND_FONT = `https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap`;
@@ -144,7 +120,7 @@ async function main() {
     course_title, chapter_number, chapter_title, chapter_subtitle,
     total_chapters, script, duration_mins, key_takeaway,
     quiz_questions = [], concepts = [],
-    heygen_local_file, output_filename,
+    output_filename,
   } = input;
 
   if (!script) die('script is missing from course-render-input.json');
@@ -204,24 +180,52 @@ async function main() {
   log('\n🎨 Steps 2-3 — Generating and screenshotting slides…');
   await generateSlides(allSections, input);
 
-  // ── Step 4: Locate HeyGen video ──────────────────────────────────────────
-  log('\n⬇  Step 4 — Locating HeyGen video…');
-  const heygenPath = path.join(TEMP_DIR, 'heygen-raw.mp4');
-  const sourcePath = findHeygenVideo(chapter_number); // uses argv-overridden chapter number
-  fs.copyFileSync(sourcePath, heygenPath);
-  log(`   ✓ Copied to temp/heygen-raw.mp4`);
+  // ── Step 4: Generate voice audio with ElevenLabs ────────────────────────
+  const audioPath = path.join(TEMP_DIR, 'narration.mp3');
+  let hasAudio = false;
 
-  // ── Step 5: Duration + timings ───────────────────────────────────────────
-  log('\n⏱  Step 5 — Getting video duration and distributing timings…');
-  const totalDuration = getVideoDuration(ffprobe, heygenPath);
-  log(`   ✓ Total duration: ${totalDuration.toFixed(2)}s`);
+  if (ELEVENLABS_API_KEY && ELEVENLABS_VOICE_ID) {
+    log('\n🎙️  Step 4 — Generating voice audio with ElevenLabs…');
+    try {
+      const { generateAudio } = require('./elevenlabs.js');
+      await generateAudio(script, ELEVENLABS_VOICE_ID, ELEVENLABS_API_KEY, audioPath, ELEVENLABS_MODEL);
+      hasAudio = true;
+      log('   ✓ Audio generated successfully');
+    } catch (e) {
+      log(`   ❌ Audio generation failed: ${e.message}`);
+      log('   Continuing without audio…');
+    }
+  } else {
+    log('\n⏭  Step 4 — Skipping audio (ElevenLabs not configured)');
+    log('   Add ELEVENLABS_API_KEY and ELEVENLABS_VOICE_ID to .env for voice narration.');
+  }
+
+  // ── Step 5: Determine total duration + distribute slide timings ──────────
+  let totalDuration;
+  if (hasAudio) {
+    const { getAudioDuration } = require('./elevenlabs.js');
+    totalDuration = getAudioDuration(audioPath);
+    log(`\n⏱  Step 5 — Audio duration: ${totalDuration.toFixed(2)}s`);
+  } else {
+    // Estimate from word count (150 words per minute)
+    const wordCount = script.split(/\s+/).filter(Boolean).length;
+    totalDuration = (wordCount / 150) * 60;
+    log(`\n⏱  Step 5 — Estimated duration: ${totalDuration.toFixed(2)}s (${wordCount} words)`);
+  }
+
   const timed = distributeTimings(allSections, totalDuration);
   timed.forEach((s, i) => log(`   Slide ${i + 1}: ${s.duration.toFixed(1)}s — ${s.type}`));
 
-  // ── Step 6: Composite ────────────────────────────────────────────────────
+  // ── Step 6: Composite slides + audio + presenter photo ───────────────────
+  const hasPhoto = fs.existsSync(PRESENTER_PHOTO);
+  if (!hasPhoto) {
+    log('\n⚠️  No presenter photo found — rendering without PIP overlay.');
+    log(`   Add presenter.jpg to project root: ${path.join(__dirname, '..', 'presenter.jpg')}`);
+  }
+
   log('\n🎬 Step 6 — Compositing with FFmpeg…');
   const outPath = PATHS.finalVideo;
-  await composite(ffmpeg, ffprobe, timed, heygenPath, outPath);
+  await compositeVideo(ffmpeg, timed, audioPath, PRESENTER_PHOTO, hasAudio, hasPhoto, outPath, totalDuration);
 
   log(`\n✅ Done: ${outPath}`);
 }
@@ -932,7 +936,7 @@ function distributeTimings(sections, totalDuration) {
 
 // ── Step 6: Composite ─────────────────────────────────────────────────────────
 
-async function composite(ffmpeg, ffprobe, sections, heygenPath, outPath) {
+async function compositeVideo(ffmpeg, sections, audioPath, photoPath, hasAudio, hasPhoto, outPath, totalDuration) {
   const FPS  = 30;
   const FADE = 0.4;
 
@@ -954,7 +958,7 @@ async function composite(ffmpeg, ffprobe, sections, heygenPath, outPath) {
     log(`   ✓ seg-${i}.mp4 (${dur.toFixed(1)}s)`);
   }
 
-  // 6b: concat
+  // 6b: concat slideshow
   const concatFile = path.join(TEMP_DIR, 'concat.txt');
   fs.writeFileSync(concatFile, segPaths.map(p => `file '${p.replace(/'/g,"'\\''")}'`).join('\n') + '\n');
 
@@ -965,54 +969,80 @@ async function composite(ffmpeg, ffprobe, sections, heygenPath, outPath) {
   );
   log('   ✓ slideshow.mp4 assembled');
 
-  // 6c: PIP composite
-  const hasAudio  = hasAudioStream(ffprobe, heygenPath);
-  const overlayExpr = { 'bottom-right': 'W-w-20:H-h-20', 'bottom-left': '20:H-h-20', 'top-right': 'W-w-20:20' }[PIP_POSITION] || 'W-w-20:H-h-20';
+  // 6c: final composite
+  let ffmpegArgs;
 
-  let probeOut = '';
-  try {
-    probeOut = execSync(
-      `"${ffprobe}" -v error -select_streams v:0 -show_entries stream=width,height -of csv=p=0 "${heygenPath}"`,
-      { encoding: 'utf8', stdio: ['pipe','pipe','pipe'] }
-    ).trim();
-  } catch {}
+  if (hasAudio && hasPhoto) {
+    log('   Mode: Slides + Audio + Photo PIP');
+    ffmpegArgs = [
+      '-y',
+      '-i', slideshowPath,          // 0: slideshow
+      '-i', audioPath,              // 1: narration audio
+      '-loop', '1', '-i', photoPath, // 2: presenter photo (static)
+      '-filter_complex', [
+        '[0:v]scale=1280:720:flags=lanczos[bg]',
+        '[2:v]scale=320:-2:flags=lanczos[photo_scaled]',
+        '[photo_scaled]pad=iw+6:ih+6:3:3:color=white[photo_bordered]',
+        '[bg][photo_bordered]overlay=W-w-20:H-h-20[outv]',
+      ].join(';'),
+      '-map', '[outv]', '-map', '1:a',
+      '-c:v', 'libx264', '-crf', '18', '-preset', 'slow', '-pix_fmt', 'yuv420p',
+      '-c:a', 'aac', '-b:a', '192k',
+      '-shortest', outPath,
+    ];
 
-  const [avW, avH] = probeOut.split(',').map(Number);
-  const isPortrait = avH > avW;
-  const pipScaleFilter = isPortrait
-    ? `[1:v]scale=-2:${PIP_HEIGHT}:flags=lanczos[av_scaled]`
-    : `[1:v]scale=${PIP_WIDTH}:-2:flags=lanczos[av_scaled]`;
+  } else if (hasAudio && !hasPhoto) {
+    log('   Mode: Slides + Audio (no PIP)');
+    ffmpegArgs = [
+      '-y',
+      '-i', slideshowPath,
+      '-i', audioPath,
+      '-filter_complex', '[0:v]scale=1280:720:flags=lanczos[outv]',
+      '-map', '[outv]', '-map', '1:a',
+      '-c:v', 'libx264', '-crf', '18', '-preset', 'slow', '-pix_fmt', 'yuv420p',
+      '-c:a', 'aac', '-b:a', '192k',
+      '-shortest', outPath,
+    ];
 
-  const filterComplex = [
-    `[0:v]scale=1280:720:flags=lanczos[bg]`,
-    `${pipScaleFilter}`,
-    `[av_scaled]pad=iw+6:ih+6:3:3:color=white[av_bordered]`,
-    `[bg][av_bordered]overlay=${overlayExpr}[outv]`,
-  ].join(';');
+  } else if (!hasAudio && hasPhoto) {
+    log('   Mode: Slides + Photo PIP (silent)');
+    ffmpegArgs = [
+      '-y',
+      '-i', slideshowPath,
+      '-loop', '1', '-i', photoPath,
+      '-filter_complex', [
+        '[0:v]scale=1280:720:flags=lanczos[bg]',
+        '[1:v]scale=320:-2:flags=lanczos[photo_scaled]',
+        '[photo_scaled]pad=iw+6:ih+6:3:3:color=white[photo_bordered]',
+        '[bg][photo_bordered]overlay=W-w-20:H-h-20[outv]',
+      ].join(';'),
+      '-map', '[outv]',
+      '-c:v', 'libx264', '-crf', '18', '-preset', 'slow', '-pix_fmt', 'yuv420p',
+      '-t', String(totalDuration), outPath,
+    ];
 
-  const audioMapArgs = hasAudio
-    ? ['-map','[outv]','-map','1:a','-c:a','aac','-b:a','192k']
-    : ['-map','[outv]','-an'];
-
-  const ffmpegArgs = [
-    '-y', '-i', slideshowPath, '-i', heygenPath,
-    '-filter_complex', filterComplex,
-    '-c:v', 'libx264', '-crf', '18', '-preset', 'slow', '-pix_fmt', 'yuv420p',
-    ...audioMapArgs, outPath,
-  ];
+  } else {
+    log('   Mode: Slides only (silent, no PIP)');
+    ffmpegArgs = [
+      '-y',
+      '-i', slideshowPath,
+      '-filter_complex', '[0:v]scale=1280:720:flags=lanczos[outv]',
+      '-map', '[outv]',
+      '-c:v', 'libx264', '-crf', '18', '-preset', 'slow', '-pix_fmt', 'yuv420p',
+      '-t', String(totalDuration), outPath,
+    ];
+  }
 
   await new Promise((resolve, reject) => {
-    const proc = spawn(ffmpeg, ffmpegArgs, { stdio: ['ignore','pipe','pipe'] });
+    const proc = spawn(ffmpeg, ffmpegArgs, { stdio: ['ignore', 'pipe', 'pipe'] });
     proc.stderr.on('data', d => {
       const line = d.toString();
-      if (line.includes('error') || line.includes('Error') || line.includes('time='))
+      if (line.includes('time=') || line.toLowerCase().includes('error'))
         log(`   FFmpeg: ${line.trim()}`);
     });
     proc.on('close', code => {
-      if (code !== 0) {
-        log(`❌ FFmpeg exited ${code}`);
-        reject(new Error(`FFmpeg exited with code ${code}`));
-      } else resolve();
+      if (code !== 0) reject(new Error(`FFmpeg exited with code ${code}`));
+      else resolve();
     });
   });
 
@@ -1029,15 +1059,6 @@ function getVideoDuration(ffprobe, p) {
   const d = parseFloat(out);
   if (isNaN(d) || d <= 0) die(`Cannot read duration from ${p}`);
   return d;
-}
-
-function hasAudioStream(ffprobe, p) {
-  try {
-    return execSync(
-      `"${ffprobe}" -v error -select_streams a:0 -show_entries stream=codec_type -of csv=p=0 "${p}"`,
-      { encoding: 'utf8', stdio: ['pipe','pipe','pipe'] }
-    ).trim().includes('audio');
-  } catch { return false; }
 }
 
 function findBinary(name) {

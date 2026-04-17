@@ -71,16 +71,25 @@ function mountRender(container) {
       <h3>⚙️ How Rendering Works</h3>
       <ol style="font-size:.875rem;color:var(--muted);line-height:2;padding-left:20px;">
         <li>Generate scripts in the <strong>Chapters</strong> tab for each chapter</li>
-        <li>Click <strong>📋 Prepare</strong> — downloads <code>course-render-input.json</code> with that chapter's unique data</li>
+        <li>Click <strong>📋 Prepare</strong> — downloads <code>course-render-input.json</code> with that chapter's script and content</li>
         <li>Move it to its chapter directory:<br>
           <code style="background:var(--code-bg);padding:2px 6px;border-radius:4px;font-size:.78rem;">
             mv ~/Downloads/course-render-input.json ~/course-pipeline/render/chapters/chapter-NN/
           </code>
         </li>
         <li>Run: <code style="background:var(--code-bg);padding:2px 6px;border-radius:4px;">node render/course-render.js N</code></li>
+        <li>The renderer automatically: generates voice audio via ElevenLabs → composites slides + audio + presenter photo PIP</li>
         <li>Output: <code>render/chapters/chapter-NN/chapter-NN-final.mp4</code></li>
-        <li>HeyGen video: place <code>heygen-chapter-NN.mp4</code> in project root, chapter dir, or ~/Downloads</li>
       </ol>
+      <div style="margin-top:14px;padding:10px 14px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:var(--radius-sm);">
+        <div style="font-size:.8rem;font-weight:600;color:#166534;margin-bottom:6px;">Setup checklist:</div>
+        <div style="font-size:.8rem;color:#15803d;line-height:1.9;">
+          ✅ <code>ANTHROPIC_API_KEY</code> in <code>.env</code> — for curriculum &amp; script generation<br>
+          ✅ <code>ELEVENLABS_API_KEY</code> + <code>ELEVENLABS_VOICE_ID</code> in <code>.env</code> — for narration<br>
+          ✅ <code>presenter.jpg</code> in project root — for PIP overlay (optional)<br>
+          ✅ <code>ffmpeg</code> installed — <code>brew install ffmpeg</code>
+        </div>
+      </div>
       <div style="margin-top:16px;">
         <div style="font-size:.8rem;font-weight:600;color:var(--primary);margin-bottom:8px;">Slide types Claude generates:</div>
         <div style="display:flex;flex-wrap:wrap;gap:6px;">
@@ -99,9 +108,6 @@ function mountRender(container) {
             </span>`
           ).join('')}
         </div>
-      </div>
-      <div style="margin-top:12px;font-size:.8rem;color:var(--muted);">
-        Requires: ffmpeg · Node.js · npm install · ANTHROPIC_API_KEY in .env
       </div>
     </div>
   `;
@@ -207,7 +213,6 @@ function buildRenderInput(ch, cur, d) {
     key_takeaway:     ch.key_takeaway || '',
     quiz_questions:   ch.quiz_questions || [],
     concepts:         ch.concepts || [],
-    heygen_local_file: `heygen-chapter-${paddedNum}.mp4`,
     output_filename:  `chapter-${paddedNum}-final.mp4`,
   };
 }

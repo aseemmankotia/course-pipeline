@@ -10,27 +10,24 @@
  *   ...
  *
  * Falls back to course-render-input-N.json in the project root.
- * Skips any chapter whose HeyGen video cannot be found.
+ * Audio is generated automatically via ElevenLabs — no HeyGen video needed.
  */
 
 const { execSync } = require('child_process');
 const fs   = require('fs');
 const path = require('path');
-const os   = require('os');
 
-const ROOT       = path.join(__dirname, '..');
+const ROOT         = path.join(__dirname, '..');
 const CHAPTERS_DIR = path.join(__dirname, 'chapters');
 
 function log(msg) { console.log(msg); }
 
 function loadCurriculum() {
-  // Try to infer total chapters from chapter directories or input files
   const dirs = fs.existsSync(CHAPTERS_DIR)
     ? fs.readdirSync(CHAPTERS_DIR).filter(d => /^chapter-\d+$/.test(d)).sort()
     : [];
   if (dirs.length) return dirs.length;
 
-  // Fallback: count course-render-input-N.json files in project root
   const rootFiles = fs.readdirSync(ROOT)
     .filter(f => /^course-render-input(-\d+)?\.json$/.test(f));
   return rootFiles.length;
@@ -43,22 +40,6 @@ function findInputFile(n) {
     path.join(ROOT, `course-render-input-${n}.json`),
     path.join(ROOT, 'course-render-input.json'),
   ];
-  for (const loc of locations) {
-    if (fs.existsSync(loc)) return loc;
-  }
-  return null;
-}
-
-function findHeygenVideo(n) {
-  const paddedNum = String(n).padStart(2, '0');
-  const canonicalName = `heygen-chapter-${paddedNum}.mp4`;
-  const locations = [
-    path.join(CHAPTERS_DIR, `chapter-${paddedNum}`, canonicalName),
-    path.join(CHAPTERS_DIR, `chapter-${paddedNum}`, 'heygen-raw.mp4'),
-    path.join(ROOT, canonicalName),
-    path.join(os.homedir(), 'Downloads', canonicalName),
-  ];
-
   for (const loc of locations) {
     if (fs.existsSync(loc)) return loc;
   }
@@ -88,7 +69,6 @@ async function main() {
       continue;
     }
 
-    // Read input to check for HeyGen file
     let input;
     try { input = JSON.parse(fs.readFileSync(inputFile, 'utf8')); }
     catch (e) {
@@ -97,18 +77,9 @@ async function main() {
       continue;
     }
 
-    const heygenFile = findHeygenVideo(n);
-    if (!heygenFile) {
-      log(`⏭  Skipping Chapter ${n} — HeyGen video not found`);
-      log(`   Expected: heygen-chapter-${paddedNum}.mp4 (project root, chapters dir, or ~/Downloads)`);
-      results.push({ chapter: n, status: 'skipped', reason: 'no HeyGen video' });
-      continue;
-    }
-
     log(`${'─'.repeat(60)}`);
     log(`🎬 Chapter ${n} of ${totalChapters}: ${input.chapter_title || ''}`);
-    log(`   Input:  ${inputFile}`);
-    log(`   HeyGen: ${heygenFile}`);
+    log(`   Input: ${inputFile}`);
 
     try {
       execSync(`node render/course-render.js ${n}`, {
