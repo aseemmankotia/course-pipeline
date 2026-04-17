@@ -8,6 +8,7 @@ import { renderChapter }    from './components/chapter.js';
 import { renderSlides }     from './components/slides.js';
 import { renderPublish }    from './components/publish.js';
 import { renderMarketing }  from './components/marketing.js';
+import { renderMaterials }  from './components/materials.js';
 
 // ── Settings ──────────────────────────────────────────────────────────────────
 
@@ -141,6 +142,23 @@ function renderSettings(container) {
         </div>
       </div>
 
+      <div class="settings-section">
+        <div class="settings-label">📚 Materials Generation</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Code Examples Language</label>
+            <select id="st-course-language">
+              ${['Python','JavaScript','TypeScript','Java','Go','Rust','C#','None (no code examples)']
+                .map(l => `<option ${(s.courseLanguage || 'Python') === l ? 'selected' : ''}>${l}</option>`).join('')}
+            </select>
+          </div>
+          <div class="form-group">
+            <label>GitHub Repo Name Template</label>
+            <input type="text" id="st-github-repo-template" placeholder="course-{slug}" value="${esc(s.githubRepoTemplate || 'course-{slug}')}" />
+          </div>
+        </div>
+      </div>
+
       <div id="settings-status"></div>
       <div class="btn-group">
         <button class="btn btn-primary" id="save-settings-btn">Save Settings</button>
@@ -157,9 +175,11 @@ function renderSettings(container) {
       heygenApiKey:      container.querySelector('#st-heygen-key').value.trim(),
       heygenAvatarId:    container.querySelector('#st-avatar-id').value.trim(),
       heygenVoiceId:     container.querySelector('#st-voice-id').value.trim(),
-      academyName:       container.querySelector('#st-academy-name').value.trim() || 'TechNuggets Academy',
-      defaultAudience:   container.querySelector('#st-audience').value,
-      defaultDepth:      container.querySelector('#st-depth').value,
+      academyName:          container.querySelector('#st-academy-name').value.trim() || 'TechNuggets Academy',
+      defaultAudience:      container.querySelector('#st-audience').value,
+      defaultDepth:         container.querySelector('#st-depth').value,
+      courseLanguage:       container.querySelector('#st-course-language').value,
+      githubRepoTemplate:   container.querySelector('#st-github-repo-template').value.trim() || 'course-{slug}',
     };
     saveSettings(updated);
     const el = container.querySelector('#settings-status');
@@ -300,6 +320,7 @@ document.addEventListener('DOMContentLoaded', () => {
     render:     document.querySelector('#tab-render'),
     publish:    document.querySelector('#tab-publish'),
     marketing:  document.querySelector('#tab-marketing'),
+    materials:  document.querySelector('#tab-materials'),
     settings:   document.querySelector('#tab-settings'),
   };
 
@@ -308,6 +329,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderSlides(panels.render);
   renderPublish(panels.publish);
   renderMarketing(panels.marketing);
+  renderMaterials(panels.materials);
   renderSettings(panels.settings);
 
   document.querySelectorAll('.tab-btn').forEach(btn => {

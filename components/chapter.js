@@ -556,6 +556,21 @@ async function generateScript(container, editorEl, cur, ch, mode) {
   } else if (mode === 'longer') {
     userMsg = `The following script is too short. Expand it by about 30%, adding more examples, analogies, and deeper explanation. Keep the same structure and voice.\n\n${textarea.value}`;
   } else {
+    const isCert     = cur.course_type === 'certification';
+    const examSection = isCert ? `
+Certification: ${cur.exam_name || ''}
+Exam domains this chapter covers: ${(ch.exam_domains_covered || []).join(', ')}
+Exam tips to weave in: ${(ch.exam_tips || []).join('; ')}
+
+EXAM PREPARATION MODE — include in this script:
+1. After each concept, add an exam tip spoken naturally:
+   "Here is a tip for the exam: [specific advice about this topic]"
+2. Mention common exam traps to avoid
+3. Use memory tricks for complex terms
+4. End the chapter with a Quick Exam Review section:
+   - Spoken recap of the most testable points from this chapter
+   - 2 practice questions read aloud in exam format, with the answer and explanation after a pause` : '';
+
     userMsg = `Write a complete video script for Chapter ${ch.number} of "${cur.course_title}".
 
 Chapter: ${ch.title}
@@ -566,6 +581,7 @@ Real world example: ${ch.real_world_example || ''}
 Key takeaway: ${ch.key_takeaway || ''}
 Duration target: ${ch.duration_mins || 15} minutes (~${wordTarget} words)
 ${prevChapter ? `Previous chapter: "${prevChapter.title}"` : ''}
+${examSection}
 
 Script structure:
 1. CHAPTER INTRO (60 seconds):
