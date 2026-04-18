@@ -183,6 +183,30 @@ function renderSettings(container) {
         </div>
       </div>
 
+      <div class="settings-section">
+        <div class="settings-label">🐙 GitHub Materials Repository</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>GitHub Username</label>
+            <input type="text" id="st-github-username" placeholder="aseemmankotia" value="${esc(s.githubUsername || '')}" />
+          </div>
+          <div class="form-group">
+            <label>Personal Access Token <span style="font-size:.75rem;color:var(--muted);">(repo scope needed)</span></label>
+            <input type="password" id="st-github-token" placeholder="ghp_…" value="${esc(s.githubToken || '')}" />
+            <div style="font-size:.76rem;color:var(--muted);margin-top:4px;">
+              <a href="https://github.com/settings/tokens" target="_blank" style="color:var(--accent);">Get token at github.com/settings/tokens</a> · needs <code>repo</code> scope
+            </div>
+          </div>
+        </div>
+        ${s.githubToken && s.githubUsername ? `
+        <div style="font-size:.82rem;color:#16a34a;margin-top:4px;">
+          ✅ Will create: <code>github.com/${esc(s.githubUsername)}/course-{slug}</code>
+        </div>` : `
+        <div style="font-size:.82rem;color:var(--muted);margin-top:4px;">
+          ⚠️ Add username + token to enable one-click GitHub publishing from the Materials tab.
+        </div>`}
+      </div>
+
       <div id="settings-status"></div>
       <div class="btn-group">
         <button class="btn btn-primary" id="save-settings-btn">Save Settings</button>
@@ -205,6 +229,8 @@ function renderSettings(container) {
       defaultDepth:         container.querySelector('#st-depth').value,
       courseLanguage:       container.querySelector('#st-course-language').value,
       githubRepoTemplate:   container.querySelector('#st-github-repo-template').value.trim() || 'course-{slug}',
+      githubUsername:       container.querySelector('#st-github-username').value.trim(),
+      githubToken:          container.querySelector('#st-github-token').value.trim(),
     };
     saveSettings(updated);
     const el = container.querySelector('#settings-status');

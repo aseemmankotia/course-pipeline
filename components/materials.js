@@ -118,11 +118,13 @@ function mount(container) {
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
           <button class="btn btn-primary" id="mat-gen-all-btn">🚀 Generate All Materials</button>
-          <button class="btn btn-secondary" id="mat-zip-btn">⬇ Download ZIP</button>
+          <button class="btn btn-secondary" id="mat-zip-btn">⬇️ Download ZIP</button>
+          <button class="btn btn-secondary" id="mat-github-btn">📤 Push to GitHub</button>
         </div>
       </div>
 
       <div id="mat-status" style="margin-bottom:12px;"></div>
+      <div id="mat-repo-link" style="display:none;margin-bottom:12px;"></div>
 
       <!-- Progress grid -->
       <div class="mat-grid-wrap">
@@ -189,8 +191,13 @@ function mount(container) {
 
   // Wire buttons
   container.querySelector('#mat-gen-all-btn').addEventListener('click', () => genAll(container, cur, lang, isCert, certName));
-  container.querySelector('#mat-zip-btn').addEventListener('click', () => downloadZip(cur));
+  container.querySelector('#mat-zip-btn').addEventListener('click', () => downloadZip(container, cur));
+  container.querySelector('#mat-github-btn').addEventListener('click', () => pushToGitHub(container, cur));
   container.querySelector('#mat-readme-preview-btn').addEventListener('click', () => showPreview(container, 'README.md', generateReadme(cur), 'README.md'));
+
+  // Restore published repo link if it exists
+  const savedRepoUrl = lget(`course_github_url_${cur.id}`);
+  if (savedRepoUrl) showRepoLink(container, savedRepoUrl);
   container.querySelector('#mat-preview-close').addEventListener('click', () => {
     container.querySelector('#mat-preview-panel').style.display = 'none';
   });
@@ -603,61 +610,206 @@ function getChapterData(n) {
   catch { return null; }
 }
 
-// ── ZIP download ───────────────────────────────────────────────────────────────
+// ── Collect all materials as file list ────────────────────────────────────────
 
-async function downloadZip(cur) {
-  // Ensure JSZip is loaded
-  if (!window.JSZip) {
-    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
-  }
+function collectAllMaterials(cur) {
+  const files = [{ path: 'README.md', content: generateReadme(cur) }];
 
-  const zip = new window.JSZip();
-
-  // README
-  zip.file('README.md', generateReadme(cur));
-
-  // Per-chapter materials
-  let anyContent = false;
   cur.chapters.forEach(ch => {
-    const n = pad(ch.number);
+    const n    = pad(ch.number);
+    const slug = ch.title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 
     const questions = lget(MKEYS.questions(cur.id, ch.number));
-    if (questions) { zip.file(`practice-questions/chapter-${n}-questions.md`, questions); anyContent = true; }
+    if (questions) files.push({ path: `practice-questions/chapter-${n}-questions.md`, content: questions });
 
     const flashcards = lget(MKEYS.flashcards(cur.id, ch.number));
-    if (flashcards) { zip.file(`flashcards/chapter-${n}-flashcards.md`, flashcards); anyContent = true; }
+    if (flashcards) files.push({ path: `flashcards/chapter-${n}-flashcards.md`, content: flashcards });
 
     const cheatsheet = lget(MKEYS.cheatsheet(cur.id, ch.number));
-    if (cheatsheet) { zip.file(`cheat-sheets/chapter-${n}-cheatsheet.md`, cheatsheet); anyContent = true; }
+    if (cheatsheet) files.push({ path: `cheat-sheets/chapter-${n}-cheatsheet.md`, content: cheatsheet });
 
     const codeStr = lget(MKEYS.code(cur.id, ch.number));
     if (codeStr) {
       try {
         const examples = JSON.parse(codeStr);
-        let readmeLines = [`# Chapter ${ch.number}: ${ch.title} — Code Examples\n`];
         examples.forEach(ex => {
-          zip.file(`code-examples/chapter-${n}/${ex.filename}`, ex.code);
-          readmeLines.push(`## ${ex.title}\n\n**File:** \`${ex.filename}\`\n\n**Challenge:** ${ex.challenge || 'Try modifying this example!'}\n`);
-          anyContent = true;
+          files.push({ path: `labs/lab-${n}-${slug}/${ex.filename}`, content: ex.code });
         });
-        zip.file(`code-examples/chapter-${n}/README.md`, readmeLines.join('\n'));
+        files.push({ path: `labs/lab-${n}-${slug}/README.md`, content: generateLabReadme(ch, examples) });
+        files.push({ path: `labs/lab-${n}-${slug}/verify.sh`, content: generateVerifyScript(ch, examples) });
       } catch {}
     }
   });
 
-  if (!anyContent) {
-    alert('No materials generated yet. Generate some materials first, then download.');
+  return files;
+}
+
+function generateLabReadme(ch, examples) {
+  return `# Lab ${pad(ch.number)}: ${ch.title}
+
+**Exam Domain:** ${ch.exam_domains_covered?.[0] || 'See curriculum'}
+**Duration:** ~${ch.lab_duration || 20} minutes
+
+## What You'll Build
+${ch.hands_on || 'See chapter video for lab instructions.'}
+
+## Files
+${examples.map(ex => `- \`${ex.filename}\` — ${ex.title}`).join('\n')}
+
+## Steps
+Follow along with the chapter video, then run the verification script.
+
+## Verify
+\`\`\`bash
+bash verify.sh
+\`\`\`
+`;
+}
+
+function generateVerifyScript(ch, examples) {
+  return `#!/bin/bash
+# Verification script for Lab ${ch.number}: ${ch.title}
+set -e
+
+echo "🔍 Verifying Lab ${ch.number}: ${ch.title}..."
+
+# Check that required files exist
+${examples.map(ex => `[ -f "${ex.filename}" ] && echo "✅ ${ex.filename} found" || echo "❌ ${ex.filename} missing"`).join('\n')}
+
+echo ""
+echo "✅ Lab ${ch.number} verification complete!"
+`;
+}
+
+// ── ZIP download ───────────────────────────────────────────────────────────────
+
+async function downloadZip(container, cur) {
+  if (!window.JSZip) {
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
+  }
+
+  const files = collectAllMaterials(cur);
+  if (files.length <= 1) { // only README
+    const status = container.querySelector('#mat-status');
+    if (status) status.innerHTML = `<div class="status-bar warning">⚠️ No materials generated yet. Generate materials first, then download.</div>`;
+    setTimeout(() => { if (status) status.innerHTML = ''; }, 4000);
     return;
   }
+
+  // Show contents preview
+  const counts = {
+    questions:  cur.chapters.filter(ch => !!lget(MKEYS.questions(cur.id,ch.number))).length,
+    flashcards: cur.chapters.filter(ch => !!lget(MKEYS.flashcards(cur.id,ch.number))).length,
+    code:       cur.chapters.filter(ch => !!lget(MKEYS.code(cur.id,ch.number))).length,
+    cheatsheet: cur.chapters.filter(ch => !!lget(MKEYS.cheatsheet(cur.id,ch.number))).length,
+  };
+  const status = container.querySelector('#mat-status');
+  if (status) status.innerHTML = `<div class="status-bar info">
+    📦 Building ZIP with: ${[
+      counts.questions  ? `✅ ${counts.questions} practice question file${counts.questions!==1?'s':''}` : null,
+      counts.flashcards ? `✅ ${counts.flashcards} flashcard file${counts.flashcards!==1?'s':''}` : null,
+      counts.cheatsheet ? `✅ ${counts.cheatsheet} cheat sheet${counts.cheatsheet!==1?'s':''}` : null,
+      counts.code       ? `✅ ${counts.code} lab director${counts.code!==1?'ies':'y'}` : null,
+      '✅ README.md',
+    ].filter(Boolean).join(' · ')}
+  </div>`;
+
+  const zip = new window.JSZip();
+  files.forEach(f => zip.file(f.path, f.content));
 
   const slug = cur.course_title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
   const blob = await zip.generateAsync({ type: 'blob' });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
-  a.href = url; a.download = `${slug}-materials.zip`;
+  a.href = url; a.download = `${slug}-course-materials.zip`;
   document.body.appendChild(a); a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+
+  setTimeout(() => { if (status) status.innerHTML = `<div class="status-bar success">✅ Downloaded: ${slug}-course-materials.zip</div>`; }, 100);
+  setTimeout(() => { if (status) status.innerHTML = ''; }, 4000);
+}
+
+// ── GitHub push ────────────────────────────────────────────────────────────────
+
+async function pushToGitHub(container, cur) {
+  const { githubToken, githubUsername } = getSettings();
+  const status = container.querySelector('#mat-status');
+
+  if (!githubToken) {
+    if (status) status.innerHTML = `<div class="status-bar error">❌ GitHub token not set — add it in ⚙ Settings (GitHub Materials Repository section).</div>`;
+    return;
+  }
+
+  const ghUser    = githubUsername || 'aseemmankotia';
+  const slug      = cur.course_title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+  const repoName  = `course-${slug}`;
+  const API       = 'https://api.github.com';
+  const headers   = { 'Authorization': `token ${githubToken}`, 'Content-Type': 'application/json' };
+  const btn       = container.querySelector('#mat-github-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Pushing…'; }
+
+  const setStatus = (msg) => { if (status) status.innerHTML = `<div class="status-bar info">${msg}</div>`; };
+
+  try {
+    // Step 1: Create repo (ignore 422 = already exists)
+    setStatus('📁 Creating GitHub repository…');
+    const createResp = await fetch(`${API}/user/repos`, {
+      method: 'POST', headers,
+      body: JSON.stringify({ name: repoName, description: `Course materials for: ${cur.course_title}`, private: false, auto_init: false }),
+    });
+    if (!createResp.ok && createResp.status !== 422) {
+      const e = await createResp.json().catch(()=>({}));
+      throw new Error(`Failed to create repo (${createResp.status}): ${e.message || createResp.statusText}`);
+    }
+
+    // Step 2: Push all files
+    const files = collectAllMaterials(cur);
+    let pushed = 0;
+
+    for (const file of files) {
+      setStatus(`📤 Pushing files… (${pushed + 1}/${files.length}) <span style="color:var(--muted);font-size:.8rem;">${esc(file.path)}</span>`);
+
+      // Check if file already exists (need sha for updates)
+      let sha = null;
+      const checkResp = await fetch(`${API}/repos/${ghUser}/${repoName}/contents/${file.path}`, { headers });
+      if (checkResp.ok) {
+        const existing = await checkResp.json();
+        sha = existing.sha;
+      }
+
+      // Encode content as base64
+      const content = btoa(unescape(encodeURIComponent(file.content)));
+      await fetch(`${API}/repos/${ghUser}/${repoName}/contents/${file.path}`, {
+        method: 'PUT', headers,
+        body: JSON.stringify({ message: `Add ${file.path}`, content, ...(sha ? { sha } : {}) }),
+      });
+
+      pushed++;
+      await new Promise(r => setTimeout(r, 250));
+    }
+
+    const repoUrl = `https://github.com/${ghUser}/${repoName}`;
+    lset(`course_github_url_${cur.id}`, repoUrl);
+    showRepoLink(container, repoUrl);
+
+    if (status) status.innerHTML = `<div class="status-bar success">✅ Pushed ${pushed} files to GitHub!</div>`;
+    setTimeout(() => { if (status) status.innerHTML = ''; }, 5000);
+
+  } catch (e) {
+    if (status) status.innerHTML = `<div class="status-bar error">❌ ${esc(e.message)}</div>`;
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '📤 Push to GitHub'; }
+  }
+}
+
+function showRepoLink(container, repoUrl) {
+  const el = container.querySelector('#mat-repo-link');
+  if (!el) return;
+  el.style.display = '';
+  el.innerHTML = `<div class="status-bar" style="background:#f0fdf4;border-color:#86efac;color:#166534;">
+    📦 Materials published at: <a href="${esc(repoUrl)}" target="_blank" style="color:#16a34a;font-weight:600;">${esc(repoUrl)}</a>
+  </div>`;
 }
 
 function loadScript(src) {

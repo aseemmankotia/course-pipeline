@@ -244,11 +244,12 @@ async function splitChapterScript(script, input) {
       system: `You are a course slide designer. Split a chapter video script into slides for a professional online learning platform.
 
 Slide types available:
-- "concept"   : explanation slide with title + bullets (use for theory)
-- "code"      : static code display with syntax highlight (use for showing a finished snippet)
-- "live_code" : animated Jupyter-style cell — choose this when the script says "let me show you", "let's try", "let's write", "here's how we do this", or is demonstrating a function, walking through execution, or showing input → output
-- "analogy"   : split-pane analogy vs technical (use for real-world comparisons)
-- "diagram"   : Mermaid.js diagram — use flowchart LR (left-to-right) for process flows, flowchart TD for hierarchies. Maximum 8 nodes, short labels (2-4 words). No subgraphs, no style blocks, simple arrows only. LR fills horizontal space better.
+- "concept"     : explanation slide with title + bullets (use for theory)
+- "code"        : static code display with syntax highlight (use for showing a finished snippet)
+- "live_code"   : animated Jupyter-style cell — choose this when the script says "let me show you", "let's try", "let's write", "here's how we do this", or is demonstrating a function, walking through execution, or showing input → output
+- "analogy"     : split-pane analogy vs technical (use for real-world comparisons)
+- "diagram"     : Mermaid.js diagram — use flowchart LR (left-to-right) for process flows, flowchart TD for hierarchies. Maximum 8 nodes, short labels (2-4 words). No subgraphs, no style blocks, simple arrows only. LR fills horizontal space better.
+- "portal_demo" : REQUIRED when script mentions: 'in the Azure portal', 'navigate to' any Azure service, 'click on'/'select' in a UI context, 'you will see' a screen or form, 'go to' + any Azure service name, any hands-on lab step involving the portal, 'open' any Azure blade. Generate a realistic Azure portal mockup showing exactly what the student sees. Use realistic Azure resource names (az104-lab-rg, etc), real regions, real VM sizes. Highlight fields the exam commonly tests. Always include CLI equivalent command.
 
 For live_code slides:
 - Write syntactically correct Python (or the course language) that actually runs
@@ -317,6 +318,28 @@ Return JSON array of slides:
     "output_type": "dataframe",
     "explanation": "Pandas loaded our CSV into a DataFrame with 3 columns",
     "duration_seconds": 50
+  },
+  {
+    "type": "portal_demo",
+    "title": "Creating a Virtual Machine",
+    "portal_service": "Virtual Machines",
+    "portal_action": "Create VM - Basics tab",
+    "portal_url": "portal.azure.com/#create/Microsoft.VirtualMachine",
+    "breadcrumb": ["Home", "Virtual machines", "Create a virtual machine"],
+    "active_tab": "Basics",
+    "tabs": ["Basics", "Disks", "Networking", "Management", "Tags", "Review + create"],
+    "fields": [
+      { "label": "Subscription", "value": "Azure subscription 1", "type": "dropdown", "highlight": false },
+      { "label": "Resource group", "value": "az104-lab-rg", "type": "dropdown", "highlight": true, "highlight_reason": "Exam tip: always group resources by lifecycle" },
+      { "label": "Virtual machine name", "value": "az104-vm-01", "type": "text", "highlight": false },
+      { "label": "Region", "value": "(US) East US", "type": "dropdown", "highlight": true, "highlight_reason": "Region affects availability and pricing" },
+      { "label": "Image", "value": "Ubuntu Server 22.04 LTS - x64 Gen2", "type": "dropdown", "highlight": false },
+      { "label": "Size", "value": "Standard_D2s_v3 - 2 vcpus, 8 GiB", "type": "dropdown", "highlight": true, "highlight_reason": "Exam tests VM size naming convention" }
+    ],
+    "bottom_buttons": ["Review + create", "Next: Disks >"],
+    "exam_callout": "D-series VMs are general purpose. Exam differentiates: B=burstable, D=general, E=memory-optimized, F=compute-optimized",
+    "cli_equivalent": "az vm create --resource-group az104-lab-rg --name az104-vm-01 --image Ubuntu2204 --size Standard_D2s_v3",
+    "duration_seconds": 45
   }
 ]`,
       }],
@@ -342,6 +365,7 @@ async function generateSlides(sections, input) {
   const WAIT_MS = {
     chapter_title: 600, concept: 1000, code: 1200,
     analogy: 800, diagram: 4000, quiz: 800, chapter_summary: 800,
+    portal_demo: 1500,
     live_code: 0, // computed dynamically below
   };
 
@@ -433,6 +457,7 @@ function buildSlideHTML(section, index, total, input) {
     case 'analogy':        return buildAnalogySlide(section, index, total, input);
     case 'diagram':        return buildDiagramSlide(section, index, total, input);
     case 'quiz':           return buildQuizSlide(section, input);
+    case 'portal_demo':    return buildPortalDemoSlide(section, index, total, input);
     default:               return buildConceptSlide(section, index, total, input);
   }
 }
@@ -902,6 +927,316 @@ ${accentBar()}
   TechNuggets Academy
 </div>
 </body></html>`;
+}
+
+// ── Portal Demo slide builder ─────────────────────────────────────────────────
+
+function buildPortalDemoSlide(s, index, total, input) {
+  const action  = (s.portal_action || '').toLowerCase();
+  const layout  =
+    (action.includes('cli') || action.includes('shell') || action.includes('command')) ? 'terminal' :
+    (action.includes('metric') || action.includes('monitor'))                          ? 'metrics'  :
+    (action.includes('pricing') || action.includes('cost'))                            ? 'pricing'  :
+    (action.includes('list') || action.includes(' all') || action.includes('browse'))  ? 'list'     :
+    (action.includes('overview') || action.includes('setting'))                        ? 'dashboard':
+    'form';
+
+  const breadcrumbs = (s.breadcrumb || ['Home', s.portal_service || 'Azure']).map(b => esc(b));
+  const fields      = s.fields || [];
+  const tabs        = s.tabs || ['Basics', 'Review + create'];
+  const activeTab   = s.active_tab || tabs[0];
+  const btns        = s.bottom_buttons || ['Review + create'];
+  const examCallout = s.exam_callout || '';
+  const cliCmd      = s.cli_equivalent || '';
+  const title       = esc(s.title || s.portal_service || 'Azure Portal');
+  const subtitle    = esc(s.portal_action || '');
+  const portalUrl   = esc(s.portal_url || 'portal.azure.com');
+
+  // ── Shared chrome (topbar, breadcrumb) ────────────────────────────────────
+  const AZURE_CSS = `
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{width:1280px;height:720px;font-family:'Inter','Segoe UI',sans-serif;overflow:hidden;background:#f3f2f1;font-size:13px;color:#323130;}
+    .az-topbar{height:48px;background:#0078d4;display:flex;align-items:center;padding:0 16px;gap:12px;position:relative;}
+    .az-logo{display:flex;align-items:center;gap:8px;color:#fff;font-weight:600;font-size:15px;}
+    .az-logo-icon{width:24px;height:24px;background:#fff;border-radius:3px;display:flex;align-items:center;justify-content:center;color:#0078d4;font-weight:800;font-size:14px;}
+    .az-search{flex:1;max-width:400px;height:32px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:4px;display:flex;align-items:center;padding:0 12px;color:rgba(255,255,255,.8);font-size:13px;margin-left:16px;}
+    .az-user{margin-left:auto;color:#fff;font-size:13px;display:flex;align-items:center;gap:8px;}
+    .az-avatar{width:28px;height:28px;border-radius:50%;background:#50e6ff;display:flex;align-items:center;justify-content:center;color:#0078d4;font-weight:700;font-size:12px;}
+    .az-urlbar{height:26px;background:#f3f2f1;border-bottom:1px solid #e1dfdd;display:flex;align-items:center;padding:0 12px;gap:6px;font-size:11px;color:#605e5c;}
+    .az-breadcrumb{height:36px;background:#fff;border-bottom:1px solid #e1dfdd;display:flex;align-items:center;padding:0 24px;gap:6px;font-size:13px;}
+    .bc-item{color:#0078d4;cursor:pointer;} .bc-item:last-child{color:#323130;font-weight:600;} .bc-sep{color:#a19f9d;font-size:11px;}
+    .brand-badge{position:absolute;bottom:0;left:0;background:#1a1a2e;color:#fff;font-size:10px;padding:3px 10px;font-weight:600;letter-spacing:.04em;}
+  `;
+
+  const topChrome = `
+    <div class="az-topbar">
+      <div class="az-logo"><div class="az-logo-icon">A</div>Microsoft Azure</div>
+      <div class="az-search">🔍 Search resources, services, and docs (G+/)</div>
+      <div style="margin-left:auto;display:flex;gap:14px;color:#fff;font-size:15px;">🔔 ⚙️ ?</div>
+      <div class="az-user"><div class="az-avatar">AM</div>aseem@technuggets.com</div>
+    </div>
+    <div class="az-urlbar">🔒 <span style="color:#323130;">${portalUrl}</span></div>
+    <div class="az-breadcrumb">
+      ${breadcrumbs.map((b, i) => `<span class="bc-item">${b}</span>${i < breadcrumbs.length - 1 ? '<span class="bc-sep">›</span>' : ''}`).join('')}
+    </div>`;
+
+  const examOverlay = examCallout ? `
+    <div style="position:absolute;top:110px;right:0;width:292px;background:#e94560;color:#fff;padding:10px 14px;font-size:11.5px;font-weight:500;display:flex;gap:8px;align-items:flex-start;z-index:20;">
+      <span style="font-size:15px;flex-shrink:0;">📝</span>
+      <span><strong>Exam Note:</strong> ${esc(examCallout)}</span>
+    </div>` : '';
+
+  const cliBanner = cliCmd ? `
+    <div style="position:absolute;bottom:52px;left:220px;right:0;background:#1b1b1b;color:#50e6ff;font-family:'Courier New',monospace;font-size:11.5px;padding:7px 20px;border-top:1px solid #333;display:flex;align-items:center;gap:10px;z-index:10;">
+      <span style="color:#888;white-space:nowrap;font-size:11px;">CLI equivalent:</span>
+      <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(cliCmd)}</span>
+    </div>` : '';
+
+  // ── Form layout ───────────────────────────────────────────────────────────
+  if (layout === 'form') {
+    const hasCli   = !!cliCmd;
+    const formBottom = hasCli ? 88 : 52;
+
+    const projectFields = fields.slice(0, Math.ceil(fields.length / 2));
+    const instanceFields = fields.slice(Math.ceil(fields.length / 2));
+
+    const renderField = (f) => {
+      const isHL = f.highlight;
+      return `
+        <div style="margin-bottom:11px;position:relative;">
+          <div style="font-size:12px;font-weight:600;color:#323130;margin-bottom:4px;">${esc(f.label)} <span style="color:#d13438;font-size:10px;">*</span></div>
+          <div style="width:100%;max-width:380px;height:32px;border:${isHL ? '2px solid #0078d4' : '1px solid #8a8886'};border-radius:2px;padding:0 8px;background:${isHL ? '#e8f4ff' : '#fff'};display:flex;align-items:center;justify-content:space-between;font-size:13px;">
+            <span>${esc(f.value)}</span>
+            ${f.type === 'dropdown' ? '<span style="color:#605e5c;font-size:10px;">▼</span>' : ''}
+          </div>
+          ${isHL && f.highlight_reason ? `
+            <div style="position:absolute;right:-248px;top:18px;width:230px;background:#fff4ce;border:1px solid #f7d057;border-radius:4px;padding:7px 9px;font-size:10.5px;color:#323130;z-index:15;display:flex;gap:5px;">
+              <span style="font-size:13px;flex-shrink:0;">💡</span>${esc(f.highlight_reason)}
+            </div>` : ''}
+        </div>`;
+    };
+
+    const tabsHtml = tabs.map(t =>
+      `<div style="padding:9px 14px;font-size:13px;color:${t === activeTab ? '#0078d4' : '#605e5c'};border-bottom:${t === activeTab ? '2px solid #0078d4' : '2px solid transparent'};font-weight:${t === activeTab ? '600' : '400'};margin-bottom:-1px;white-space:nowrap;cursor:pointer;">${esc(t)}</div>`
+    ).join('');
+
+    const formActionsHtml = `
+      <div style="position:absolute;bottom:0;left:220px;right:0;height:52px;background:#fff;border-top:1px solid #e1dfdd;display:flex;align-items:center;padding:0 24px;gap:8px;z-index:10;">
+        ${btns.map((b, i) => `<button style="height:32px;background:${i===0?'#0078d4':'#fff'};color:${i===0?'#fff':'#0078d4'};border:${i===0?'none':'1px solid #0078d4'};border-radius:2px;padding:0 16px;font-size:13px;font-weight:${i===0?'600':'400'};cursor:pointer;">${esc(b)}</button>`).join('')}
+      </div>`;
+
+    return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><style>
+      ${AZURE_CSS}
+      .sidebar{width:220px;background:#faf9f8;border-right:1px solid #e1dfdd;padding:8px 0;overflow:hidden;}
+      .sb-item{padding:8px 14px;font-size:13px;color:#323130;cursor:pointer;display:flex;align-items:center;gap:8px;}
+      .sb-item.active{background:#e8f4ff;color:#0078d4;border-left:3px solid #0078d4;font-weight:600;}
+      .sb-div{height:1px;background:#e1dfdd;margin:6px 0;}
+    </style></head><body>
+    ${topChrome}
+    <div style="display:flex;height:calc(720px - 110px);position:relative;">
+      <div class="sidebar">
+        ${tabs.map((t, i) => `<div class="sb-item${t === activeTab ? ' active' : ''}">${['📋','💿','🌐','⚙️','📊','🔧','🏷️','✅'][i]||'•'} ${esc(t)}</div>${i === tabs.length - 3 ? '<div class="sb-div"></div>' : ''}`).join('')}
+      </div>
+      <div style="flex:1;background:#fff;overflow:hidden;position:relative;">
+        <div style="padding:14px 24px 10px;border-bottom:1px solid #e1dfdd;">
+          <div style="font-size:20px;font-weight:600;color:#323130;margin-bottom:2px;">${title}</div>
+          <div style="font-size:13px;color:#605e5c;">${subtitle}</div>
+        </div>
+        <div style="display:flex;border-bottom:1px solid #e1dfdd;padding:0 24px;">${tabsHtml}</div>
+        <div style="padding:14px 24px;overflow-y:auto;max-height:calc(720px - ${formBottom + 110 + 60}px);">
+          ${projectFields.length ? `<div style="font-size:13px;font-weight:600;color:#323130;margin-bottom:10px;padding-bottom:5px;border-bottom:1px solid #e1dfdd;">Project details</div>` : ''}
+          ${projectFields.map(renderField).join('')}
+          ${instanceFields.length ? `<div style="font-size:13px;font-weight:600;color:#323130;margin:14px 0 10px;padding-bottom:5px;border-bottom:1px solid #e1dfdd;">Instance details</div>` : ''}
+          ${instanceFields.map(renderField).join('')}
+        </div>
+      </div>
+    </div>
+    ${examOverlay}${cliBanner}${formActionsHtml}
+    <div class="brand-badge">TechNuggets Academy</div>
+    </body></html>`;
+  }
+
+  // ── Terminal / Cloud Shell layout ─────────────────────────────────────────
+  if (layout === 'terminal') {
+    const prompt  = 'aseem@Azure:~$';
+    const command = esc(cliCmd || `az ${(s.portal_service || 'group').toLowerCase().replace(/\s+/g,'')} list --output table`);
+    const output  = esc(s.cli_output || 'Name              ResourceGroup    Location\n----------------  ---------------  ----------\naz104-lab-rg      N/A              eastus\naz104-vm-01       az104-lab-rg     eastus');
+
+    return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><style>
+      ${AZURE_CSS}
+      .terminal{background:#0c0c0c;color:#cccccc;font-family:'Courier New',Consolas,monospace;font-size:13px;line-height:1.5;padding:16px 20px;white-space:pre;}
+    </style></head><body>
+    ${topChrome}
+    <div style="display:flex;height:calc(720px - 110px);flex-direction:column;">
+      <div style="background:#fff;padding:10px 24px;border-bottom:1px solid #e1dfdd;display:flex;align-items:center;gap:16px;">
+        <span style="font-size:14px;font-weight:600;color:#323130;">Azure Cloud Shell</span>
+        <span style="font-size:12px;background:#e8f4ff;color:#0078d4;padding:2px 8px;border-radius:10px;font-weight:500;">Bash</span>
+        <span style="font-size:12px;color:#605e5c;">PowerShell</span>
+        <div style="margin-left:auto;font-size:12px;color:#605e5c;">aseem@Azure:~ (East US)</div>
+      </div>
+      <div class="terminal" style="flex:1;">Requesting a Cloud Shell...Succeeded.<br>Connecting terminal...<br><br><span style="color:#50e6ff;">${prompt}</span> <span style="color:#fffb00;">${command}</span><br><br><span style="color:#d4d4d4;">${output}</span><br><br><span style="color:#50e6ff;">${prompt}</span> <span style="animation:blink 1s step-end infinite;">█</span></div>
+    </div>
+    ${examOverlay}
+    <div class="brand-badge">TechNuggets Academy</div>
+    </body></html>`;
+  }
+
+  // ── Resource list layout ──────────────────────────────────────────────────
+  if (layout === 'list') {
+    const resources = fields.length ? fields : [
+      { label: 'az104-rg-01', value: 'East US', type: 'active' },
+      { label: 'az104-rg-02', value: 'West Europe', type: 'active' },
+      { label: 'az104-rg-03', value: 'Southeast Asia', type: 'active' },
+    ];
+
+    const rows = resources.map((r, i) => `
+      <tr style="border-bottom:1px solid #f3f2f1;">
+        <td style="padding:8px 12px;"><input type="checkbox" style="margin-right:8px;">${esc(r.label || r.value)}</td>
+        <td style="padding:8px 12px;"><span style="background:#dff6dd;color:#107c10;border-radius:10px;padding:2px 10px;font-size:12px;font-weight:500;">● Active</span></td>
+        <td style="padding:8px 12px;color:#605e5c;font-size:12px;">${esc(r.value || r.label)}</td>
+        <td style="padding:8px 12px;color:#0078d4;font-size:12px;cursor:pointer;">az104-sub-01</td>
+        <td style="padding:8px 12px;"><button style="background:none;border:1px solid #e1dfdd;border-radius:2px;padding:2px 8px;font-size:12px;color:#323130;cursor:pointer;">···</button></td>
+      </tr>`).join('');
+
+    return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><style>${AZURE_CSS}</style></head><body>
+    ${topChrome}
+    <div style="height:calc(720px - 110px);background:#fff;padding:0;">
+      <div style="padding:14px 24px 12px;border-bottom:1px solid #e1dfdd;display:flex;align-items:center;gap:12px;">
+        <div style="font-size:20px;font-weight:600;color:#323130;">${title}</div>
+        <div style="margin-left:auto;display:flex;gap:8px;">
+          <button style="height:32px;background:#0078d4;color:#fff;border:none;border-radius:2px;padding:0 14px;font-size:13px;font-weight:600;cursor:pointer;">+ Create</button>
+          <button style="height:32px;background:#fff;color:#323130;border:1px solid #e1dfdd;border-radius:2px;padding:0 12px;font-size:13px;cursor:pointer;">⟳ Refresh</button>
+        </div>
+      </div>
+      <div style="padding:10px 24px;border-bottom:1px solid #e1dfdd;display:flex;align-items:center;gap:10px;">
+        <div style="height:30px;border:1px solid #e1dfdd;border-radius:2px;display:flex;align-items:center;padding:0 10px;width:260px;font-size:13px;color:#605e5c;">🔍 Filter for any field...</div>
+        <span style="font-size:13px;color:#605e5c;">Subscription == All &nbsp;&#8964;</span>
+        <span style="font-size:13px;color:#605e5c;">Location == All &nbsp;&#8964;</span>
+        <span style="font-size:13px;color:#0078d4;cursor:pointer;">+ Add filter</span>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead style="background:#faf9f8;">
+          <tr style="border-bottom:2px solid #e1dfdd;">
+            <th style="padding:8px 12px;text-align:left;font-weight:600;color:#323130;">Name ↑</th>
+            <th style="padding:8px 12px;text-align:left;font-weight:600;color:#323130;">Status</th>
+            <th style="padding:8px 12px;text-align:left;font-weight:600;color:#323130;">Location</th>
+            <th style="padding:8px 12px;text-align:left;font-weight:600;color:#323130;">Subscription</th>
+            <th style="padding:8px 12px;"></th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    ${examOverlay}
+    <div class="brand-badge">TechNuggets Academy</div>
+    </body></html>`;
+  }
+
+  // ── Dashboard / Overview layout ───────────────────────────────────────────
+  if (layout === 'dashboard') {
+    const essentials = fields.slice(0, 4).map(f => `
+      <div style="padding:10px 16px;border-right:1px solid #e1dfdd;flex:1;">
+        <div style="font-size:11px;color:#605e5c;font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em;">${esc(f.label)}</div>
+        <div style="font-size:13px;color:#0078d4;cursor:pointer;">${esc(f.value)}</div>
+      </div>`).join('');
+
+    const sideNav = ['Overview','Activity log','Access control (IAM)','Tags','Diagnose and solve problems','Settings','Properties','Locks','Monitoring','Insights','Alerts','Metrics','Diagnostic settings'].map((item,i) =>
+      `<div style="padding:7px 16px;font-size:13px;color:${i===0?'#0078d4':'#323130'};background:${i===0?'#e8f4ff':'transparent'};${i===0?'border-left:3px solid #0078d4;font-weight:600;':''}cursor:pointer;">${item}</div>` +
+      (i===4 || i===7 ? '<div style="height:1px;background:#e1dfdd;margin:4px 0;"></div>' : '')
+    ).join('');
+
+    return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><style>${AZURE_CSS}</style></head><body>
+    ${topChrome}
+    <div style="display:flex;height:calc(720px - 110px);">
+      <div style="width:210px;background:#faf9f8;border-right:1px solid #e1dfdd;overflow-y:auto;">${sideNav}</div>
+      <div style="flex:1;overflow:hidden;background:#fff;">
+        <div style="padding:12px 20px 10px;border-bottom:1px solid #e1dfdd;">
+          <div style="font-size:18px;font-weight:600;color:#323130;">${title}</div>
+          <div style="font-size:12px;color:#605e5c;margin-top:2px;">${subtitle}</div>
+        </div>
+        <div style="background:#faf9f8;border-bottom:1px solid #e1dfdd;padding:6px 20px;font-size:12px;font-weight:600;color:#323130;">Essentials</div>
+        <div style="display:flex;border-bottom:1px solid #e1dfdd;">${essentials || '<div style="padding:10px 16px;color:#605e5c;font-size:13px;">No data configured</div>'}</div>
+        <div style="padding:14px 20px;">
+          ${(fields.slice(4) || []).map(f => `
+            <div style="display:flex;padding:8px 0;border-bottom:1px solid #f3f2f1;">
+              <span style="width:200px;font-size:13px;color:#605e5c;font-weight:600;">${esc(f.label)}</span>
+              <span style="font-size:13px;color:${f.highlight?'#0078d4':'#323130'};font-weight:${f.highlight?'600':'400'};cursor:pointer;">${esc(f.value)}</span>
+              ${f.highlight && f.highlight_reason ? `<span style="margin-left:12px;font-size:11px;background:#fff4ce;border:1px solid #f7d057;padding:1px 8px;border-radius:10px;color:#605e5c;">💡 ${esc(f.highlight_reason)}</span>` : ''}
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>
+    ${examOverlay}${cliBanner}
+    <div class="brand-badge">TechNuggets Academy</div>
+    </body></html>`;
+  }
+
+  // ── Metrics layout ────────────────────────────────────────────────────────
+  if (layout === 'metrics') {
+    const bars = Array.from({length: 24}, (_,i) => {
+      const h = 20 + Math.round(Math.sin(i * 0.5) * 30 + Math.random() * 20);
+      return `<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;"><div style="background:#0078d4;opacity:.8;height:${h}%;border-radius:2px 2px 0 0;"></div></div>`;
+    }).join('');
+
+    return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><style>${AZURE_CSS}</style></head><body>
+    ${topChrome}
+    <div style="height:calc(720px - 110px);background:#fff;padding:14px 24px;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+        <div style="font-size:18px;font-weight:600;color:#323130;">${title}</div>
+        <div style="margin-left:auto;display:flex;gap:8px;align-items:center;">
+          ${['1 hour','6 hours','12 hours','1 day','7 days','30 days'].map((t,i)=>`<span style="padding:4px 10px;border:1px solid #e1dfdd;border-radius:2px;font-size:12px;background:${i===2?'#0078d4':'#fff'};color:${i===2?'#fff':'#323130'};cursor:pointer;">${t}</span>`).join('')}
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:12px;">
+        <div style="height:30px;border:1px solid #0078d4;border-radius:2px;display:flex;align-items:center;padding:0 12px;font-size:13px;color:#0078d4;background:#e8f4ff;gap:6px;">📊 ${esc((fields[0]?.label) || 'CPU Percentage')} <span>▼</span></div>
+        <div style="height:30px;border:1px solid #e1dfdd;border-radius:2px;display:flex;align-items:center;padding:0 12px;font-size:13px;color:#323130;gap:6px;">Aggregation: Avg <span>▼</span></div>
+      </div>
+      <div style="border:1px solid #e1dfdd;border-radius:4px;padding:16px;height:calc(100% - 110px);display:flex;flex-direction:column;">
+        <div style="display:flex;align-items:flex-end;height:100%;gap:2px;padding-bottom:0;">
+          ${bars}
+        </div>
+        <div style="display:flex;justify-content:space-between;padding-top:6px;font-size:11px;color:#605e5c;">
+          <span>00:00</span><span>04:00</span><span>08:00</span><span>12:00</span><span>16:00</span><span>20:00</span><span>Now</span>
+        </div>
+      </div>
+    </div>
+    ${examOverlay}
+    <div class="brand-badge">TechNuggets Academy</div>
+    </body></html>`;
+  }
+
+  // ── Pricing layout ────────────────────────────────────────────────────────
+  const tiers = fields.length ? fields : [
+    { label: 'Free', value: '$0/month', type: 'text', highlight: false },
+    { label: 'Standard', value: '$0.10/GB', type: 'text', highlight: true, highlight_reason: 'Most exam scenarios use Standard' },
+    { label: 'Premium', value: '$0.15/GB', type: 'text', highlight: false },
+  ];
+
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><style>${AZURE_CSS}</style></head><body>
+  ${topChrome}
+  <div style="height:calc(720px - 110px);background:#f3f2f1;padding:16px 24px;display:flex;gap:16px;">
+    <div style="flex:2;display:flex;flex-direction:column;gap:12px;">
+      <div style="font-size:18px;font-weight:600;color:#323130;">${title} — Pricing</div>
+      ${tiers.map(t => `
+        <div style="background:#fff;border:${t.highlight ? '2px solid #0078d4' : '1px solid #e1dfdd'};border-radius:4px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <div style="font-size:14px;font-weight:600;color:#323130;">${esc(t.label)}</div>
+            ${t.highlight_reason ? `<div style="font-size:12px;color:#0078d4;margin-top:2px;">${esc(t.highlight_reason)}</div>` : ''}
+          </div>
+          <div style="font-size:18px;font-weight:700;color:${t.highlight ? '#0078d4' : '#323130'};">${esc(t.value)}</div>
+        </div>`).join('')}
+    </div>
+    <div style="flex:1;background:#fff;border:1px solid #e1dfdd;border-radius:4px;padding:16px;">
+      <div style="font-size:14px;font-weight:600;color:#323130;margin-bottom:12px;">Cost Estimate</div>
+      <div style="font-size:28px;font-weight:700;color:#323130;margin-bottom:4px;">~$12.40<span style="font-size:14px;font-weight:400;color:#605e5c;">/month</span></div>
+      <div style="font-size:12px;color:#605e5c;margin-bottom:12px;">Based on current configuration</div>
+      <button style="width:100%;height:32px;background:#0078d4;color:#fff;border:none;border-radius:2px;font-size:13px;font-weight:600;cursor:pointer;">Add to estimate</button>
+    </div>
+  </div>
+  ${examOverlay}
+  <div class="brand-badge">TechNuggets Academy</div>
+  </body></html>`;
 }
 
 // ── Step 5: Timing distribution ───────────────────────────────────────────────
