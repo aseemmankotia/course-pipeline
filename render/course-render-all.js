@@ -10,7 +10,7 @@
  *   ...
  *
  * Falls back to course-render-input-N.json in the project root.
- * Audio is generated automatically via ElevenLabs — no HeyGen video needed.
+ * Requires heygen-chapter-NN.mp4 in each chapter dir (or ~/Downloads) for PIP overlay.
  */
 
 const { execSync } = require('child_process');

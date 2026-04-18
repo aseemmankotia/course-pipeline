@@ -78,15 +78,15 @@ function mountRender(container) {
           </code>
         </li>
         <li>Run: <code style="background:var(--code-bg);padding:2px 6px;border-radius:4px;">node render/course-render.js N</code></li>
-        <li>The renderer automatically: generates voice audio via ElevenLabs → composites slides + audio + presenter photo PIP</li>
+        <li>The renderer automatically: locates your HeyGen avatar video → gets duration → composites slides + HeyGen PIP</li>
         <li>Output: <code>render/chapters/chapter-NN/chapter-NN-final.mp4</code></li>
       </ol>
       <div style="margin-top:14px;padding:10px 14px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:var(--radius-sm);">
         <div style="font-size:.8rem;font-weight:600;color:#166534;margin-bottom:6px;">Setup checklist:</div>
         <div style="font-size:.8rem;color:#15803d;line-height:1.9;">
           ✅ <code>ANTHROPIC_API_KEY</code> in <code>.env</code> — for curriculum &amp; script generation<br>
-          ✅ <code>ELEVENLABS_API_KEY</code> + <code>ELEVENLABS_VOICE_ID</code> in <code>.env</code> — for narration<br>
-          ✅ <code>presenter.jpg</code> in project root — for PIP overlay (optional)<br>
+          ✅ HeyGen avatar video exported as <code>heygen-chapter-NN.mp4</code> (place in chapter dir or <code>~/Downloads</code>)<br>
+          ✅ <code>cta-overlay.png</code> in project root — subscribe CTA overlay (optional)<br>
           ✅ <code>ffmpeg</code> installed — <code>brew install ffmpeg</code>
         </div>
       </div>
@@ -142,6 +142,13 @@ function wireButtons(container, cur) {
     const prepared = cur.chapters.filter(ch => !!localStorage.getItem(PREPARED_KEY(ch.number)));
     showBatchInstructions(container, prepared);
   });
+
+  // Wire PIP controls for each chapter that has a script
+  cur.chapters.forEach(ch => {
+    if (getChapterData(ch.number)?.script) {
+      initPIPControls(container, ch.number);
+    }
+  });
 }
 
 // ── Row HTML ──────────────────────────────────────────────────────────────────
@@ -193,6 +200,71 @@ function renderRowHtml(ch, cur) {
           🎬 Render ${ch.number}
         </button>
       </div>
+      ${hasScript ? `
+      <div class="pip-config" style="width:100%;margin-top:10px;padding:12px;
+          background:#f9fafb;border-radius:8px;border:1px solid #e5e7eb;">
+        <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:8px;">
+          Avatar PIP Mode
+        </label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+          ${[
+            ['full',        '📹', 'Full video',    'Avatar shown throughout'],
+            ['intro_only',  '👋', 'Intro only',    'Avatar for first X seconds'],
+            ['intro_outro', '🎬', 'Intro + Outro', 'Avatar at start and end'],
+            ['none',        '🖥️', 'No avatar',     'Slides only (audio from HeyGen)'],
+          ].map(([val, icon, title, desc]) => {
+            const saved = localStorage.getItem(`pip_mode_ch${ch.number}`) || 'full';
+            return `
+            <label style="cursor:pointer;">
+              <input type="radio" name="pip_mode_${ch.number}" value="${val}"
+                ${saved === val ? 'checked' : ''} style="display:none;">
+              <span style="display:flex;align-items:center;gap:8px;padding:8px 10px;
+                  border:1.5px solid ${saved === val ? '#e94560' : '#e5e7eb'};
+                  border-radius:6px;background:${saved === val ? '#fde8ec20' : 'white'};
+                  transition:all 0.15s;" class="pip-opt-label">
+                <span style="font-size:18px;">${icon}</span>
+                <span>
+                  <strong style="display:block;font-size:13px;color:#1a1a2e;">${title}</strong>
+                  <small style="font-size:11px;color:#6b7280;">${desc}</small>
+                </span>
+              </span>
+            </label>`;
+          }).join('')}
+        </div>
+        <div id="pip_duration_${ch.number}" style="display:${
+          ['intro_only','intro_outro'].includes(localStorage.getItem(`pip_mode_ch${ch.number}`) || 'full')
+            ? 'block' : 'none'
+        };padding-top:10px;border-top:1px solid #e5e7eb;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:13px;color:#374151;">
+            <label style="width:120px;flex-shrink:0;">Intro duration:</label>
+            <input type="range" id="intro_dur_${ch.number}" min="15" max="120"
+              value="${localStorage.getItem(`pip_intro_duration_ch${ch.number}`) || 45}" step="5"
+              style="flex:1;">
+            <span id="intro_dur_label_${ch.number}" style="width:36px;text-align:right;font-weight:600;color:#e94560;">
+              ${localStorage.getItem(`pip_intro_duration_ch${ch.number}`) || 45}s
+            </span>
+          </div>
+          <div id="outro_dur_row_${ch.number}" style="display:${
+            (localStorage.getItem(`pip_mode_ch${ch.number}`) || 'full') === 'intro_outro' ? 'flex' : 'none'
+          };align-items:center;gap:10px;margin-bottom:8px;font-size:13px;color:#374151;">
+            <label style="width:120px;flex-shrink:0;">Outro duration:</label>
+            <input type="range" id="outro_dur_${ch.number}" min="15" max="60"
+              value="${localStorage.getItem(`pip_outro_duration_ch${ch.number}`) || 30}" step="5"
+              style="flex:1;">
+            <span id="outro_dur_label_${ch.number}" style="width:36px;text-align:right;font-weight:600;color:#e94560;">
+              ${localStorage.getItem(`pip_outro_duration_ch${ch.number}`) || 30}s
+            </span>
+          </div>
+        </div>
+        <div id="pip_timeline_${ch.number}" style="margin-top:10px;">
+          ${renderPIPTimeline(
+            localStorage.getItem(`pip_mode_ch${ch.number}`) || 'full',
+            ch.duration_mins || 15,
+            parseInt(localStorage.getItem(`pip_intro_duration_ch${ch.number}`) || 45, 10),
+            parseInt(localStorage.getItem(`pip_outro_duration_ch${ch.number}`) || 30, 10)
+          )}
+        </div>
+      </div>` : ''}
     </div>
   `;
 }
@@ -200,20 +272,35 @@ function renderRowHtml(ch, cur) {
 // ── Build render input ────────────────────────────────────────────────────────
 
 function buildRenderInput(ch, cur, d) {
-  const paddedNum = String(ch.number).padStart(2, '0');
+  const n          = ch.number;
+  const paddedNum  = String(n).padStart(2, '0');
+
+  const pipMode      = document.querySelector(`input[name="pip_mode_${n}"]:checked`)?.value
+                    || localStorage.getItem(`pip_mode_ch${n}`) || 'full';
+  const introDuration = parseInt(
+    document.getElementById(`intro_dur_${n}`)?.value
+    || localStorage.getItem(`pip_intro_duration_ch${n}`) || '45', 10);
+  const outroDuration = parseInt(
+    document.getElementById(`outro_dur_${n}`)?.value
+    || localStorage.getItem(`pip_outro_duration_ch${n}`) || '30', 10);
+
   return {
-    course_title:     cur.course_title,
-    course_id:        cur.id || cur.course_id || 'course',
-    chapter_number:   ch.number,
-    chapter_title:    ch.title,
-    chapter_subtitle: ch.subtitle || '',
-    total_chapters:   cur.chapters.length,
-    script:           d?.script || '',
-    duration_mins:    ch.duration_mins || 15,
-    key_takeaway:     ch.key_takeaway || '',
-    quiz_questions:   ch.quiz_questions || [],
-    concepts:         ch.concepts || [],
-    output_filename:  `chapter-${paddedNum}-final.mp4`,
+    course_title:        cur.course_title,
+    course_id:           cur.id || cur.course_id || 'course',
+    chapter_number:      n,
+    chapter_title:       ch.title,
+    chapter_subtitle:    ch.subtitle || '',
+    total_chapters:      cur.chapters.length,
+    script:              d?.script || '',
+    duration_mins:       ch.duration_mins || 15,
+    key_takeaway:        ch.key_takeaway || '',
+    quiz_questions:      ch.quiz_questions || [],
+    concepts:            ch.concepts || [],
+    pip_mode:            pipMode,
+    pip_duration_intro:  introDuration,
+    pip_duration_outro:  outroDuration,
+    heygen_local_file:   `heygen-chapter-${paddedNum}.mp4`,
+    output_filename:     `chapter-${paddedNum}-final.mp4`,
   };
 }
 
@@ -313,6 +400,97 @@ function showBatchInstructions(container, chapters) {
         Output: <code>render/chapters/chapter-NN/chapter-NN-final.mp4</code> per chapter
       </span>
     </div>`;
+}
+
+// ── PIP controls ──────────────────────────────────────────────────────────────
+
+function renderPIPTimeline(mode, totalMins, introDur, outroDur) {
+  const totalSecs    = totalMins * 60;
+  const introPct     = Math.min(100, (introDur / totalSecs) * 100).toFixed(1);
+  const outroStart   = totalSecs - outroDur;
+  const outroStartPct = Math.max(0, (outroStart / totalSecs) * 100).toFixed(1);
+  const outroPct     = Math.min(100, (outroDur / totalSecs) * 100).toFixed(1);
+
+  let segments = '';
+  if (mode === 'full') {
+    segments = `<div style="position:absolute;left:0;width:100%;height:100%;background:#e94560;opacity:.55;border-radius:2px;"></div>`;
+  } else if (mode === 'intro_only') {
+    segments = `<div style="position:absolute;left:0;width:${introPct}%;height:100%;background:#e94560;opacity:.55;border-radius:2px;"></div>`;
+  } else if (mode === 'outro_only') {
+    segments = `<div style="position:absolute;left:${outroStartPct}%;width:${outroPct}%;height:100%;background:#e94560;opacity:.55;border-radius:2px;"></div>`;
+  } else if (mode === 'intro_outro') {
+    segments = `
+      <div style="position:absolute;left:0;width:${introPct}%;height:100%;background:#e94560;opacity:.55;border-radius:2px;"></div>
+      <div style="position:absolute;left:${outroStartPct}%;width:${outroPct}%;height:100%;background:#e94560;opacity:.55;border-radius:2px;"></div>`;
+  }
+
+  return `
+    <div style="margin-top:6px;">
+      <div style="height:16px;background:#f3f4f6;border-radius:4px;position:relative;overflow:hidden;margin-bottom:4px;">
+        ${segments}
+        <span style="position:absolute;left:4px;top:50%;transform:translateY(-50%);font-size:10px;color:#6b7280;">0:00</span>
+        <span style="position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:10px;color:#6b7280;">${totalMins}:00</span>
+      </div>
+      <div style="display:flex;gap:12px;font-size:11px;color:#6b7280;">
+        <span style="color:#e94560;">█ Avatar PIP</span>
+        <span>░ Slides only</span>
+      </div>
+    </div>`;
+}
+
+function initPIPControls(container, n) {
+  const radios          = container.querySelectorAll(`input[name="pip_mode_${n}"]`);
+  const durationPanel   = container.querySelector(`#pip_duration_${n}`);
+  const outroRow        = container.querySelector(`#outro_dur_row_${n}`);
+  const timelineEl      = container.querySelector(`#pip_timeline_${n}`);
+  const introSlider     = container.querySelector(`#intro_dur_${n}`);
+  const outroSlider     = container.querySelector(`#outro_dur_${n}`);
+  const introLabel      = container.querySelector(`#intro_dur_label_${n}`);
+  const outroLabel      = container.querySelector(`#outro_dur_label_${n}`);
+
+  const ch = { number: n, duration_mins: parseInt(container.querySelector(`[data-chapter="${n}"]`)?.closest('.render-row')?.querySelector('.duration-badge')?.textContent) || 15 };
+
+  function updateTimeline() {
+    if (!timelineEl) return;
+    const mode     = container.querySelector(`input[name="pip_mode_${n}"]:checked`)?.value || 'full';
+    const introDur = parseInt(introSlider?.value || 45, 10);
+    const outroDur = parseInt(outroSlider?.value || 30, 10);
+    timelineEl.innerHTML = renderPIPTimeline(mode, ch.duration_mins, introDur, outroDur);
+  }
+
+  radios.forEach(radio => {
+    radio.addEventListener('change', () => {
+      const mode = radio.value;
+      localStorage.setItem(`pip_mode_ch${n}`, mode);
+
+      // Update pill styles
+      container.querySelectorAll(`input[name="pip_mode_${n}"]`).forEach(r => {
+        const lbl = r.nextElementSibling;
+        if (!lbl) return;
+        lbl.style.borderColor = r.checked ? '#e94560' : '#e5e7eb';
+        lbl.style.background  = r.checked ? '#fde8ec20' : 'white';
+      });
+
+      if (durationPanel) durationPanel.style.display = (mode === 'intro_only' || mode === 'intro_outro') ? 'block' : 'none';
+      if (outroRow)       outroRow.style.display       = mode === 'intro_outro' ? 'flex' : 'none';
+      updateTimeline();
+    });
+  });
+
+  if (introSlider) {
+    introSlider.addEventListener('input', () => {
+      if (introLabel) introLabel.textContent = introSlider.value + 's';
+      localStorage.setItem(`pip_intro_duration_ch${n}`, introSlider.value);
+      updateTimeline();
+    });
+  }
+  if (outroSlider) {
+    outroSlider.addEventListener('input', () => {
+      if (outroLabel) outroLabel.textContent = outroSlider.value + 's';
+      localStorage.setItem(`pip_outro_duration_ch${n}`, outroSlider.value);
+      updateTimeline();
+    });
+  }
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

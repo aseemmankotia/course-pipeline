@@ -81,13 +81,6 @@ function ensureChapterDirs(paths) {
   });
 }
 
-// ── ElevenLabs / presenter photo config ──────────────────────────────────────
-const ELEVENLABS_API_KEY  = process.env.ELEVENLABS_API_KEY  || '';
-const ELEVENLABS_VOICE_ID = process.env.ELEVENLABS_VOICE_ID || '';
-const ELEVENLABS_MODEL    = process.env.ELEVENLABS_MODEL    || 'eleven_monolingual_v1';
-const PRESENTER_PHOTO     = process.env.PRESENTER_PHOTO
-  || path.join(__dirname, '..', 'presenter.jpg');
-
 // ── Brand ─────────────────────────────────────────────────────────────────────
 const BRAND_FONT = `https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap`;
 const ACCENT     = '#e94560';
@@ -180,52 +173,26 @@ async function main() {
   log('\n🎨 Steps 2-3 — Generating and screenshotting slides…');
   await generateSlides(allSections, input);
 
-  // ── Step 4: Generate voice audio with ElevenLabs ────────────────────────
-  const audioPath = path.join(TEMP_DIR, 'narration.mp3');
-  let hasAudio = false;
+  // ── Step 4: Locate HeyGen video ─────────────────────────────────────────
+  log('\n⬇  Step 4 — Locating HeyGen video…');
+  const heygenVideoPath = findHeygenVideo(chapter_number);
+  const tempHeygenPath  = path.join(TEMP_DIR, 'heygen-raw.mp4');
+  fs.copyFileSync(heygenVideoPath, tempHeygenPath);
+  log(`   ✓ Copied to temp/heygen-raw.mp4`);
 
-  if (ELEVENLABS_API_KEY && ELEVENLABS_VOICE_ID) {
-    log('\n🎙️  Step 4 — Generating voice audio with ElevenLabs…');
-    try {
-      const { generateAudio } = require('./elevenlabs.js');
-      await generateAudio(script, ELEVENLABS_VOICE_ID, ELEVENLABS_API_KEY, audioPath, ELEVENLABS_MODEL);
-      hasAudio = true;
-      log('   ✓ Audio generated successfully');
-    } catch (e) {
-      log(`   ❌ Audio generation failed: ${e.message}`);
-      log('   Continuing without audio…');
-    }
-  } else {
-    log('\n⏭  Step 4 — Skipping audio (ElevenLabs not configured)');
-    log('   Add ELEVENLABS_API_KEY and ELEVENLABS_VOICE_ID to .env for voice narration.');
-  }
-
-  // ── Step 5: Determine total duration + distribute slide timings ──────────
-  let totalDuration;
-  if (hasAudio) {
-    const { getAudioDuration } = require('./elevenlabs.js');
-    totalDuration = getAudioDuration(audioPath);
-    log(`\n⏱  Step 5 — Audio duration: ${totalDuration.toFixed(2)}s`);
-  } else {
-    // Estimate from word count (150 words per minute)
-    const wordCount = script.split(/\s+/).filter(Boolean).length;
-    totalDuration = (wordCount / 150) * 60;
-    log(`\n⏱  Step 5 — Estimated duration: ${totalDuration.toFixed(2)}s (${wordCount} words)`);
-  }
+  // ── Step 5: Get duration from HeyGen video ───────────────────────────────
+  log('\n⏱  Step 5 — Getting video duration…');
+  const totalDuration = getVideoDuration(ffprobe, tempHeygenPath);
+  log(`   ✓ Total duration: ${totalDuration.toFixed(2)}s`);
 
   const timed = distributeTimings(allSections, totalDuration);
   timed.forEach((s, i) => log(`   Slide ${i + 1}: ${s.duration.toFixed(1)}s — ${s.type}`));
 
-  // ── Step 6: Composite slides + audio + presenter photo ───────────────────
-  const hasPhoto = fs.existsSync(PRESENTER_PHOTO);
-  if (!hasPhoto) {
-    log('\n⚠️  No presenter photo found — rendering without PIP overlay.');
-    log(`   Add presenter.jpg to project root: ${path.join(__dirname, '..', 'presenter.jpg')}`);
-  }
-
+  // ── Step 6: Composite slides + HeyGen video PIP ──────────────────────────
   log('\n🎬 Step 6 — Compositing with FFmpeg…');
-  const outPath = PATHS.finalVideo;
-  await compositeVideo(ffmpeg, timed, audioPath, PRESENTER_PHOTO, hasAudio, hasPhoto, outPath, totalDuration);
+  const outPath        = PATHS.finalVideo;
+  const ctaOverlayPath = path.join(__dirname, '..', 'cta-overlay.png');
+  await compositeVideo(timed, tempHeygenPath, outPath, totalDuration, ctaOverlayPath, input);
 
   log(`\n✅ Done: ${outPath}`);
 }
@@ -1269,107 +1236,36 @@ function distributeTimings(sections, totalDuration) {
   });
 }
 
-// ── Step 6: Composite ─────────────────────────────────────────────────────────
+// ── HeyGen video lookup ───────────────────────────────────────────────────────
 
-async function compositeVideo(ffmpeg, sections, audioPath, photoPath, hasAudio, hasPhoto, outPath, totalDuration) {
-  const FPS  = 30;
-  const FADE = 0.4;
-
-  // 6a: slide segments
-  const segPaths = [];
-  for (let i = 0; i < sections.length; i++) {
-    const s   = sections[i];
-    const dur = s.duration;
-    const seg = path.join(TEMP_DIR, `seg-${i}.mp4`);
-    const fadeOutStart = Math.max(0, dur - FADE).toFixed(3);
-
-    execSync(
-      `"${ffmpeg}" -y -loop 1 -framerate ${FPS} -i "${path.join(SLIDES_DIR, `slide-${String(i).padStart(2,'0')}.png`)}" ` +
-      `-vf "scale=1280:720:flags=lanczos,fade=t=in:st=0:d=${FADE},fade=t=out:st=${fadeOutStart}:d=${FADE}" ` +
-      `-t ${dur.toFixed(3)} -c:v libx264 -preset slow -crf 18 -pix_fmt yuv420p "${seg}"`,
-      { stdio: 'pipe' }
-    );
-    segPaths.push(seg);
-    log(`   ✓ seg-${i}.mp4 (${dur.toFixed(1)}s)`);
+function findHeygenVideo(chapterNum) {
+  const paddedNum  = String(chapterNum).padStart(2, '0');
+  const chapterDir = CHAPTER_DIR || path.join(__dirname, 'chapters', `chapter-${paddedNum}`);
+  const candidates = [
+    path.join(chapterDir, `heygen-chapter-${paddedNum}.mp4`),
+    path.join(__dirname, '..', `heygen-chapter-${paddedNum}.mp4`),
+    path.join(process.env.HOME || '', 'Downloads', `heygen-chapter-${paddedNum}.mp4`),
+  ];
+  for (const c of candidates) {
+    if (fs.existsSync(c)) {
+      log(`   Found: ${c}`);
+      return c;
+    }
   }
-
-  // 6b: concat slideshow
-  const concatFile = path.join(TEMP_DIR, 'concat.txt');
-  fs.writeFileSync(concatFile, segPaths.map(p => `file '${p.replace(/'/g,"'\\''")}'`).join('\n') + '\n');
-
-  const slideshowPath = path.join(TEMP_DIR, 'slideshow.mp4');
-  execSync(
-    `"${ffmpeg}" -y -f concat -safe 0 -i "${concatFile}" -c copy "${slideshowPath}"`,
-    { stdio: 'pipe' }
+  die(
+    `HeyGen video not found for Chapter ${chapterNum}.\n` +
+    `Looked for heygen-chapter-${paddedNum}.mp4 in:\n` +
+    candidates.map(c => `  · ${c}`).join('\n') + '\n\n' +
+    `Export the HeyGen video and place it in one of those locations.`
   );
-  log('   ✓ slideshow.mp4 assembled');
+}
 
-  // 6c: final composite
-  let ffmpegArgs;
+// ── FFmpeg spawn wrapper ──────────────────────────────────────────────────────
 
-  if (hasAudio && hasPhoto) {
-    log('   Mode: Slides + Audio + Photo PIP');
-    ffmpegArgs = [
-      '-y',
-      '-i', slideshowPath,          // 0: slideshow
-      '-i', audioPath,              // 1: narration audio
-      '-loop', '1', '-i', photoPath, // 2: presenter photo (static)
-      '-filter_complex', [
-        '[0:v]scale=1280:720:flags=lanczos[bg]',
-        '[2:v]scale=320:-2:flags=lanczos[photo_scaled]',
-        '[photo_scaled]pad=iw+6:ih+6:3:3:color=white[photo_bordered]',
-        '[bg][photo_bordered]overlay=W-w-20:H-h-20[outv]',
-      ].join(';'),
-      '-map', '[outv]', '-map', '1:a',
-      '-c:v', 'libx264', '-crf', '18', '-preset', 'slow', '-pix_fmt', 'yuv420p',
-      '-c:a', 'aac', '-b:a', '192k',
-      '-shortest', outPath,
-    ];
-
-  } else if (hasAudio && !hasPhoto) {
-    log('   Mode: Slides + Audio (no PIP)');
-    ffmpegArgs = [
-      '-y',
-      '-i', slideshowPath,
-      '-i', audioPath,
-      '-filter_complex', '[0:v]scale=1280:720:flags=lanczos[outv]',
-      '-map', '[outv]', '-map', '1:a',
-      '-c:v', 'libx264', '-crf', '18', '-preset', 'slow', '-pix_fmt', 'yuv420p',
-      '-c:a', 'aac', '-b:a', '192k',
-      '-shortest', outPath,
-    ];
-
-  } else if (!hasAudio && hasPhoto) {
-    log('   Mode: Slides + Photo PIP (silent)');
-    ffmpegArgs = [
-      '-y',
-      '-i', slideshowPath,
-      '-loop', '1', '-i', photoPath,
-      '-filter_complex', [
-        '[0:v]scale=1280:720:flags=lanczos[bg]',
-        '[1:v]scale=320:-2:flags=lanczos[photo_scaled]',
-        '[photo_scaled]pad=iw+6:ih+6:3:3:color=white[photo_bordered]',
-        '[bg][photo_bordered]overlay=W-w-20:H-h-20[outv]',
-      ].join(';'),
-      '-map', '[outv]',
-      '-c:v', 'libx264', '-crf', '18', '-preset', 'slow', '-pix_fmt', 'yuv420p',
-      '-t', String(totalDuration), outPath,
-    ];
-
-  } else {
-    log('   Mode: Slides only (silent, no PIP)');
-    ffmpegArgs = [
-      '-y',
-      '-i', slideshowPath,
-      '-filter_complex', '[0:v]scale=1280:720:flags=lanczos[outv]',
-      '-map', '[outv]',
-      '-c:v', 'libx264', '-crf', '18', '-preset', 'slow', '-pix_fmt', 'yuv420p',
-      '-t', String(totalDuration), outPath,
-    ];
-  }
-
-  await new Promise((resolve, reject) => {
-    const proc = spawn(ffmpeg, ffmpegArgs, { stdio: ['ignore', 'pipe', 'pipe'] });
+function runFFmpeg(args) {
+  const ffmpegBin = findBinary('ffmpeg');
+  return new Promise((resolve, reject) => {
+    const proc = spawn(ffmpegBin, args, { stdio: ['ignore', 'pipe', 'pipe'] });
     proc.stderr.on('data', d => {
       const line = d.toString();
       if (line.includes('time=') || line.toLowerCase().includes('error'))
@@ -1380,6 +1276,168 @@ async function compositeVideo(ffmpeg, sections, audioPath, photoPath, hasAudio, 
       else resolve();
     });
   });
+}
+
+// ── PIP timing helpers ────────────────────────────────────────────────────────
+
+function getPIPFilter(totalDuration, pipMode, introDuration, outroDuration) {
+  switch (pipMode) {
+    case 'full':
+      return '';
+    case 'intro_only':
+      return `enable='between(t,0,${introDuration})'`;
+    case 'outro_only': {
+      const outroStart = (totalDuration - outroDuration).toFixed(2);
+      return `enable='between(t,${outroStart},${totalDuration.toFixed(2)})'`;
+    }
+    case 'intro_outro': {
+      const outroStartIO = (totalDuration - outroDuration).toFixed(2);
+      return `enable='lt(t,${introDuration})+gt(t,${outroStartIO})'`;
+    }
+    case 'none':
+      return null;
+    default:
+      return '';
+  }
+}
+
+function getPIPWithFade(pipMode, introDuration, outroStart, totalDuration) {
+  if (pipMode === 'intro_only') {
+    return `[av_bordered]format=yuva420p,fade=in:st=0:d=1:alpha=1,fade=out:st=${introDuration - 1}:d=1:alpha=1[av_faded]`;
+  } else if (pipMode === 'outro_only') {
+    return `[av_bordered]format=yuva420p,fade=in:st=${outroStart}:d=1:alpha=1,fade=out:st=${totalDuration - 1}:d=1:alpha=1[av_faded]`;
+  }
+  return null;
+}
+
+// ── Step 6: Composite ─────────────────────────────────────────────────────────
+
+async function compositeVideo(sections, heygenPath, outPath, totalDuration, ctaOverlayPath, renderInput) {
+  const ffmpegBin = findBinary('ffmpeg');
+  const FPS       = 30;
+  const FADE      = 0.4;
+
+  const pipMode   = (renderInput && renderInput.pip_mode) || 'full';
+  const introDur  = (renderInput && renderInput.pip_duration_intro) || 45;
+  const outroDur  = (renderInput && renderInput.pip_duration_outro) || 30;
+  const ctaStart  = totalDuration - 30;
+  const ctaEnd    = totalDuration - 8;
+  const ctaExists = fs.existsSync(ctaOverlayPath);
+  const outroStart = totalDuration - outroDur;
+
+  // 6a: per-slide video segments
+  const segPaths = [];
+  for (let i = 0; i < sections.length; i++) {
+    const s   = sections[i];
+    const dur = s.duration;
+    const seg = path.join(TEMP_DIR, `seg-${i}.mp4`);
+    const fadeOutStart = Math.max(0, dur - FADE).toFixed(3);
+
+    execSync(
+      `"${ffmpegBin}" -y -loop 1 -framerate ${FPS} -i "${path.join(SLIDES_DIR, `slide-${String(i).padStart(2,'0')}.png`)}" ` +
+      `-vf "scale=1280:720:flags=lanczos,fade=t=in:st=0:d=${FADE},fade=t=out:st=${fadeOutStart}:d=${FADE}" ` +
+      `-t ${dur.toFixed(3)} -c:v libx264 -preset slow -crf 18 -pix_fmt yuv420p "${seg}"`,
+      { stdio: 'pipe' }
+    );
+    segPaths.push(seg);
+    log(`   ✓ seg-${i}.mp4 (${dur.toFixed(1)}s)`);
+  }
+
+  // 6b: concat into slideshow
+  const concatFile    = path.join(TEMP_DIR, 'concat.txt');
+  fs.writeFileSync(concatFile, segPaths.map(p => `file '${p.replace(/'/g,"'\\''")}'`).join('\n') + '\n');
+
+  const slideshowPath = path.join(TEMP_DIR, 'slideshow.mp4');
+  execSync(
+    `"${ffmpegBin}" -y -f concat -safe 0 -i "${concatFile}" -c copy "${slideshowPath}"`,
+    { stdio: 'pipe' }
+  );
+  log('   ✓ slideshow.mp4 assembled');
+
+  log(`   PIP Mode: ${pipMode}`);
+
+  // 6c: final composite
+  if (pipMode === 'none') {
+    log('   Rendering without PIP overlay (audio from HeyGen)…');
+    const filterComplex = ctaExists
+      ? [
+          '[0:v]scale=1280:720:flags=lanczos[bg]',
+          `[bg][1:v]overlay=0:440:enable='between(t,${ctaStart.toFixed(2)},${ctaEnd.toFixed(2)})'[outv]`,
+        ].join(';')
+      : '[0:v]scale=1280:720:flags=lanczos[outv]';
+
+    const inputs = ctaExists
+      ? ['-i', slideshowPath, '-i', ctaOverlayPath]
+      : ['-i', slideshowPath];
+
+    await runFFmpeg([
+      '-y',
+      ...inputs,
+      '-i', heygenPath,
+      '-filter_complex', filterComplex,
+      '-map', '[outv]',
+      '-map', `${inputs.length / 2}:a`,
+      '-c:v', 'libx264', '-crf', '18', '-preset', 'slow', '-pix_fmt', 'yuv420p',
+      '-c:a', 'aac', '-b:a', '192k',
+      '-shortest', outPath,
+    ]);
+    log(`   ✓ ${path.basename(outPath)} written`);
+    return;
+  }
+
+  // Build PIP enable + optional fade
+  const pipEnable  = getPIPFilter(totalDuration, pipMode, introDur, outroDur);
+  const pipFade    = getPIPWithFade(pipMode, introDur, outroStart, totalDuration);
+  const pipOverlay = pipEnable
+    ? `overlay=W-w-20:H-h-20:${pipEnable}`
+    : `overlay=W-w-20:H-h-20`;
+  const avSrc      = pipFade ? '[av_faded]' : '[av_bordered]';
+
+  if (pipMode === 'intro_only') {
+    log(`   PIP visible: 0s → ${introDur}s`);
+  } else if (pipMode === 'outro_only') {
+    log(`   PIP visible: ${outroStart.toFixed(0)}s → ${totalDuration.toFixed(0)}s`);
+  } else if (pipMode === 'intro_outro') {
+    log(`   PIP visible: 0s → ${introDur}s AND ${outroStart.toFixed(0)}s → ${totalDuration.toFixed(0)}s`);
+  } else {
+    log('   PIP visible: entire video');
+  }
+
+  const pipChain = [
+    '[1:v]scale=320:-2:flags=lanczos[av_scaled]',
+    '[av_scaled]pad=iw+6:ih+6:3:3:color=white[av_bordered]',
+    ...(pipFade ? [pipFade] : []),
+  ];
+
+  let filterComplex, inputs;
+
+  if (ctaExists) {
+    filterComplex = [
+      '[0:v]scale=1280:720:flags=lanczos[bg]',
+      ...pipChain,
+      `[bg]${avSrc}${pipOverlay}[with_pip]`,
+      `[with_pip][2:v]overlay=0:440:enable='between(t,${ctaStart.toFixed(2)},${ctaEnd.toFixed(2)})'[outv]`,
+    ].join(';');
+    inputs = ['-i', slideshowPath, '-i', heygenPath, '-i', ctaOverlayPath];
+  } else {
+    filterComplex = [
+      '[0:v]scale=1280:720:flags=lanczos[bg]',
+      ...pipChain,
+      `[bg]${avSrc}${pipOverlay}[outv]`,
+    ].join(';');
+    inputs = ['-i', slideshowPath, '-i', heygenPath];
+  }
+
+  await runFFmpeg([
+    '-y',
+    ...inputs,
+    '-filter_complex', filterComplex,
+    '-map', '[outv]',
+    '-map', '1:a',
+    '-c:v', 'libx264', '-crf', '18', '-preset', 'slow', '-pix_fmt', 'yuv420p',
+    '-c:a', 'aac', '-b:a', '192k',
+    '-shortest', outPath,
+  ]);
 
   log(`   ✓ ${path.basename(outPath)} written`);
 }
