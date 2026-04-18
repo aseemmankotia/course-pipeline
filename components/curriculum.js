@@ -11,6 +11,37 @@ const DEPTH_COUNTS = {
   'Deep dive (12-15 chapters)':       13,
 };
 
+const PROMPT_PRESETS = {
+  default: {
+    name: 'Standard Course',
+    badge: 'Default',
+    description: 'Balanced mix of theory and practice. Good for general learning.',
+    features: ['📊 Theory + Practice', '⏱️ 20-25 min chapters', '🎯 General audience'],
+    file: null,
+  },
+  certification: {
+    name: 'Certification Fast Track',
+    badge: '🏆 Exam Prep',
+    description: 'Zero fluff. Direct content. Practical labs. Exam questions. Built to pass on first attempt.',
+    features: ['🎯 Exam-focused', '⚡ No fluff', '🔬 Practical labs', '📝 Exam questions'],
+    file: 'prompts/certification-course-prompt.md',
+  },
+  'quick-start': {
+    name: 'Quick Start Guide',
+    badge: '⚡ Fast',
+    description: 'Get something working as fast as possible. Zero theory until after first example.',
+    features: ['⚡ Action-first', '⏱️ 10-15 min chapters', '🛠️ Hands-on immediately'],
+    file: 'prompts/quick-start-prompt.md',
+  },
+  'deep-dive': {
+    name: 'Deep Dive',
+    badge: '🔬 Advanced',
+    description: 'For experienced engineers. Focus on architecture decisions, trade-offs, edge cases.',
+    features: ['🏗️ Architecture focus', '⚙️ Trade-offs', '🔬 Edge cases', '👩‍💻 Senior level'],
+    file: 'prompts/deep-dive-prompt.md',
+  },
+};
+
 // ── Public render ─────────────────────────────────────────────────────────────
 
 export function renderCurriculum(container, onReady) {
@@ -136,6 +167,54 @@ Example:
         </div>
       </div>
 
+      <!-- ── Prompt / Teaching Style selector ───────────────────────────────── -->
+      <div class="form-group" style="margin-bottom:20px;">
+        <label style="margin-bottom:10px;display:block;">Course Prompt / Teaching Style</label>
+        <div class="prompt-presets" id="cv-prompt-presets">
+          <button class="preset-pill active" data-prompt="default">📚 Standard</button>
+          <button class="preset-pill" data-prompt="certification">🏆 Certification Fast Track</button>
+          <button class="preset-pill" data-prompt="quick-start">⚡ Quick Start</button>
+          <button class="preset-pill" data-prompt="deep-dive">🔬 Deep Dive</button>
+        </div>
+
+        <div class="prompt-description" id="promptDescription">
+          <div class="prompt-meta">
+            <span class="prompt-name">Standard Course</span>
+            <span class="prompt-badge">Default</span>
+          </div>
+          <p class="prompt-desc">Balanced mix of theory and practice. Good for general learning.</p>
+          <div class="prompt-features">
+            <span>📊 Theory + Practice</span>
+            <span>⏱️ 20-25 min chapters</span>
+            <span>🎯 General audience</span>
+          </div>
+        </div>
+
+        <div class="custom-prompt-section">
+          <label class="upload-label" style="font-size:.82rem;color:var(--muted);margin-bottom:6px;display:block;">
+            Or upload custom prompt file (.md):
+          </label>
+          <div class="file-drop-zone" id="promptDropZone">
+            <input type="file" id="promptFileInput" accept=".md,.txt" style="display:none">
+            <div class="drop-content" onclick="document.getElementById('promptFileInput').click()">
+              <span class="drop-icon">📄</span>
+              <span class="drop-text">Drop prompt file here or click to browse</span>
+              <span class="drop-hint">Supports .md and .txt files</span>
+            </div>
+          </div>
+          <div id="loadedPromptInfo" style="display:none;">
+            <div class="loaded-prompt-card">
+              <span class="loaded-icon">✅</span>
+              <div class="loaded-details">
+                <div class="loaded-name" id="loadedPromptName"></div>
+                <div class="loaded-desc" id="loadedPromptDesc"></div>
+              </div>
+              <button id="clearCustomPromptBtn" class="clear-btn">✕</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="btn-group">
         <button class="btn btn-primary" id="cv-generate-btn">✨ Generate Curriculum</button>
         <button class="btn btn-secondary" id="cv-load-btn" title="Load last saved curriculum">📂 Load Saved</button>
@@ -239,6 +318,82 @@ Example:
         font-size: .72rem;
         margin: 1px 2px;
       }
+      .prompt-presets { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
+      .preset-pill {
+        padding: 8px 16px;
+        border-radius: 20px;
+        border: 1.5px solid var(--border);
+        background: var(--surface);
+        color: var(--muted);
+        font-size: .82rem;
+        cursor: pointer;
+        transition: all .15s;
+        font-family: 'DM Sans', sans-serif;
+      }
+      .preset-pill:hover:not(.active) { border-color: var(--accent); color: var(--accent); }
+      .preset-pill.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+      .prompt-description {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 12px 16px;
+        margin-bottom: 12px;
+      }
+      .prompt-meta { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+      .prompt-name { font-weight:600; font-size:.88rem; color:var(--primary); }
+      .prompt-badge {
+        font-size: .72rem; padding: 2px 8px; border-radius: 10px;
+        background: #fde8ec; color: var(--accent); font-weight: 600;
+      }
+      .prompt-desc { font-size:.82rem; color:var(--muted); margin-bottom:8px; }
+      .prompt-features { display:flex; gap:12px; flex-wrap:wrap; }
+      .prompt-features span { font-size:.78rem; color:var(--muted); }
+      .file-drop-zone {
+        border: 2px dashed var(--border);
+        border-radius: 8px;
+        padding: 16px;
+        text-align: center;
+        cursor: pointer;
+        transition: all .15s;
+        margin-top: 8px;
+      }
+      .file-drop-zone:hover, .file-drop-zone.drag-over {
+        border-color: var(--accent);
+        background: #fde8ec20;
+      }
+      .drop-icon { font-size:20px; display:block; margin-bottom:4px; }
+      .drop-text { font-size:.82rem; color:var(--text); display:block; }
+      .drop-hint { font-size:.75rem; color:var(--muted); display:block; }
+      .loaded-prompt-card {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: #f0fdf4;
+        border: 1px solid #86efac;
+        border-radius: 8px;
+        padding: 10px 14px;
+        margin-top: 8px;
+      }
+      .loaded-name { font-weight:600; font-size:.85rem; color:#166534; }
+      .loaded-desc { font-size:.75rem; color:#16a34a; }
+      .clear-btn {
+        margin-left: auto; background: none; border: none;
+        color: var(--muted); cursor: pointer; font-size: 16px; padding: 0 4px;
+      }
+      .clear-btn:hover { color: var(--accent); }
+      .active-prompt-banner {
+        background: #fde8ec;
+        border: 1px solid #f5c0cb;
+        border-radius: 6px;
+        padding: 6px 12px;
+        font-size: .8rem;
+        color: var(--accent);
+        margin-bottom: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .active-prompt-banner a { color: var(--accent); font-weight: 600; }
     </style>
   `;
 
@@ -268,6 +423,100 @@ Example:
   // Auto-fetch exam topics
   container.querySelector('#cv-fetch-topics-btn').addEventListener('click', () =>
     fetchExamTopics(container));
+
+  // ── Prompt preset pills ──────────────────────────────────────────────────────
+  const savedPreset = localStorage.getItem('course_active_preset') || 'default';
+  updatePresetUI(container, savedPreset);
+
+  container.querySelectorAll('.preset-pill').forEach(pill => {
+    pill.addEventListener('click', async () => {
+      const key = pill.dataset.prompt;
+      localStorage.setItem('course_active_preset', key);
+      localStorage.removeItem('course_custom_prompt');
+      localStorage.removeItem('course_custom_prompt_name');
+      localStorage.removeItem('course_custom_prompt_desc');
+      container.querySelector('#loadedPromptInfo').style.display = 'none';
+      container.querySelector('#promptFileInput').value = '';
+
+      if (key !== 'default' && PROMPT_PRESETS[key]?.file) {
+        try {
+          const resp = await fetch(PROMPT_PRESETS[key].file);
+          if (resp.ok) {
+            localStorage.setItem('course_active_preset_text', await resp.text());
+          } else {
+            localStorage.removeItem('course_active_preset_text');
+          }
+        } catch { localStorage.removeItem('course_active_preset_text'); }
+      } else {
+        localStorage.removeItem('course_active_preset_text');
+      }
+
+      updatePresetUI(container, key);
+    });
+  });
+
+  // Restore custom prompt display if one was previously loaded
+  const customName = localStorage.getItem('course_custom_prompt_name');
+  const customDesc = localStorage.getItem('course_custom_prompt_desc');
+  if (localStorage.getItem('course_custom_prompt') && customName) {
+    container.querySelector('#loadedPromptInfo').style.display = 'block';
+    container.querySelector('#loadedPromptName').textContent = customName;
+    container.querySelector('#loadedPromptDesc').textContent = customDesc || '';
+    container.querySelectorAll('.preset-pill').forEach(p => p.classList.remove('active'));
+  }
+
+  // File upload handler
+  container.querySelector('#promptFileInput').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const text = await file.text();
+    const nameMatch = text.match(/name:\s*"([^"]+)"/);
+    const descMatch = text.match(/description:\s*"([^"]+)"/);
+    const promptName = nameMatch ? nameMatch[1] : file.name;
+    const promptDesc = descMatch ? descMatch[1] : 'Custom prompt file loaded';
+
+    localStorage.setItem('course_custom_prompt', text);
+    localStorage.setItem('course_custom_prompt_name', promptName);
+    localStorage.setItem('course_custom_prompt_desc', promptDesc);
+    localStorage.setItem('course_active_preset', 'custom');
+    localStorage.removeItem('course_active_preset_text');
+
+    container.querySelectorAll('.preset-pill').forEach(p => p.classList.remove('active'));
+    container.querySelector('#loadedPromptInfo').style.display = 'block';
+    container.querySelector('#loadedPromptName').textContent = promptName;
+    container.querySelector('#loadedPromptDesc').textContent = promptDesc;
+    cvShowToast(container, `✅ Prompt loaded: ${promptName}`);
+  });
+
+  // Drag and drop
+  const dropZone = container.querySelector('#promptDropZone');
+  dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      const input = container.querySelector('#promptFileInput');
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      input.files = dt.files;
+      input.dispatchEvent(new Event('change'));
+    }
+  });
+
+  // Clear custom prompt
+  container.querySelector('#clearCustomPromptBtn').addEventListener('click', () => {
+    localStorage.removeItem('course_custom_prompt');
+    localStorage.removeItem('course_custom_prompt_name');
+    localStorage.removeItem('course_custom_prompt_desc');
+    localStorage.removeItem('course_active_preset_text');
+    localStorage.setItem('course_active_preset', 'default');
+    container.querySelector('#loadedPromptInfo').style.display = 'none';
+    container.querySelector('#promptFileInput').value = '';
+    updatePresetUI(container, 'default');
+    cvShowToast(container, 'Custom prompt cleared');
+  });
 
   container.querySelector('#cv-generate-btn').addEventListener('click', () =>
     generate(container, () => activeCourseType, onReady));
@@ -417,6 +666,25 @@ async function generate(container, getCourseType, onReady) {
 
   const prompt = buildCurriculumPrompt(courseType, topic, audience, prereqs, chapterCount, examTopics, customSyllabus, coveragePriority);
 
+  const activePromptText = getActiveSystemPrompt();
+  const defaultSystemPrompt = `You are an expert curriculum designer for online tech courses. Design comprehensive, well-structured courses.
+
+Today's date: ${dateStr}
+
+Design principles:
+- Each chapter builds on the previous
+- Balance theory with hands-on practice (60/40 split)
+- Include real-world examples and analogies
+- Every chapter ends with a mini-project or exercise
+- Use progressive complexity (easy wins early)
+- Chapter titles should be engaging, not dry
+
+Return ONLY valid JSON. No markdown fences, no extra text.`;
+
+  const systemPrompt = activePromptText
+    ? activePromptText + '\n\n---\n\n' + defaultSystemPrompt
+    : defaultSystemPrompt;
+
   try {
     const res = await fetchWithRetry('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -431,19 +699,7 @@ async function generate(container, getCourseType, onReady) {
         model: 'claude-opus-4-5',
         max_tokens: 8000,
         tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-        system: `You are an expert curriculum designer for online tech courses. Design comprehensive, well-structured courses.
-
-Today's date: ${dateStr}
-
-Design principles:
-- Each chapter builds on the previous
-- Balance theory with hands-on practice (60/40 split)
-- Include real-world examples and analogies
-- Every chapter ends with a mini-project or exercise
-- Use progressive complexity (easy wins early)
-- Chapter titles should be engaging, not dry
-
-Return ONLY valid JSON. No markdown fences, no extra text.`,
+        system: systemPrompt,
         messages: [{ role: 'user', content: prompt }],
       }),
     }, statusEl);
@@ -900,6 +1156,44 @@ async function fetchWithRetry(url, opts, statusEl) {
     }
   }
   return fetch(url, opts);
+}
+
+// ── Prompt helpers ────────────────────────────────────────────────────────────
+
+function getActiveSystemPrompt() {
+  const custom = localStorage.getItem('course_custom_prompt');
+  if (custom) return custom;
+  return localStorage.getItem('course_active_preset_text') || '';
+}
+
+function updatePresetUI(container, activeKey) {
+  const preset = PROMPT_PRESETS[activeKey] || PROMPT_PRESETS.default;
+
+  container.querySelectorAll('.preset-pill').forEach(p => {
+    p.classList.toggle('active', p.dataset.prompt === activeKey);
+  });
+
+  const descEl = container.querySelector('#promptDescription');
+  if (descEl) {
+    descEl.innerHTML = `
+      <div class="prompt-meta">
+        <span class="prompt-name">${preset.name}</span>
+        <span class="prompt-badge">${preset.badge}</span>
+      </div>
+      <p class="prompt-desc">${preset.description}</p>
+      <div class="prompt-features">
+        ${(preset.features || []).map(f => `<span>${f}</span>`).join('')}
+      </div>
+    `;
+  }
+}
+
+function cvShowToast(container, message) {
+  const statusEl = container.querySelector('#cv-status');
+  if (!statusEl) return;
+  const prev = statusEl.innerHTML;
+  statusEl.innerHTML = `<div class="status-bar info">${esc(message)}</div>`;
+  setTimeout(() => { statusEl.innerHTML = prev; }, 2500);
 }
 
 const delay = ms => new Promise(r => setTimeout(r, ms));

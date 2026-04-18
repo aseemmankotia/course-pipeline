@@ -150,6 +150,15 @@ function loadChapter(container, cur, n, autoGenerate) {
         👁 Showing cleaned version — as HeyGen will speak it
       </div>
 
+      ${(() => {
+        const presetName = getActivePresetName();
+        return presetName ? `
+          <div class="active-prompt-banner" id="active-prompt-banner">
+            🎯 Using: ${esc(presetName)} prompt
+            <a href="#" id="change-prompt-link">Change</a>
+          </div>` : '';
+      })()}
+
       <textarea class="script-editor" id="script-textarea"
         placeholder="Script will appear here after generation…">${esc(saved?.script || '')}</textarea>
 
@@ -196,6 +205,12 @@ function loadChapter(container, cur, n, autoGenerate) {
   `;
 
   // ── Wire up all controls ──────────────────────────────────────────────────
+
+  // Active prompt banner — "Change" link switches to Curriculum tab
+  editorEl.querySelector('#change-prompt-link')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    document.querySelector('[data-tab="curriculum"]')?.click();
+  });
 
   const textarea      = editorEl.querySelector('#script-textarea');
   const wordCount     = editorEl.querySelector('#word-count');
@@ -653,6 +668,12 @@ IMPORTANT:
 - Always address the viewer as you`;
   }
 
+  // Resolve active system prompt (from preset or custom file)
+  const activeFullPrompt = getActiveSystemPrompt();
+  const activeScriptSystemPrompt = activeFullPrompt
+    ? (extractScriptPrompt(activeFullPrompt) || activeFullPrompt)
+    : null;
+
   genBtn.disabled = true;
   genBtn.innerHTML = '<span class="loader"></span><span>Generating…</span>';
   scriptStatus.innerHTML = `<div class="status-bar info"><span class="loader"></span> Writing script for Chapter ${ch.number}…</div>`;
@@ -663,7 +684,7 @@ IMPORTANT:
   }, 2000);
 
   try {
-    const script = await generateFullScript(userMsg, claudeApiKey, maxTokens);
+    const script = await generateFullScript(userMsg, claudeApiKey, maxTokens, activeScriptSystemPrompt);
 
     textarea.value = script;
     wordCount.textContent = wordCountLabel(script);
@@ -694,6 +715,33 @@ IMPORTANT:
     genBtn.disabled = false;
     genBtn.innerHTML = '🔄 Regenerate Script';
   }
+}
+
+// ── Prompt helpers ────────────────────────────────────────────────────────────
+
+function getActiveSystemPrompt() {
+  const custom = localStorage.getItem('course_custom_prompt');
+  if (custom) return custom;
+  return localStorage.getItem('course_active_preset_text') || '';
+}
+
+function extractScriptPrompt(fullPrompt) {
+  // Extract content between ``` fences under "# SCRIPT GENERATION PROMPT"
+  const match = fullPrompt.match(/# SCRIPT GENERATION PROMPT[\s\S]*?```([\s\S]*?)```/);
+  return match ? match[1].trim() : null;
+}
+
+function getActivePresetName() {
+  const customName = localStorage.getItem('course_custom_prompt_name');
+  if (customName) return customName;
+  const preset = localStorage.getItem('course_active_preset');
+  const names = {
+    default: null,
+    certification: 'Certification Fast Track',
+    'quick-start': 'Quick Start Guide',
+    'deep-dive': 'Deep Dive',
+  };
+  return names[preset] || null;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

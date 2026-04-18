@@ -238,7 +238,7 @@ The script MUST end with:
 
 If you are running long, condense the middle sections rather than omitting the ending.`;
 
-export async function generateFullScript(userMsg, apiKey, maxTokens) {
+export async function generateFullScript(userMsg, apiKey, maxTokens, customSystemPrompt) {
   let fullScript = '';
   let continueGenerating = true;
   let attempt = 0;
@@ -269,7 +269,7 @@ export async function generateFullScript(userMsg, apiKey, maxTokens) {
       body: JSON.stringify({
         model: 'claude-opus-4-5',
         max_tokens: maxTokens,
-        system: CHAPTER_SYSTEM_PROMPT,
+        system: customSystemPrompt || CHAPTER_SYSTEM_PROMPT,
         messages,
       }),
     });
@@ -310,7 +310,7 @@ export async function generateFullScript(userMsg, apiKey, maxTokens) {
       body: JSON.stringify({
         model: 'claude-opus-4-5',
         max_tokens: 1000,
-        system: CHAPTER_SYSTEM_PROMPT,
+        system: customSystemPrompt || CHAPTER_SYSTEM_PROMPT,
         messages: [
           { role: 'user', content: userMsg },
           { role: 'assistant', content: fullScript },
