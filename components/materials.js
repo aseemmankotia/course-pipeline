@@ -30,6 +30,16 @@ const PTKEYS = {
 const STATUS = { none:'⬜', generating:'🔄', ready:'✅' };
 
 async function callClaude(apiKey, { system, user, maxTokens = 2500 }) {
+  if (typeof window.callAI === 'function') {
+    const result = await window.callAI({
+      prompt:       user,
+      systemPrompt: system,
+      maxTokens,
+      action:       'materials_gen',
+    });
+    return result.text;
+  }
+  // Fallback: direct Anthropic call (ai-client.js not loaded)
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -61,8 +71,8 @@ function parseJSON(text) {
 
 function getApiKey() {
   const s = getSettings();
-  if (!s.claudeApiKey) throw new Error('Claude API key not set — add it in ⚙ Settings.');
-  return s.claudeApiKey;
+  if (!s.claudeApiKey && !s.geminiApiKey) throw new Error('API key not set — add Anthropic or Gemini key in ⚙ Settings.');
+  return s.claudeApiKey || '';
 }
 
 // ── Public render ─────────────────────────────────────────────────────────────

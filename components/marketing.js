@@ -15,6 +15,16 @@ function lset(key, v) { localStorage.setItem(key, typeof v === 'string' ? v : JS
 function lgetJSON(key) { try { return JSON.parse(lget(key)); } catch { return null; } }
 
 async function callClaude(apiKey, { system, user, maxTokens = 1800 }) {
+  if (typeof window.callAI === 'function') {
+    const result = await window.callAI({
+      prompt:       user,
+      systemPrompt: system,
+      maxTokens,
+      action:       'marketing_gen',
+    });
+    return result.text;
+  }
+  // Fallback: direct Anthropic call (ai-client.js not loaded)
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {

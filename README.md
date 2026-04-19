@@ -31,7 +31,23 @@ Open `index.html` in a browser (or `npm start` on Mac).
 - **Browser**: Chrome/Edge/Firefox (ES modules, localStorage)
 - **Node.js** ≥ 18: for rendering chapters
 - **ffmpeg**: `brew install ffmpeg`
-- **Anthropic API key**: for curriculum + script generation
+- **Anthropic API key**: for curriculum + script generation (primary)
+- **Google Gemini API key**: optional fallback (free tier available)
+
+## AI Provider Setup
+
+The pipeline uses **Claude (Anthropic)** as the primary AI for curriculum design, script generation, materials, and marketing. When Claude hits a credit or balance error, **Gemini Flash (Google)** is used automatically — no manual intervention needed.
+
+### Anthropic (Claude) — primary
+1. Sign up at [console.anthropic.com](https://console.anthropic.com)
+2. Create an API key → paste into ⚙️ Settings → **Anthropic API Key**
+
+### Google Gemini — fallback
+1. Get a free key at [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey)
+2. Paste into ⚙️ Settings → **Google Gemini API Key**
+3. Gemini Flash activates automatically on Anthropic balance/credit errors, or if no Claude key is configured
+
+Click **🤖 Test AI providers** in Settings to verify both keys are working.
 
 ## Rendering a Chapter
 

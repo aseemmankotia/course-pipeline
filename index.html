@@ -27,6 +27,11 @@
       <button class="tab-btn"        data-tab="materials">📚 Materials</button>
       <button class="tab-btn"        data-tab="settings">⚙️ Settings</button>
     </div>
+    <span id="aiCostDisplay"
+      style="font-size:0.75rem;color:var(--muted,#888);padding:3px 10px;
+             background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
+             border-radius:6px;white-space:nowrap;margin-left:12px;"
+      title="Session AI cost (Anthropic + Gemini)">AI: $0.0000</span>
   </nav>
 
   <!-- ── Tab panels ─────────────────────────────────────────────────────────── -->
@@ -42,6 +47,7 @@
 
   </main>
 
+  <script src="js/ai-client.js"></script>
   <script type="module" src="app.js"></script>
 </body>
 </html>

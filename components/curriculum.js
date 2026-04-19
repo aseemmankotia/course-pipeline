@@ -548,8 +548,8 @@ async function fetchExamTopics(container) {
     return;
   }
 
-  const { claudeApiKey } = getSettings();
-  if (!claudeApiKey) {
+  const { claudeApiKey, geminiApiKey } = getSettings();
+  if (!claudeApiKey && !geminiApiKey) {
     fetchStatus.textContent = '⚠ API key missing — add it in ⚙ Settings.';
     return;
   }
@@ -558,20 +558,10 @@ async function fetchExamTopics(container) {
   fetchStatus.textContent = '🔍 Searching…';
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': claudeApiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-beta': 'web-search-2025-03-05',
-        'anthropic-dangerous-direct-browser-access': 'true',
-      },
-      body: JSON.stringify({
-        model: 'claude-opus-4-5',
-        max_tokens: 2000,
-        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-        system: `Search for the official exam objectives/topics for the specified certification.
+    const result = await window.callAI({
+      prompt: `Find the official exam topics/domains for: ${certName}
+Search the official certification page and return all exam objectives.`,
+      systemPrompt: `Search for the official exam objectives/topics for the specified certification.
 Return ONLY the official exam domains and topics as a clean structured list.
 Format as:
 Domain 1: [Name] (X-Y%)
@@ -581,17 +571,11 @@ Domain 2: [Name] (X-Y%)
 • Topic 1
 etc.
 No other text.`,
-        messages: [{
-          role: 'user',
-          content: `Find the official exam topics/domains for: ${certName}
-Search the official certification page and return all exam objectives.`,
-        }],
-      }),
+      maxTokens:         2000,
+      requiresWebSearch: true,
+      action:            'exam_topics_fetch',
     });
-
-    const data = await res.json();
-    const textBlocks = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
-    container.querySelector('#cv-exam-topics').value = textBlocks.trim();
+    container.querySelector('#cv-exam-topics').value = result.text.trim();
     fetchStatus.textContent = '✅ Fetched!';
     setTimeout(() => { fetchStatus.textContent = ''; }, 3000);
   } catch (e) {
@@ -645,9 +629,9 @@ async function generate(container, getCourseType, onReady) {
     }
   }
 
-  const { claudeApiKey } = getSettings();
-  if (!claudeApiKey) {
-    statusEl.innerHTML = `<div class="status-bar error">Anthropic API key missing — add it in ⚙ Settings.</div>`;
+  const { claudeApiKey, geminiApiKey } = getSettings();
+  if (!claudeApiKey && !geminiApiKey) {
+    statusEl.innerHTML = `<div class="status-bar error">API key missing — add Anthropic or Gemini key in ⚙ Settings.</div>`;
     return;
   }
 
@@ -686,34 +670,15 @@ Return ONLY valid JSON. No markdown fences, no extra text.`;
     : defaultSystemPrompt;
 
   try {
-    const res = await fetchWithRetry('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': claudeApiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-beta': 'web-search-2025-03-05',
-        'anthropic-dangerous-direct-browser-access': 'true',
-      },
-      body: JSON.stringify({
-        model: 'claude-opus-4-5',
-        max_tokens: 8000,
-        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-        system: systemPrompt,
-        messages: [{ role: 'user', content: prompt }],
-      }),
-    }, statusEl);
+    const result = await window.callAI({
+      prompt:            prompt,
+      systemPrompt,
+      maxTokens:         8000,
+      requiresWebSearch: true,
+      action:            'curriculum_generation',
+    });
 
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(`Claude API error (${res.status}): ${err?.error?.message || res.statusText}`);
-    }
-
-    const data = await res.json();
-    const textBlocks = (data.content || []).filter(b => b.type === 'text');
-    if (!textBlocks.length) throw new Error('No response from Claude. Please try again.');
-
-    const fullText = textBlocks.map(b => b.text).join('\n\n');
+    const fullText = result.text;
     const clean = fullText.replace(/```json|```/g, '').trim();
     const jsonMatch = clean.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error('Could not find JSON in response.');
@@ -906,11 +871,11 @@ function showCurriculum(container, cur, onReady) {
   container.querySelector('#gen-all-btn').addEventListener('click', async () => {
     const genAllBtn  = container.querySelector('#gen-all-btn');
     const progressEl = container.querySelector('#batch-gen-progress');
-    const { claudeApiKey } = getSettings();
+    const { claudeApiKey, geminiApiKey } = getSettings();
 
-    if (!claudeApiKey) {
+    if (!claudeApiKey && !geminiApiKey) {
       progressEl.style.display = 'block';
-      progressEl.innerHTML = `<div class="status-bar error">API key missing — add it in ⚙ Settings.</div>`;
+      progressEl.innerHTML = `<div class="status-bar error">API key missing — add Anthropic or Gemini key in ⚙ Settings.</div>`;
       return;
     }
 

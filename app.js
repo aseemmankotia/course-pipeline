@@ -67,12 +67,27 @@ function renderSettings(container) {
       <h2>⚙️ Settings</h2>
 
       <div class="settings-section">
-        <div class="settings-label">🤖 Claude (Anthropic)</div>
-        <div class="form-row single">
+        <div class="settings-label">🤖 AI Providers</div>
+        <p style="font-size:.82rem;color:var(--muted);margin:4px 0 12px;">
+          Claude (Anthropic) is the primary AI. When Claude hits a credit/balance error,
+          Gemini Flash is used automatically as a fallback.
+        </p>
+        <div class="form-row">
           <div class="form-group">
-            <label>API Key</label>
+            <label>Anthropic API Key <span style="font-size:.75rem;color:var(--muted);">(primary)</span></label>
             <input type="password" id="st-claude-key" placeholder="sk-ant-..." value="${esc(s.claudeApiKey || '')}" />
           </div>
+          <div class="form-group">
+            <label>Google Gemini API Key <span style="font-size:.75rem;color:var(--muted);">(fallback)</span></label>
+            <input type="password" id="st-gemini-key" placeholder="AIza…" value="${esc(s.geminiApiKey || '')}" />
+            <div style="font-size:.76rem;color:var(--muted);margin-top:4px;">
+              Free key at <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--accent);">aistudio.google.com</a>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:8px;flex-wrap:wrap;">
+          <button class="btn btn-secondary" id="st-ai-test-btn" style="font-size:.82rem;padding:5px 14px;">🤖 Test AI providers</button>
+          <span id="st-ai-test-status" style="font-size:.82rem;color:var(--muted);"></span>
         </div>
       </div>
 
@@ -188,9 +203,65 @@ function renderSettings(container) {
     </div>
   `;
 
+  container.querySelector('#st-ai-test-btn').addEventListener('click', async () => {
+    const btn      = container.querySelector('#st-ai-test-btn');
+    const statusEl = container.querySelector('#st-ai-test-status');
+    btn.disabled   = true;
+    btn.textContent = 'Testing…';
+    statusEl.textContent = '';
+
+    const claudeKey  = container.querySelector('#st-claude-key').value.trim();
+    const geminiKey  = container.querySelector('#st-gemini-key').value.trim();
+    const results    = [];
+
+    if (claudeKey) {
+      try {
+        const res = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': claudeKey,
+            'anthropic-version': '2023-06-01',
+            'anthropic-dangerous-direct-browser-access': 'true',
+          },
+          body: JSON.stringify({
+            model: 'claude-haiku-4-5-20251001',
+            max_tokens: 16,
+            messages: [{ role: 'user', content: 'Say "ok".' }],
+          }),
+        });
+        results.push(res.ok ? '✅ Claude' : `❌ Claude (${res.status})`);
+      } catch { results.push('❌ Claude (network error)'); }
+    } else {
+      results.push('⬜ Claude (no key)');
+    }
+
+    if (geminiKey) {
+      try {
+        const res = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: 'Say "ok".' }] }], generationConfig: { maxOutputTokens: 8 } }),
+          }
+        );
+        results.push(res.ok ? '✅ Gemini' : `❌ Gemini (${res.status})`);
+      } catch { results.push('❌ Gemini (network error)'); }
+    } else {
+      results.push('⬜ Gemini (no key)');
+    }
+
+    statusEl.textContent = results.join('  ·  ');
+    statusEl.style.color = results.some(r => r.startsWith('✅')) ? '#16a34a' : '#dc2626';
+    btn.disabled    = false;
+    btn.textContent = '🤖 Test AI providers';
+  });
+
   container.querySelector('#save-settings-btn').addEventListener('click', () => {
     const updated = {
       claudeApiKey:      container.querySelector('#st-claude-key').value.trim(),
+      geminiApiKey:      container.querySelector('#st-gemini-key').value.trim(),
       youtubeClientId:   container.querySelector('#st-yt-client-id').value.trim(),
       youtubeClientSecret: container.querySelector('#st-yt-client-secret').value.trim(),
       youtubeToken:      container.querySelector('#st-yt-token').value.trim(),
@@ -237,6 +308,41 @@ The script MUST end with:
 If you are running long, condense the middle sections rather than omitting the ending.`;
 
 export async function generateFullScript(userMsg, apiKey, maxTokens, customSystemPrompt) {
+  const systemPrompt = customSystemPrompt || CHAPTER_SYSTEM_PROMPT;
+
+  // Use window.callAI if available (handles Gemini fallback automatically)
+  if (typeof window.callAI === 'function') {
+    const result = await window.callAI({
+      prompt:       userMsg,
+      systemPrompt,
+      maxTokens:    maxTokens || 4096,
+      action:       'chapter_script',
+    });
+    let fullScript = result.text;
+
+    // If script was cut off (Gemini doesn't support multi-turn continuation),
+    // check for ending and append a closing if missing
+    const hasEnding =
+      fullScript.toLowerCase().includes('subscribe') ||
+      fullScript.toLowerCase().includes('next chapter') ||
+      fullScript.toLowerCase().includes('see you');
+
+    if (!hasEnding) {
+      try {
+        const closing = await window.callAI({
+          prompt: 'Complete the script now with just the closing recap, subscribe CTA, and sign-off. Keep it brief.',
+          systemPrompt,
+          maxTokens: 1000,
+          action:    'chapter_script_closing',
+        });
+        fullScript += '\n' + closing.text;
+      } catch { /* best-effort */ }
+    }
+
+    return fullScript;
+  }
+
+  // Fallback: direct Anthropic multi-turn loop (ai-client.js not loaded)
   let fullScript = '';
   let continueGenerating = true;
   let attempt = 0;
@@ -267,7 +373,7 @@ export async function generateFullScript(userMsg, apiKey, maxTokens, customSyste
       body: JSON.stringify({
         model: 'claude-opus-4-5',
         max_tokens: maxTokens,
-        system: customSystemPrompt || CHAPTER_SYSTEM_PROMPT,
+        system: systemPrompt,
         messages,
       }),
     });
@@ -308,7 +414,7 @@ export async function generateFullScript(userMsg, apiKey, maxTokens, customSyste
       body: JSON.stringify({
         model: 'claude-opus-4-5',
         max_tokens: 1000,
-        system: customSystemPrompt || CHAPTER_SYSTEM_PROMPT,
+        system: systemPrompt,
         messages: [
           { role: 'user', content: userMsg },
           { role: 'assistant', content: fullScript },
