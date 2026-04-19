@@ -1,7 +1,7 @@
 /**
  * materials.js — Tab 6: 📚 Course Materials
- * Per-chapter: practice questions, flashcards, code examples, cheat sheets.
- * Generates markdown files, previews them, and downloads as a ZIP.
+ * Practice tests, per-chapter: questions, flashcards, code, cheat sheets.
+ * Generates markdown, allows preview, ZIP download, and GitHub push.
  */
 
 import { getSettings, getCurriculum } from '../app.js';
@@ -20,6 +20,11 @@ const MKEYS = {
   flashcards: (id,n) => `course_materials_${id}_ch${n}_flashcards`,
   code:       (id,n) => `course_materials_${id}_ch${n}_code`,
   cheatsheet: (id,n) => `course_materials_${id}_ch${n}_cheatsheet`,
+};
+
+const PTKEYS = {
+  test:     (id, n) => `course_practice_test_${id}_${n}`,
+  attempts: (id, n) => `course_practice_test_attempts_${id}_${n}`,
 };
 
 const STATUS = { none:'⬜', generating:'🔄', ready:'✅' };
@@ -82,16 +87,18 @@ function mount(container) {
     return;
   }
 
-  const s = getSettings();
-  const lang = s.courseLanguage || 'Python';
-  const isCert = cur.course_type === 'certification';
+  const s        = getSettings();
+  const lang     = s.courseLanguage || 'Python';
+  const isCert   = cur.course_type === 'certification';
   const certName = cur.exam_name || '';
+  const pt1      = lgetJSON(PTKEYS.test(cur.id, 1));
+  const pt2      = lgetJSON(PTKEYS.test(cur.id, 2));
 
   const gridRows = cur.chapters.map(ch => {
-    const qDone  = !!lget(MKEYS.questions(cur.id, ch.number));
-    const fDone  = !!lget(MKEYS.flashcards(cur.id, ch.number));
-    const cDone  = !!lget(MKEYS.code(cur.id, ch.number));
-    const sDone  = !!lget(MKEYS.cheatsheet(cur.id, ch.number));
+    const qDone = !!lget(MKEYS.questions(cur.id, ch.number));
+    const fDone = !!lget(MKEYS.flashcards(cur.id, ch.number));
+    const cDone = !!lget(MKEYS.code(cur.id, ch.number));
+    const sDone = !!lget(MKEYS.cheatsheet(cur.id, ch.number));
     return `
       <tr class="mat-row" data-chapter="${ch.number}">
         <td class="mat-ch-name">
@@ -103,18 +110,20 @@ function mount(container) {
         <td class="mat-cell" id="mat-c-${ch.number}">${cDone ? STATUS.ready : STATUS.none}</td>
         <td class="mat-cell" id="mat-s-${ch.number}">${sDone ? STATUS.ready : STATUS.none}</td>
         <td class="mat-actions">
-          <button class="btn btn-outline btn-sm mat-gen-btn" data-chapter="${ch.number}" title="Generate all materials for this chapter">⚡ Generate</button>
-          <button class="btn btn-outline btn-sm mat-preview-btn" data-chapter="${ch.number}" title="Preview generated materials">👁 Preview</button>
+          <button class="btn btn-outline btn-sm mat-gen-btn" data-chapter="${ch.number}">⚡ Generate</button>
+          <button class="btn btn-outline btn-sm mat-preview-btn" data-chapter="${ch.number}">👁 Preview</button>
         </td>
       </tr>`;
   }).join('');
 
   container.innerHTML = `
+    ${renderPTPanel(cur, certName, pt1, pt2)}
+
     <div class="card">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
         <div>
-          <h2 style="margin-bottom:4px;">📚 Course Materials</h2>
-          <p style="color:var(--muted);font-size:.9rem;margin:0;">Generate supplementary materials for GitHub · <strong>${esc(lang)}</strong> code examples</p>
+          <h2 style="margin-bottom:4px;">📚 Chapter Materials</h2>
+          <p style="color:var(--muted);font-size:.9rem;margin:0;">Supplementary materials for GitHub · <strong>${esc(lang)}</strong> code examples</p>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
           <button class="btn btn-primary" id="mat-gen-all-btn">🚀 Generate All Materials</button>
@@ -126,7 +135,6 @@ function mount(container) {
       <div id="mat-status" style="margin-bottom:12px;"></div>
       <div id="mat-repo-link" style="display:none;margin-bottom:12px;"></div>
 
-      <!-- Progress grid -->
       <div class="mat-grid-wrap">
         <table class="mat-grid">
           <thead>
@@ -143,7 +151,6 @@ function mount(container) {
         </table>
       </div>
 
-      <!-- Preview panel -->
       <div id="mat-preview-panel" style="display:none;margin-top:20px;">
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
           <h3 id="mat-preview-title" style="margin:0;font-size:1rem;font-family:'Poppins',sans-serif;"></h3>
@@ -159,7 +166,6 @@ function mount(container) {
           background:var(--surface);color:var(--text);" readonly></textarea>
       </div>
 
-      <!-- README preview -->
       <div style="margin-top:20px;border-top:1px solid var(--border);padding-top:16px;">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
           <span style="font-weight:600;font-size:.9rem;">📄 README.md (auto-generated)</span>
@@ -169,6 +175,11 @@ function mount(container) {
           A professional README is included in the ZIP with course overview, how-to-use guide, and chapter video links.
         </p>
       </div>
+    </div>
+
+    <!-- Practice Test Full-screen Modal -->
+    <div id="pt-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9999;overflow-y:auto;padding:20px;">
+      <div id="pt-modal-inner" style="margin:0 auto;max-width:880px;background:var(--surface);border-radius:12px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.4);"></div>
     </div>
 
     <style>
@@ -186,49 +197,697 @@ function mount(container) {
       .mat-ch-title { font-size:.85rem; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
       .mat-actions { display:flex; gap:6px; justify-content:flex-end; white-space:nowrap; }
       .mat-gen-btn, .mat-preview-btn { font-size:.78rem !important; }
+      /* Practice Test Card */
+      .pt-test-card { flex:1; min-width:220px; border:1.5px solid var(--border); border-radius:10px; padding:16px; background:var(--surface2); }
+      .pt-test-card.has-test { border-color:#16a34a; }
+      /* Practice Test Modal */
+      .pt-q-block { padding:20px 24px; border-bottom:1px solid var(--border); }
+      .pt-q-block:last-child { border-bottom:none; }
+      .pt-option { display:flex; align-items:flex-start; gap:10px; padding:10px 14px; margin:6px 0;
+        border:1.5px solid var(--border); border-radius:8px; cursor:pointer; transition:all .15s; }
+      .pt-option:hover { border-color:var(--accent); background:#fde8ec10; }
+      .pt-option.selected { border-color:var(--accent); background:#fde8ec20; }
+      .pt-option.correct-answer { border-color:#16a34a !important; background:#f0fdf4 !important; }
+      .pt-option.wrong-answer { border-color:#dc2626 !important; background:#fef2f2 !important; }
+      .pt-explanation { margin-top:12px; padding:12px; background:var(--surface2); border-radius:8px; font-size:.85rem; line-height:1.6; display:none; }
     </style>
   `;
 
-  // Wire buttons
+  // ── Wire practice test buttons ───────────────────────────────────────────────
+  container.querySelector('#pt-gen-both-btn')?.addEventListener('click', () => genBothPracticeTests(container, cur, certName));
+  container.querySelector('#pt-gen-1-btn')?.addEventListener('click', () => genOnePracticeTest(container, cur, certName, 1));
+  container.querySelector('#pt-gen-2-btn')?.addEventListener('click', () => genOnePracticeTest(container, cur, certName, 2));
+  for (let t = 1; t <= 2; t++) {
+    container.querySelector(`#pt-preview-${t}`)?.addEventListener('click', () => {
+      const test = lgetJSON(PTKEYS.test(cur.id, t));
+      if (test) showPTModal(container, cur, test);
+    });
+    container.querySelector(`#pt-download-${t}`)?.addEventListener('click', () => downloadPracticeTest(cur, t));
+    container.querySelector(`#pt-push-${t}`)?.addEventListener('click', () => pushPracticeTest(container, cur, t));
+  }
+  container.querySelector('#pt-modal')?.addEventListener('click', e => {
+    if (e.target.id === 'pt-modal') e.target.style.display = 'none';
+  });
+
+  // ── Wire chapter material buttons ────────────────────────────────────────────
   container.querySelector('#mat-gen-all-btn').addEventListener('click', () => genAll(container, cur, lang, isCert, certName));
   container.querySelector('#mat-zip-btn').addEventListener('click', () => downloadZip(container, cur));
   container.querySelector('#mat-github-btn').addEventListener('click', () => pushToGitHub(container, cur));
   container.querySelector('#mat-readme-preview-btn').addEventListener('click', () => showPreview(container, 'README.md', generateReadme(cur), 'README.md'));
-
-  // Restore published repo link if it exists
-  const savedRepoUrl = lget(`course_github_url_${cur.id}`);
-  if (savedRepoUrl) showRepoLink(container, savedRepoUrl);
   container.querySelector('#mat-preview-close').addEventListener('click', () => {
     container.querySelector('#mat-preview-panel').style.display = 'none';
   });
+  const savedRepoUrl = lget(`course_github_url_${cur.id}`);
+  if (savedRepoUrl) showRepoLink(container, savedRepoUrl);
 
   container.querySelectorAll('.mat-gen-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
-      const n = parseInt(btn.dataset.chapter);
+      const n  = parseInt(btn.dataset.chapter);
       const ch = cur.chapters.find(c => c.number === n);
-      if (!ch) return;
-      await genChapterAll(container, cur, ch, lang, isCert, certName);
+      if (ch) await genChapterAll(container, cur, ch, lang, isCert, certName);
+    });
+  });
+  container.querySelectorAll('.mat-preview-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const n  = parseInt(btn.dataset.chapter);
+      const ch = cur.chapters.find(c => c.number === n);
+      if (ch) showChapterPreview(container, cur, ch);
+    });
+  });
+}
+
+// ── Practice Test Panel HTML ──────────────────────────────────────────────────
+
+function renderPTPanel(cur, certName, pt1, pt2) {
+  function testCard(t, test) {
+    const attempts    = lgetJSON(PTKEYS.attempts(cur.id, t)) || [];
+    const attemptsHtml = attempts.map((a, i) => {
+      const icon = a.passed ? '✅' : '❌';
+      const d    = new Date(a.date).toLocaleDateString('en-US', { month:'short', day:'numeric' });
+      return `<div style="font-size:.72rem;color:${a.passed?'#16a34a':'#dc2626'};">
+        ${icon} Attempt ${i+1}: ${a.percentage}% (${a.score}/${a.total}) — ${d}
+      </div>`;
+    }).join('');
+
+    if (!test) {
+      return `
+        <div class="pt-test-card" id="pt-card-${t}">
+          <div style="font-weight:700;font-size:1rem;margin-bottom:8px;color:var(--primary);">Practice Test ${t}</div>
+          <div style="font-size:.83rem;color:var(--muted);line-height:1.9;margin-bottom:12px;">
+            📝 55 Questions<br>⏱️ 90 minutes<br>🎯 Passing: 700/1000 (70%)
+          </div>
+          <div style="padding:10px;background:white;border-radius:6px;border:1px dashed var(--border);
+              text-align:center;color:var(--muted);font-size:.82rem;margin-bottom:12px;">
+            ⬜ Not generated yet
+          </div>
+          <button class="btn btn-primary btn-sm" id="pt-gen-${t}-btn" style="width:100%;">✨ Generate Test ${t}</button>
+        </div>`;
+    }
+
+    const questions     = test.questions || [];
+    const domainEntries = Object.entries(test.domain_breakdown || {});
+    const totalQ        = test.total_questions || questions.length || 55;
+    const easy          = questions.filter(q => q.difficulty === 'easy').length;
+    const medium        = questions.filter(q => q.difficulty === 'medium').length;
+    const hard          = questions.filter(q => q.difficulty === 'hard').length;
+
+    return `
+      <div class="pt-test-card has-test" id="pt-card-${t}">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+          <span style="font-weight:700;font-size:1rem;color:var(--primary);">Practice Test ${t}</span>
+          <span style="color:#16a34a;">✅</span>
+        </div>
+        <div style="font-size:.8rem;color:var(--muted);margin-bottom:10px;">
+          ${totalQ} Questions · ${test.time_limit_minutes||90} min · Passing: ${test.passing_score||700}/1000
+        </div>
+
+        <div style="font-size:.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px;">Domain Breakdown</div>
+        ${domainEntries.map(([domain, count]) => {
+          const pct = Math.round((count / totalQ) * 100);
+          const short = domain.length > 22 ? domain.slice(0,20) + '…' : domain;
+          return `<div style="margin-bottom:5px;">
+            <div style="display:flex;justify-content:space-between;font-size:.71rem;margin-bottom:2px;">
+              <span title="${esc(domain)}" style="color:var(--text);">${esc(short)}</span>
+              <span style="color:var(--muted);">${count}q</span>
+            </div>
+            <div style="height:5px;background:#e5e7eb;border-radius:3px;overflow:hidden;">
+              <div style="height:100%;width:${pct}%;background:var(--accent);opacity:.75;border-radius:3px;"></div>
+            </div>
+          </div>`;
+        }).join('')}
+
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin:10px 0;">
+          ${[['Easy','#16a34a',easy],['Medium','#d97706',medium],['Hard','#dc2626',hard]].map(([lbl,col,cnt]) =>
+            `<div style="text-align:center;padding:6px 2px;background:${col}18;border-radius:6px;">
+              <div style="font-size:.95rem;font-weight:700;color:${col};">${cnt}</div>
+              <div style="font-size:.67rem;color:var(--muted);">${lbl}</div>
+            </div>`
+          ).join('')}
+        </div>
+
+        ${attemptsHtml ? `<div style="margin-bottom:8px;">${attemptsHtml}</div>` : ''}
+
+        <div style="display:flex;gap:5px;flex-wrap:wrap;">
+          <button class="btn btn-primary btn-sm" id="pt-preview-${t}" style="flex:1;">📋 Take Test</button>
+          <button class="btn btn-secondary btn-sm" id="pt-download-${t}" title="Download markdown">⬇</button>
+          <button class="btn btn-secondary btn-sm" id="pt-push-${t}" title="Push to GitHub">📤</button>
+          <button class="btn btn-outline btn-sm" id="pt-gen-${t}-btn" title="Regenerate" style="font-size:.7rem;padding:4px 8px;">↺</button>
+        </div>
+      </div>`;
+  }
+
+  return `
+    <div class="card" id="pt-section">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
+        <div>
+          <h2 style="margin-bottom:4px;">📝 Full Practice Tests</h2>
+          <p style="color:var(--muted);font-size:.88rem;margin:0;">
+            ${certName ? `${esc(certName)} — ` : ''}2 complete exams · 55 questions · 90 minutes · AI-generated
+          </p>
+        </div>
+        <button class="btn btn-primary" id="pt-gen-both-btn">🚀 Generate Both Tests</button>
+      </div>
+      <div id="pt-status" style="margin-bottom:12px;"></div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;">
+        ${testCard(1, pt1)}
+        ${testCard(2, pt2)}
+      </div>
+    </div>`;
+}
+
+// ── Domain distribution ───────────────────────────────────────────────────────
+
+function calculateDomainDistribution(chapters, totalQ) {
+  const domains = {};
+  chapters.forEach(ch => {
+    const domain = ch.exam_domain || ch.title;
+    const weight = parseFloat((ch.exam_weight || '10%').replace('%','').split('-')[0]) || 10;
+    if (!domains[domain]) domains[domain] = { weight: 0 };
+    domains[domain].weight += weight;
+  });
+  const totalWeight = Object.values(domains).reduce((s, d) => s + d.weight, 0) || 1;
+  const entries = Object.entries(domains);
+  let assigned = 0;
+  const distributed = {};
+  entries.forEach(([domain, data], i) => {
+    const q = i === entries.length - 1
+      ? totalQ - assigned
+      : Math.round((data.weight / totalWeight) * totalQ);
+    distributed[domain] = Math.max(1, q);
+    assigned += distributed[domain];
+  });
+  return distributed;
+}
+
+// ── Practice Test Generation ──────────────────────────────────────────────────
+
+const PT_SYSTEM = `You are a certified exam author who writes official certification practice tests.
+
+STRICT RULES:
+1. Every question must be exam-quality — plausible wrong answers, not obviously incorrect
+2. Scenario-based questions (40%) must describe a REAL business situation
+3. Questions must test SPECIFIC knowledge, not vague concepts
+4. Wrong answers must represent common misconceptions
+5. NO trick questions — test knowledge not wordplay
+6. Each question maps to exactly one exam domain
+7. Difficulty distribution: 30% Easy, 50% Medium, 20% Hard
+
+Return ONLY a valid JSON array. No markdown, no extra text, just the JSON array.`;
+
+function ptQuestionFormat(prefix) {
+  return `Each object in the array must match exactly:
+{"id":"${prefix}-001","domain":"domain name","domain_weight":"20%","difficulty":"easy|medium|hard","type":"scenario|service_selection|configuration|conceptual","question":"full question text","options":{"A":"option","B":"option","C":"option","D":"option"},"correct":"B","explanation":{"correct":"Why B is correct","A":"Why A is wrong","C":"Why C is wrong","D":"Why D is wrong"},"exam_tip":"what this tests","commonly_missed":true}`;
+}
+
+async function genOnePracticeTest(container, cur, certName, testNum) {
+  const ptStatus = container.querySelector('#pt-status');
+  const genBtn   = container.querySelector(`#pt-gen-${testNum}-btn`);
+  const bothBtn  = container.querySelector('#pt-gen-both-btn');
+  if (genBtn)  { genBtn.disabled  = true; genBtn.textContent  = '⏳ Generating…'; }
+  if (bothBtn) bothBtn.disabled = true;
+  if (ptStatus) ptStatus.innerHTML = `<div class="status-bar info">🤖 Generating Practice Test ${testNum} (this takes 30-60s)…</div>`;
+
+  try {
+    const test = await genPracticeTest(cur, certName, testNum);
+    lset(PTKEYS.test(cur.id, testNum), test);
+    if (ptStatus) ptStatus.innerHTML = `<div class="status-bar success">✅ Practice Test ${testNum} generated — ${test.questions.length} questions ready!</div>`;
+    setTimeout(() => { if (ptStatus) ptStatus.innerHTML = ''; }, 4000);
+    mount(container); // remount to show updated card
+  } catch (e) {
+    if (ptStatus) ptStatus.innerHTML = `<div class="status-bar error">❌ ${esc(e.message)}</div>`;
+    if (genBtn)  { genBtn.disabled  = false; genBtn.textContent  = `✨ Generate Test ${testNum}`; }
+    if (bothBtn) bothBtn.disabled = false;
+  }
+}
+
+async function genBothPracticeTests(container, cur, certName) {
+  const ptStatus = container.querySelector('#pt-status');
+  const bothBtn  = container.querySelector('#pt-gen-both-btn');
+  if (bothBtn) { bothBtn.disabled = true; bothBtn.textContent = '⏳ Generating…'; }
+
+  for (let t = 1; t <= 2; t++) {
+    if (ptStatus) ptStatus.innerHTML = `<div class="status-bar info">🤖 Generating Practice Test ${t}/2 (30-60s each)…</div>`;
+    try {
+      const test = await genPracticeTest(cur, certName, t);
+      lset(PTKEYS.test(cur.id, t), test);
+    } catch (e) {
+      if (ptStatus) ptStatus.innerHTML = `<div class="status-bar error">❌ Test ${t} failed: ${esc(e.message)}</div>`;
+      if (bothBtn) { bothBtn.disabled = false; bothBtn.textContent = '🚀 Generate Both Tests'; }
+      return;
+    }
+    if (t < 2) await new Promise(r => setTimeout(r, 800));
+  }
+
+  if (ptStatus) ptStatus.innerHTML = `<div class="status-bar success">✅ Both practice tests generated!</div>`;
+  setTimeout(() => { if (ptStatus) ptStatus.innerHTML = ''; }, 4000);
+  mount(container);
+}
+
+async function genPracticeTest(cur, certName, testNum) {
+  const apiKey     = getApiKey();
+  const domainDist = calculateDomainDistribution(cur.chapters, 55);
+  const entries    = Object.entries(domainDist);
+  const half       = Math.ceil(entries.length / 2);
+  const batch1     = entries.slice(0, half);
+  const batch2     = entries.slice(half);
+  const b1Total    = batch1.reduce((s,[,q]) => s + q, 0);
+  const b2Total    = batch2.reduce((s,[,q]) => s + q, 0);
+  const chapInfo   = cur.chapters.map(ch =>
+    `- Chapter ${ch.number}: ${ch.title} (Domain: ${ch.exam_domain || ch.title}, Weight: ${ch.exam_weight || '10%'})`
+  ).join('\n');
+  const extraNote  = testNum === 2
+    ? '\n\nThis is Practice Test 2. Generate COMPLETELY DIFFERENT questions from Test 1. Focus more on scenario-based and harder questions. Include more edge cases and common exam traps.'
+    : '';
+
+  const makeUserMsg = (batchDomains, startId, batchTotal) =>
+    `Generate exactly ${batchTotal} questions for Practice Test ${testNum} of: ${certName || cur.course_title}
+
+Course chapters:
+${chapInfo}
+
+Generate questions for ONLY these domains (${batchTotal} total):
+${batchDomains.map(([d,q]) => `${d}: ${q} questions`).join('\n')}
+
+Start IDs at PT${testNum}-${String(startId).padStart(3,'0')}.
+
+${ptQuestionFormat(`PT${testNum}`)}${extraNote}`;
+
+  const [raw1, raw2] = await Promise.all([
+    callClaude(apiKey, { system: PT_SYSTEM, user: makeUserMsg(batch1, 1, b1Total), maxTokens: 8000 }),
+    callClaude(apiKey, { system: PT_SYSTEM, user: makeUserMsg(batch2, b1Total + 1, b2Total), maxTokens: 8000 }),
+  ]);
+
+  const q1 = parseJSON(raw1);
+  const q2 = parseJSON(raw2);
+  const allQ = [...q1, ...q2];
+
+  // Fisher-Yates shuffle
+  for (let i = allQ.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [allQ[i], allQ[j]] = [allQ[j], allQ[i]];
+  }
+
+  return {
+    test_number: testNum,
+    cert_name: certName || cur.course_title,
+    total_questions: allQ.length,
+    time_limit_minutes: 90,
+    passing_score: 700,
+    passing_percentage: '70%',
+    generated_date: new Date().toISOString(),
+    domain_breakdown: domainDist,
+    questions: allQ,
+  };
+}
+
+// ── Practice Test Modal (interactive) ─────────────────────────────────────────
+
+function showPTModal(container, cur, test) {
+  const modal      = container.querySelector('#pt-modal');
+  const modalInner = container.querySelector('#pt-modal-inner');
+  const questions  = test.questions || [];
+  const attempts   = lgetJSON(PTKEYS.attempts(cur.id, test.test_number)) || [];
+
+  const attemptsHtml = attempts.length
+    ? `<div style="margin-bottom:12px;">
+        <div style="font-size:.78rem;font-weight:600;color:var(--muted);margin-bottom:4px;">Previous Attempts</div>
+        ${attempts.map((a,i) => `<div style="font-size:.78rem;color:${a.passed?'#16a34a':'#dc2626'};">
+          ${a.passed?'✅':'❌'} Attempt ${i+1}: ${a.score}/${a.total} (${a.percentage}%) — ${new Date(a.date).toLocaleDateString()}
+        </div>`).join('')}
+      </div>`
+    : '';
+
+  modalInner.innerHTML = `
+    <div style="background:var(--primary);color:white;padding:20px 24px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <h2 style="margin:0;font-size:1.2rem;">${esc(test.cert_name)} — Practice Test ${test.test_number}</h2>
+          <div style="font-size:.85rem;opacity:.85;margin-top:4px;">
+            ⏱️ ${test.time_limit_minutes} minutes &nbsp;·&nbsp; 📝 ${questions.length} questions &nbsp;·&nbsp; 🎯 Passing: ${test.passing_score}/1000
+          </div>
+        </div>
+        <button id="pt-modal-close" style="background:rgba(255,255,255,.2);border:none;color:white;
+            border-radius:6px;padding:6px 12px;cursor:pointer;font-size:.9rem;">✕ Close</button>
+      </div>
+      <div style="font-size:.82rem;opacity:.75;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.2);">
+        Read each question carefully. Choose the BEST answer.
+        Some questions have multiple plausible options — select the one that best meets all requirements.
+      </div>
+    </div>
+    ${attemptsHtml ? `<div style="padding:12px 24px;background:#f9fafb;border-bottom:1px solid var(--border);">${attemptsHtml}</div>` : ''}
+    <div id="pt-questions-list">
+      ${questions.map((q, i) => `
+        <div class="pt-q-block" id="pt-q-block-${i}">
+          <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+            <span style="font-size:.78rem;font-weight:700;background:var(--primary);color:white;
+                border-radius:4px;padding:2px 8px;white-space:nowrap;">Q${i+1}</span>
+            <span style="font-size:.75rem;color:var(--muted);padding-top:2px;">${esc(q.domain||'')}</span>
+            <span style="font-size:.72rem;padding:1px 7px;border-radius:10px;margin-left:auto;white-space:nowrap;
+                background:${q.difficulty==='easy'?'#dcfce7':q.difficulty==='hard'?'#fee2e2':'#fef9c3'};
+                color:${q.difficulty==='easy'?'#16a34a':q.difficulty==='hard'?'#dc2626':'#d97706'};">
+              ${q.difficulty||'medium'}
+            </span>
+          </div>
+          <div style="font-size:.95rem;line-height:1.65;margin-bottom:14px;color:var(--text);">${esc(q.question||'')}</div>
+          <div class="pt-options" data-qindex="${i}">
+            ${Object.entries(q.options||{}).map(([key, val]) => `
+              <div class="pt-option" data-key="${key}" data-qindex="${i}"
+                  style="cursor:pointer;display:flex;align-items:flex-start;gap:10px;padding:10px 14px;
+                  margin:6px 0;border:1.5px solid var(--border);border-radius:8px;transition:all .15s;">
+                <span style="font-weight:700;font-size:.88rem;color:var(--accent);flex-shrink:0;min-width:16px;">${key}</span>
+                <span style="font-size:.9rem;line-height:1.5;">${esc(val)}</span>
+              </div>
+            `).join('')}
+          </div>
+          <div class="pt-explanation" id="pt-exp-${i}" style="display:none;margin-top:12px;padding:12px;
+              background:var(--surface2);border-radius:8px;font-size:.85rem;line-height:1.6;"></div>
+        </div>
+      `).join('')}
+    </div>
+    <div style="padding:20px 24px;border-top:1px solid var(--border);display:flex;gap:10px;flex-wrap:wrap;background:var(--surface2);">
+      <button id="pt-submit-btn" class="btn btn-primary" style="flex:1;">📊 Submit & Grade Test</button>
+      <button id="pt-answer-key-btn" class="btn btn-secondary">🔑 Show Answer Key</button>
+    </div>
+    <div id="pt-results" style="display:none;padding:20px 24px;"></div>
+  `;
+
+  modal.style.display = '';
+
+  // Close button
+  modalInner.querySelector('#pt-modal-close').addEventListener('click', () => {
+    modal.style.display = 'none';
+  });
+
+  // Track selections
+  const selections = {};
+  modalInner.querySelectorAll('.pt-option').forEach(opt => {
+    opt.addEventListener('click', () => {
+      const qi  = opt.dataset.qindex;
+      const key = opt.dataset.key;
+      selections[qi] = key;
+      // Update visual selection within this question
+      modalInner.querySelectorAll(`.pt-option[data-qindex="${qi}"]`).forEach(o => {
+        o.style.borderColor = o.dataset.key === key ? '#e94560' : 'var(--border)';
+        o.style.background  = o.dataset.key === key ? '#fde8ec20' : '';
+      });
     });
   });
 
-  container.querySelectorAll('.mat-preview-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const n = parseInt(btn.dataset.chapter);
-      const ch = cur.chapters.find(c => c.number === n);
-      if (!ch) return;
-      showChapterPreview(container, cur, ch);
-    });
+  // Submit
+  modalInner.querySelector('#pt-submit-btn').addEventListener('click', () => {
+    const result = gradeTest(test, selections);
+    savePTAttempt(cur, test.test_number, result);
+    showTestResults(modalInner, test, selections, result, container, cur);
   });
+
+  // Answer Key
+  modalInner.querySelector('#pt-answer-key-btn').addEventListener('click', () => {
+    questions.forEach((q, i) => {
+      const expEl = modalInner.querySelector(`#pt-exp-${i}`);
+      if (!expEl) return;
+      expEl.style.display = '';
+      expEl.innerHTML = buildExplanationHtml(q, null);
+      // Mark correct option
+      modalInner.querySelectorAll(`.pt-option[data-qindex="${i}"]`).forEach(opt => {
+        if (opt.dataset.key === q.correct) {
+          opt.style.borderColor = '#16a34a';
+          opt.style.background  = '#f0fdf4';
+        }
+      });
+    });
+    modalInner.querySelector('#pt-answer-key-btn').textContent = '✅ Answer Key Shown';
+    modalInner.querySelector('#pt-answer-key-btn').disabled = true;
+  });
+}
+
+function buildExplanationHtml(q, userAnswer) {
+  const expObj  = q.explanation || {};
+  const correct = q.correct;
+  let html = `<div style="font-weight:600;color:#16a34a;margin-bottom:6px;">✅ Correct Answer: ${esc(correct)}</div>`;
+  html += `<div style="margin-bottom:6px;">${esc(expObj.correct || expObj[correct] || '')}</div>`;
+  if (q.exam_tip) {
+    html += `<div style="margin-top:8px;padding:6px 10px;background:#fef9c3;border-radius:5px;font-size:.82rem;color:#78350f;">
+      💡 Exam Tip: ${esc(q.exam_tip)}
+    </div>`;
+  }
+  if (userAnswer && userAnswer !== correct) {
+    const wrongExp = expObj[userAnswer] || '';
+    if (wrongExp) html += `<div style="margin-top:6px;color:#dc2626;font-size:.83rem;">❌ Why ${esc(userAnswer)} is wrong: ${esc(wrongExp)}</div>`;
+  }
+  return html;
+}
+
+function gradeTest(test, selections) {
+  const questions = test.questions || [];
+  let score = 0;
+  const wrongIds  = [];
+  const domScores = {};
+
+  questions.forEach((q, i) => {
+    const domain = q.domain || 'Unknown';
+    if (!domScores[domain]) domScores[domain] = { correct: 0, total: 0 };
+    domScores[domain].total++;
+    if (selections[String(i)] === q.correct) {
+      score++;
+      domScores[domain].correct++;
+    } else {
+      wrongIds.push(q.id || `PT${test.test_number}-${String(i+1).padStart(3,'0')}`);
+    }
+  });
+
+  const total      = questions.length;
+  const pct        = Math.round((score / total) * 100);
+  const scaledScore = Math.round((score / total) * 1000);
+  const passed     = scaledScore >= (test.passing_score || 700);
+
+  return { date: new Date().toISOString(), score, total, percentage: pct, scaled_score: scaledScore, passed, domain_scores: domScores, wrong_questions: wrongIds };
+}
+
+function savePTAttempt(cur, testNum, result) {
+  const key      = PTKEYS.attempts(cur.id, testNum);
+  const attempts = lgetJSON(key) || [];
+  attempts.push(result);
+  lset(key, attempts);
+}
+
+function showTestResults(modalInner, test, selections, result, container, cur) {
+  const questions    = test.questions || [];
+  const domBreakdown = Object.entries(result.domain_scores || {}).map(([domain, s]) => {
+    const pct    = Math.round((s.correct / s.total) * 100);
+    const needs  = pct < 70 ? ' <span style="color:#d97706;font-size:.75rem;">— review needed</span>' : '';
+    return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:5px;font-size:.83rem;">
+      <span style="flex:1;color:var(--text);" title="${esc(domain)}">${esc(domain.length > 28 ? domain.slice(0,26)+'…' : domain)}</span>
+      <span style="color:var(--muted);">${s.correct}/${s.total} (${pct}%)${needs}</span>
+    </div>`;
+  }).join('');
+
+  // Chapters to review (those whose domain had < 70%)
+  const weakDomains = Object.entries(result.domain_scores || {}).filter(([,s]) => (s.correct/s.total) < 0.7).map(([d]) => d);
+  const reviewChapters = (cur?.chapters || []).filter(ch => weakDomains.includes(ch.exam_domain || ch.title));
+  const reviewHtml = reviewChapters.length
+    ? `<div style="margin-top:10px;">
+        <div style="font-size:.8rem;font-weight:600;color:var(--muted);margin-bottom:5px;">📚 Recommended Review:</div>
+        ${reviewChapters.map(ch => `<div style="font-size:.82rem;color:var(--text);padding:3px 0;">
+          · Chapter ${ch.number}: ${esc(ch.title)}
+        </div>`).join('')}
+      </div>`
+    : '';
+
+  const resultsEl = modalInner.querySelector('#pt-results');
+  resultsEl.style.display = '';
+  resultsEl.innerHTML = `
+    <div style="text-align:center;padding:16px 0 20px;">
+      <div style="font-size:2.5rem;font-weight:800;color:${result.passed?'#16a34a':'#dc2626'};">
+        ${result.score}/${result.total}
+      </div>
+      <div style="font-size:1.1rem;color:var(--muted);">${result.percentage}% — Scaled: ${result.scaled_score}/1000</div>
+      <div style="font-size:1.2rem;margin-top:8px;font-weight:600;color:${result.passed?'#16a34a':'#dc2626'};">
+        ${result.passed ? '🎉 PASS — Well done!' : '❌ FAIL — Keep studying'}
+      </div>
+    </div>
+    <div style="border-top:1px solid var(--border);padding-top:14px;">
+      <div style="font-size:.8rem;font-weight:600;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em;">Domain Breakdown</div>
+      ${domBreakdown}
+      ${reviewHtml}
+    </div>`;
+
+  // Highlight right/wrong options in the question list
+  questions.forEach((q, i) => {
+    const userAns = selections[String(i)];
+    modalInner.querySelectorAll(`.pt-option[data-qindex="${i}"]`).forEach(opt => {
+      if (opt.dataset.key === q.correct) {
+        opt.style.borderColor = '#16a34a';
+        opt.style.background  = '#f0fdf4';
+      } else if (opt.dataset.key === userAns) {
+        opt.style.borderColor = '#dc2626';
+        opt.style.background  = '#fef2f2';
+      }
+    });
+    if (userAns && userAns !== q.correct) {
+      const expEl = modalInner.querySelector(`#pt-exp-${i}`);
+      if (expEl) {
+        expEl.style.display = '';
+        expEl.innerHTML = buildExplanationHtml(q, userAns);
+      }
+    }
+  });
+
+  resultsEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ── Practice Test Markdown Export ─────────────────────────────────────────────
+
+function ptToMarkdown(test) {
+  const questions = test.questions || [];
+  const domList   = Object.entries(test.domain_breakdown || {})
+    .map(([d, q]) => `| ${d} | ${q} | /11 |`).join('\n');
+
+  return `# ${esc(test.cert_name)} — Practice Test ${test.test_number}
+
+> **Time Limit:** ${test.time_limit_minutes} minutes
+> **Questions:** ${test.total_questions}
+> **Passing Score:** ${test.passing_score}/1000 (${test.passing_percentage})
+> **Generated:** ${new Date(test.generated_date).toLocaleDateString()}
+
+---
+
+## Instructions
+
+- Read each question carefully
+- Choose the BEST answer
+- All questions are equally weighted
+- Do not spend too long on any single question
+
+---
+
+## Questions
+
+${questions.map((q, i) => `### Question ${i + 1}
+**Domain:** ${q.domain || ''} | **Difficulty:** ${q.difficulty || 'medium'}
+
+${q.question}
+
+- A) ${(q.options||{}).A || ''}
+- B) ${(q.options||{}).B || ''}
+- C) ${(q.options||{}).C || ''}
+- D) ${(q.options||{}).D || ''}
+
+<details>
+<summary>📖 Answer & Explanation</summary>
+
+**Correct Answer: ${q.correct}**
+
+${(q.explanation||{})[q.correct] || (q.explanation||{}).correct || ''}
+
+${Object.entries(q.explanation || {}).filter(([k]) => k !== 'correct' && k !== q.correct && 'ABCD'.includes(k)).map(([k,v]) => `**Why not ${k}:** ${v}`).join('\n\n')}
+
+${q.exam_tip ? `**Exam Tip:** ${q.exam_tip}` : ''}
+
+</details>
+
+---`).join('\n\n')}
+
+## Answer Key
+
+| Q | Answer | Domain | Difficulty |
+|---|--------|--------|-----------|
+${questions.map((q, i) => `| ${i+1} | ${q.correct} | ${q.domain || ''} | ${q.difficulty || ''} |`).join('\n')}
+
+---
+
+## Domain Score Tracker
+
+| Domain | Questions | Your Score |
+|--------|-----------|------------|
+${domList}
+
+*Fill in as you check your answers*
+`;
+}
+
+function answerKeyMarkdown(test) {
+  const questions = test.questions || [];
+  return `# ${esc(test.cert_name)} — Practice Test ${test.test_number} Answer Key
+
+| Q | Answer | Domain | Difficulty | Commonly Missed |
+|---|--------|--------|-----------|----------------|
+${questions.map((q, i) => `| ${i+1} | **${q.correct}** | ${q.domain||''} | ${q.difficulty||''} | ${q.commonly_missed ? '⚠️ Yes' : 'No'} |`).join('\n')}
+
+---
+
+## Explanations
+
+${questions.map((q, i) => `### Q${i+1}. ${q.question}
+
+**Correct: ${q.correct}** — ${(q.explanation||{})[q.correct] || (q.explanation||{}).correct || ''}
+
+${q.exam_tip ? `> 💡 ${q.exam_tip}` : ''}
+`).join('\n')}
+`;
+}
+
+function downloadPracticeTest(cur, testNum) {
+  const test = lgetJSON(PTKEYS.test(cur.id, testNum));
+  if (!test) return;
+  const slug = (test.cert_name || 'course').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+  const md   = ptToMarkdown(test);
+  const blob = new Blob([md], { type: 'text/markdown' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = `${slug}-practice-test-${testNum}.md`;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+async function pushPracticeTest(container, cur, testNum) {
+  const test = lgetJSON(PTKEYS.test(cur.id, testNum));
+  if (!test) return;
+  const { githubToken, githubUsername } = getSettings();
+  const ptStatus = container.querySelector('#pt-status');
+  if (!githubToken) {
+    if (ptStatus) ptStatus.innerHTML = `<div class="status-bar error">❌ GitHub token not set — add it in ⚙ Settings.</div>`;
+    return;
+  }
+  const ghUser   = githubUsername || 'aseemmankotia';
+  const slug     = cur.course_title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+  const repoName = `course-${slug}`;
+  const API      = 'https://api.github.com';
+  const headers  = { 'Authorization': `token ${githubToken}`, 'Content-Type': 'application/json' };
+  if (ptStatus) ptStatus.innerHTML = `<div class="status-bar info">📤 Pushing Practice Test ${testNum} to GitHub…</div>`;
+
+  const files = [
+    { path: `practice-tests/practice-test-${testNum}.md`, content: ptToMarkdown(test) },
+    { path: `practice-tests/answer-key-${testNum}.md`,    content: answerKeyMarkdown(test) },
+  ];
+
+  try {
+    await fetch(`${API}/user/repos`, { method:'POST', headers, body: JSON.stringify({ name: repoName, private:false, auto_init:false }) });
+    for (const file of files) {
+      let sha = null;
+      const chk = await fetch(`${API}/repos/${ghUser}/${repoName}/contents/${file.path}`, { headers });
+      if (chk.ok) { const ex = await chk.json(); sha = ex.sha; }
+      const content = btoa(unescape(encodeURIComponent(file.content)));
+      await fetch(`${API}/repos/${ghUser}/${repoName}/contents/${file.path}`, {
+        method:'PUT', headers, body: JSON.stringify({ message:`Add ${file.path}`, content, ...(sha?{sha}:{}) }),
+      });
+      await new Promise(r => setTimeout(r, 300));
+    }
+    if (ptStatus) ptStatus.innerHTML = `<div class="status-bar success">✅ Practice Test ${testNum} pushed to GitHub!</div>`;
+    setTimeout(() => { if (ptStatus) ptStatus.innerHTML = ''; }, 4000);
+  } catch (e) {
+    if (ptStatus) ptStatus.innerHTML = `<div class="status-bar error">❌ ${esc(e.message)}</div>`;
+  }
 }
 
 // ── Cell status helper ────────────────────────────────────────────────────────
 
 function setCellStatus(container, type, chNum, state) {
   const el = container.querySelector(`#mat-${type}-${chNum}`);
-  if (el) el.textContent = STATUS[state] || STATE.none;
+  if (el) el.textContent = STATUS[state] || STATUS.none;
 }
 
-// ── Generate all chapters ─────────────────────────────────────────────────────
+// ── Generate all chapters + practice tests ────────────────────────────────────
 
 async function genAll(container, cur, lang, isCert, certName) {
   const btn    = container.querySelector('#mat-gen-all-btn');
@@ -248,7 +907,10 @@ async function genAll(container, cur, lang, isCert, certName) {
     if (i < cur.chapters.length - 1) await new Promise(r => setTimeout(r, 500));
   }
 
-  status.innerHTML = `<div class="status-bar success">✅ All materials generated for ${cur.chapters.length} chapters!</div>`;
+  status.innerHTML = `<div class="status-bar info">✅ Chapter materials done! Generating practice tests…</div>`;
+  await genBothPracticeTests(container, cur, certName);
+
+  status.innerHTML = `<div class="status-bar success">✅ All materials + both practice tests generated!</div>`;
   btn.disabled = false;
   btn.textContent = '🚀 Generate All Materials';
   setTimeout(() => { status.innerHTML = ''; }, 5000);
@@ -258,10 +920,10 @@ async function genAll(container, cur, lang, isCert, certName) {
 
 async function genChapterAll(container, cur, ch, lang, isCert, certName) {
   const types = [
-    { type: 'q', label: 'questions',  fn: () => genQuestions(container, cur, ch, isCert, certName) },
-    { type: 'f', label: 'flashcards', fn: () => genFlashcards(container, cur, ch) },
-    { type: 'c', label: 'code',       fn: () => genCode(container, cur, ch, lang) },
-    { type: 's', label: 'cheatsheet', fn: () => genCheatSheet(container, cur, ch) },
+    { type: 'q', fn: () => genQuestions(container, cur, ch, isCert, certName) },
+    { type: 'f', fn: () => genFlashcards(container, cur, ch) },
+    { type: 'c', fn: () => genCode(container, cur, ch, lang) },
+    { type: 's', fn: () => genCheatSheet(container, cur, ch) },
   ];
   for (const { type, fn } of types) {
     setCellStatus(container, type, ch.number, 'generating');
@@ -369,7 +1031,6 @@ Format EXACTLY as:
 | # | Front (Question) | Back (Answer) |
 |---|-----------------|---------------|
 | 1 | What is [concept]? | [clear concise answer] |
-| 2 | [term or concept] | [definition or explanation] |
 [... 15 rows total]
 
 ### Key Terms
@@ -404,14 +1065,12 @@ Concepts: ${(ch.concepts||[]).join(', ')}
 Course: ${cur.course_title}
 Audience: ${cur.audience || 'beginner developers'}
 
-For each example provide clear comments, expected output, and a challenge variation.
-
 Return JSON array:
 [{
-  "filename": "descriptive-kebab-name.${lang === 'JavaScript' ? 'js' : lang === 'TypeScript' ? 'ts' : lang === 'Java' ? 'java' : lang.toLowerCase() === 'none' ? 'txt' : 'py'}",
+  "filename": "descriptive-kebab-name.${lang==='JavaScript'?'js':lang==='TypeScript'?'ts':lang==='Java'?'java':lang.toLowerCase()==='none'?'txt':'py'}",
   "title": "What this example demonstrates",
-  "code": "full code with line-by-line comments explaining what each part does\\n# Expected output:\\n# [show what running this produces]",
-  "concepts_demonstrated": ["concept1", "concept2"],
+  "code": "full code with comments",
+  "concepts_demonstrated": ["concept1"],
   "challenge": "Modify this code to..."
 }]`,
     maxTokens: 3000,
@@ -443,31 +1102,24 @@ Format EXACTLY as:
 | Concept | One-line explanation |
 |---------|---------------------|
 | [concept] | [explanation] |
-[one row per concept]
 
 ### Key Syntax / Commands
 \`\`\`
-[most important syntax or commands, 1 per line with comment]
+[most important syntax or commands]
 \`\`\`
 
 ### Common Patterns
 **Pattern 1: [name]**
-[short description and when to use it]
-
-**Pattern 2: [name]**
 [short description]
 
 ### Things to Remember
 ✅ [important point 1]
 ✅ [important point 2]
-✅ [important point 3]
 ❌ [common mistake to avoid]
-❌ [another common mistake]
 
 ### Quick Quiz
 1. [quick question] → [answer]
-2. [quick question] → [answer]
-3. [quick question] → [answer]`,
+2. [quick question] → [answer]`,
     maxTokens: 1800,
   });
   lset(MKEYS.cheatsheet(cur.id, ch.number), text.trim());
@@ -478,16 +1130,16 @@ Format EXACTLY as:
 // ── Preview helpers ───────────────────────────────────────────────────────────
 
 function showPreview(container, title, content, filename) {
-  const panel    = container.querySelector('#mat-preview-panel');
-  const titleEl  = container.querySelector('#mat-preview-title');
+  const panel     = container.querySelector('#mat-preview-panel');
+  const titleEl   = container.querySelector('#mat-preview-title');
   const contentEl = container.querySelector('#mat-preview-content');
-  const copyBtn  = container.querySelector('#mat-preview-copy');
-  const dlBtn    = container.querySelector('#mat-preview-download');
+  const copyBtn   = container.querySelector('#mat-preview-copy');
+  const dlBtn     = container.querySelector('#mat-preview-download');
 
-  titleEl.textContent  = title;
-  contentEl.value      = content;
-  panel.style.display  = '';
-  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  titleEl.textContent = title;
+  contentEl.value     = content;
+  panel.style.display = '';
+  panel.scrollIntoView({ behavior:'smooth', block:'nearest' });
 
   copyBtn.onclick = () => {
     navigator.clipboard.writeText(content).then(() => {
@@ -496,9 +1148,8 @@ function showPreview(container, title, content, filename) {
       setTimeout(() => { copyBtn.textContent = orig; }, 1500);
     });
   };
-
   dlBtn.onclick = () => {
-    const blob = new Blob([content], { type: 'text/markdown' });
+    const blob = new Blob([content], { type:'text/markdown' });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
     a.href = url; a.download = filename;
@@ -509,47 +1160,38 @@ function showPreview(container, title, content, filename) {
 }
 
 function showChapterPreview(container, cur, ch) {
-  // Show first available material for this chapter
   const types = [
-    { key: MKEYS.questions(cur.id, ch.number),  label: `Ch ${ch.number} Questions`,   file: `practice-questions/chapter-${pad(ch.number)}-questions.md` },
-    { key: MKEYS.flashcards(cur.id, ch.number), label: `Ch ${ch.number} Flashcards`,  file: `flashcards/chapter-${pad(ch.number)}-flashcards.md` },
-    { key: MKEYS.cheatsheet(cur.id, ch.number), label: `Ch ${ch.number} Cheat Sheet`, file: `cheat-sheets/chapter-${pad(ch.number)}-cheatsheet.md` },
+    { key: MKEYS.questions(cur.id, ch.number) },
+    { key: MKEYS.flashcards(cur.id, ch.number) },
+    { key: MKEYS.cheatsheet(cur.id, ch.number) },
   ];
-
-  // Build a combined preview
   let combined = '';
-  let hasAny = false;
-  for (const { key, label } of types) {
+  for (const { key } of types) {
     const content = lget(key);
-    if (content) { combined += content + '\n\n---\n\n'; hasAny = true; }
+    if (content) combined += content + '\n\n---\n\n';
   }
-
   const codeStr = lget(MKEYS.code(cur.id, ch.number));
   if (codeStr) {
     try {
       const examples = JSON.parse(codeStr);
-      const codeMarkdown = `## Chapter ${ch.number}: ${ch.title} — Code Examples\n\n` +
-        examples.map(ex => `### ${eh(ex.title)}\n\n**File:** \`${ex.filename}\`\n\n\`\`\`\n${ex.code}\n\`\`\`\n\n**Challenge:** ${ex.challenge || ''}`).join('\n\n---\n\n');
-      combined += codeMarkdown;
-      hasAny = true;
+      combined += `## Chapter ${ch.number}: ${ch.title} — Code Examples\n\n` +
+        examples.map(ex => `### ${eh(ex.title)}\n\n**File:** \`${ex.filename}\`\n\n\`\`\`\n${ex.code}\n\`\`\`\n\n**Challenge:** ${ex.challenge||''}`).join('\n\n---\n\n');
     } catch {}
   }
-
-  if (!hasAny) {
-    combined = `No materials generated yet for Chapter ${ch.number}.\n\nClick ⚡ Generate to create materials.`;
-  }
-
+  if (!combined) combined = `No materials generated yet for Chapter ${ch.number}.\nClick ⚡ Generate to create materials.`;
   showPreview(container, `Chapter ${ch.number}: ${ch.title}`, combined.trim(), `chapter-${pad(ch.number)}-materials.md`);
 }
 
 // ── README generator ──────────────────────────────────────────────────────────
 
 function generateReadme(cur) {
-  const isCert = cur.course_type === 'certification';
-  const certName = cur.exam_name || '';
+  const isCert    = cur.course_type === 'certification';
+  const certName  = cur.exam_name || '';
   const chapterList = cur.chapters.map(ch =>
-    `- [Chapter ${ch.number}: ${ch.title}](${(getChapterData(ch.number) || {}).youtubeUrl || '#'})`
+    `- [Chapter ${ch.number}: ${ch.title}](${(getChapterData(ch.number)||{}).youtubeUrl||'#'})`
   ).join('\n');
+  const hasPT1 = !!lgetJSON(PTKEYS.test(cur.id, 1));
+  const hasPT2 = !!lgetJSON(PTKEYS.test(cur.id, 2));
 
   return `# ${cur.course_title} — Course Materials
 
@@ -563,26 +1205,21 @@ function generateReadme(cur) {
 | Flashcards | All ${cur.chapters.length} | 15 cards per chapter, Anki-compatible |
 | Code Examples | All ${cur.chapters.length} | 3-5 runnable examples per chapter |
 | Cheat Sheets | All ${cur.chapters.length} | Quick reference guide per chapter |
+${hasPT1 || hasPT2 ? `| Practice Tests | 2 full exams | 55 questions each, 90 minutes, with answer keys |` : ''}
 
 ## 🎯 How to Use
 
 ### Practice Questions
-Open any \`practice-questions/chapter-XX-questions.md\` file.
-Try answering before revealing the answer in the \`<details>\` block.
+Open any \`practice-questions/chapter-XX-questions.md\` and answer before revealing the \`<details>\` block.
 
 ### Flashcards
-Import the flashcard markdown into [Anki](https://apps.ankiweb.net/) or study directly on GitHub.
+Import into [Anki](https://apps.ankiweb.net/) or study directly on GitHub.
 
 ### Code Examples
-Clone this repo and run examples locally:
 \`\`\`bash
 git clone https://github.com/aseemmankotia/${cur.course_title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')}
 cd code-examples/chapter-01
-python example-01.py
 \`\`\`
-
-### Cheat Sheets
-Print or bookmark the \`cheat-sheets/\` folder for quick reference during study.
 
 ## 📺 Course Videos
 
@@ -591,11 +1228,10 @@ ${chapterList}
 ${isCert ? `## 🏆 Certification Prep
 
 These materials are designed to help you pass the **${certName}** certification exam.
-Practice questions mirror the exam format and difficulty level.` : ''}
+${hasPT1 || hasPT2 ? 'Two full practice tests (55 questions each) are included in \`practice-tests/\` with answer keys.' : ''}` : ''}
 
 ## ⭐ Support
 
-If these materials helped you, please:
 - ⭐ Star this repository
 - 👍 Like the YouTube videos
 - 🔔 Subscribe to TechNuggets Academy
@@ -641,7 +1277,60 @@ function collectAllMaterials(cur) {
     }
   });
 
+  // Practice tests
+  for (let t = 1; t <= 2; t++) {
+    const test = lgetJSON(PTKEYS.test(cur.id, t));
+    if (test) {
+      files.push({ path: `practice-tests/practice-test-${t}.md`, content: ptToMarkdown(test) });
+      files.push({ path: `practice-tests/answer-key-${t}.md`,    content: answerKeyMarkdown(test) });
+    }
+  }
+
+  // Score tracker template
+  const pt1 = lgetJSON(PTKEYS.test(cur.id, 1));
+  const pt2 = lgetJSON(PTKEYS.test(cur.id, 2));
+  if (pt1 || pt2) {
+    files.push({ path: 'practice-tests/score-tracker.md', content: generateScoreTracker(cur, pt1, pt2) });
+  }
+
   return files;
+}
+
+function generateScoreTracker(cur, pt1, pt2) {
+  return `# ${cur.course_title} — Score Tracker
+
+## Practice Test 1
+| Attempt | Date | Score | % | Pass/Fail |
+|---------|------|-------|---|-----------|
+| 1 | | /55 | % | |
+| 2 | | /55 | % | |
+| 3 | | /55 | % | |
+
+${pt1 ? `### Domain Scores — Test 1
+| Domain | Questions | Score |
+|--------|-----------|-------|
+${Object.entries(pt1.domain_breakdown || {}).map(([d,q]) => `| ${d} | ${q} | /${q} |`).join('\n')}
+` : ''}
+
+## Practice Test 2
+| Attempt | Date | Score | % | Pass/Fail |
+|---------|------|-------|---|-----------|
+| 1 | | /55 | % | |
+| 2 | | /55 | % | |
+
+${pt2 ? `### Domain Scores — Test 2
+| Domain | Questions | Score |
+|--------|-----------|-------|
+${Object.entries(pt2.domain_breakdown || {}).map(([d,q]) => `| ${d} | ${q} | /${q} |`).join('\n')}
+` : ''}
+
+## Study Plan
+
+Use weak domains from your score tracker to identify which chapters to revisit.
+- **< 60%** on a domain → re-watch that chapter + redo flashcards
+- **60-70%** on a domain → review cheat sheet + redo practice questions
+- **> 70%** on a domain → you're good, light review before exam
+`;
 }
 
 function generateLabReadme(ch, examples) {
@@ -649,9 +1338,6 @@ function generateLabReadme(ch, examples) {
 
 **Exam Domain:** ${ch.exam_domains_covered?.[0] || 'See curriculum'}
 **Duration:** ~${ch.lab_duration || 20} minutes
-
-## What You'll Build
-${ch.hands_on || 'See chapter video for lab instructions.'}
 
 ## Files
 ${examples.map(ex => `- \`${ex.filename}\` — ${ex.title}`).join('\n')}
@@ -670,12 +1356,8 @@ function generateVerifyScript(ch, examples) {
   return `#!/bin/bash
 # Verification script for Lab ${ch.number}: ${ch.title}
 set -e
-
 echo "🔍 Verifying Lab ${ch.number}: ${ch.title}..."
-
-# Check that required files exist
 ${examples.map(ex => `[ -f "${ex.filename}" ] && echo "✅ ${ex.filename} found" || echo "❌ ${ex.filename} missing"`).join('\n')}
-
 echo ""
 echo "✅ Lab ${ch.number} verification complete!"
 `;
@@ -689,32 +1371,32 @@ async function downloadZip(container, cur) {
   }
 
   const files = collectAllMaterials(cur);
-  if (files.length <= 1) { // only README
+  if (files.length <= 1) {
     const status = container.querySelector('#mat-status');
-    if (status) status.innerHTML = `<div class="status-bar warning">⚠️ No materials generated yet. Generate materials first, then download.</div>`;
+    if (status) status.innerHTML = `<div class="status-bar warning">⚠️ No materials generated yet. Generate materials first.</div>`;
     setTimeout(() => { if (status) status.innerHTML = ''; }, 4000);
     return;
   }
 
-  // Show contents preview
   const counts = {
     questions:  cur.chapters.filter(ch => !!lget(MKEYS.questions(cur.id,ch.number))).length,
     flashcards: cur.chapters.filter(ch => !!lget(MKEYS.flashcards(cur.id,ch.number))).length,
     code:       cur.chapters.filter(ch => !!lget(MKEYS.code(cur.id,ch.number))).length,
     cheatsheet: cur.chapters.filter(ch => !!lget(MKEYS.cheatsheet(cur.id,ch.number))).length,
+    tests:      [1,2].filter(t => !!lgetJSON(PTKEYS.test(cur.id,t))).length,
   };
-  const status = container.querySelector('#mat-status');
-  if (status) status.innerHTML = `<div class="status-bar info">
-    📦 Building ZIP with: ${[
-      counts.questions  ? `✅ ${counts.questions} practice question file${counts.questions!==1?'s':''}` : null,
-      counts.flashcards ? `✅ ${counts.flashcards} flashcard file${counts.flashcards!==1?'s':''}` : null,
-      counts.cheatsheet ? `✅ ${counts.cheatsheet} cheat sheet${counts.cheatsheet!==1?'s':''}` : null,
-      counts.code       ? `✅ ${counts.code} lab director${counts.code!==1?'ies':'y'}` : null,
-      '✅ README.md',
-    ].filter(Boolean).join(' · ')}
-  </div>`;
 
-  const zip = new window.JSZip();
+  const status = container.querySelector('#mat-status');
+  if (status) status.innerHTML = `<div class="status-bar info">📦 Building ZIP with: ${[
+    counts.questions  ? `✅ ${counts.questions} question file${counts.questions!==1?'s':''}` : null,
+    counts.flashcards ? `✅ ${counts.flashcards} flashcard file${counts.flashcards!==1?'s':''}` : null,
+    counts.cheatsheet ? `✅ ${counts.cheatsheet} cheat sheet${counts.cheatsheet!==1?'s':''}` : null,
+    counts.code       ? `✅ ${counts.code} lab director${counts.code!==1?'ies':'y'}` : null,
+    counts.tests      ? `✅ ${counts.tests} practice test${counts.tests!==1?'s':''}` : null,
+    '✅ README.md',
+  ].filter(Boolean).join(' · ')}</div>`;
+
+  const zip  = new window.JSZip();
   files.forEach(f => zip.file(f.path, f.content));
 
   const slug = cur.course_title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
@@ -737,54 +1419,44 @@ async function pushToGitHub(container, cur) {
   const status = container.querySelector('#mat-status');
 
   if (!githubToken) {
-    if (status) status.innerHTML = `<div class="status-bar error">❌ GitHub token not set — add it in ⚙ Settings (GitHub Materials Repository section).</div>`;
+    if (status) status.innerHTML = `<div class="status-bar error">❌ GitHub token not set — add it in ⚙ Settings.</div>`;
     return;
   }
 
-  const ghUser    = githubUsername || 'aseemmankotia';
-  const slug      = cur.course_title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
-  const repoName  = `course-${slug}`;
-  const API       = 'https://api.github.com';
-  const headers   = { 'Authorization': `token ${githubToken}`, 'Content-Type': 'application/json' };
-  const btn       = container.querySelector('#mat-github-btn');
+  const ghUser   = githubUsername || 'aseemmankotia';
+  const slug     = cur.course_title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+  const repoName = `course-${slug}`;
+  const API      = 'https://api.github.com';
+  const headers  = { 'Authorization': `token ${githubToken}`, 'Content-Type': 'application/json' };
+  const btn      = container.querySelector('#mat-github-btn');
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Pushing…'; }
 
-  const setStatus = (msg) => { if (status) status.innerHTML = `<div class="status-bar info">${msg}</div>`; };
+  const setStatus = msg => { if (status) status.innerHTML = `<div class="status-bar info">${msg}</div>`; };
 
   try {
-    // Step 1: Create repo (ignore 422 = already exists)
     setStatus('📁 Creating GitHub repository…');
     const createResp = await fetch(`${API}/user/repos`, {
-      method: 'POST', headers,
-      body: JSON.stringify({ name: repoName, description: `Course materials for: ${cur.course_title}`, private: false, auto_init: false }),
+      method:'POST', headers,
+      body: JSON.stringify({ name: repoName, description: `Course materials for: ${cur.course_title}`, private:false, auto_init:false }),
     });
     if (!createResp.ok && createResp.status !== 422) {
       const e = await createResp.json().catch(()=>({}));
       throw new Error(`Failed to create repo (${createResp.status}): ${e.message || createResp.statusText}`);
     }
 
-    // Step 2: Push all files
-    const files = collectAllMaterials(cur);
-    let pushed = 0;
+    const files   = collectAllMaterials(cur);
+    let   pushed  = 0;
 
     for (const file of files) {
-      setStatus(`📤 Pushing files… (${pushed + 1}/${files.length}) <span style="color:var(--muted);font-size:.8rem;">${esc(file.path)}</span>`);
-
-      // Check if file already exists (need sha for updates)
+      setStatus(`📤 Pushing files… (${pushed+1}/${files.length}) <span style="color:var(--muted);font-size:.8rem;">${esc(file.path)}</span>`);
       let sha = null;
-      const checkResp = await fetch(`${API}/repos/${ghUser}/${repoName}/contents/${file.path}`, { headers });
-      if (checkResp.ok) {
-        const existing = await checkResp.json();
-        sha = existing.sha;
-      }
-
-      // Encode content as base64
+      const chk = await fetch(`${API}/repos/${ghUser}/${repoName}/contents/${file.path}`, { headers });
+      if (chk.ok) { const ex = await chk.json(); sha = ex.sha; }
       const content = btoa(unescape(encodeURIComponent(file.content)));
       await fetch(`${API}/repos/${ghUser}/${repoName}/contents/${file.path}`, {
-        method: 'PUT', headers,
-        body: JSON.stringify({ message: `Add ${file.path}`, content, ...(sha ? { sha } : {}) }),
+        method:'PUT', headers,
+        body: JSON.stringify({ message:`Add ${file.path}`, content, ...(sha?{sha}:{}) }),
       });
-
       pushed++;
       await new Promise(r => setTimeout(r, 250));
     }
@@ -792,7 +1464,6 @@ async function pushToGitHub(container, cur) {
     const repoUrl = `https://github.com/${ghUser}/${repoName}`;
     lset(`course_github_url_${cur.id}`, repoUrl);
     showRepoLink(container, repoUrl);
-
     if (status) status.innerHTML = `<div class="status-bar success">✅ Pushed ${pushed} files to GitHub!</div>`;
     setTimeout(() => { if (status) status.innerHTML = ''; }, 5000);
 
@@ -808,7 +1479,7 @@ function showRepoLink(container, repoUrl) {
   if (!el) return;
   el.style.display = '';
   el.innerHTML = `<div class="status-bar" style="background:#f0fdf4;border-color:#86efac;color:#166534;">
-    📦 Materials published at: <a href="${esc(repoUrl)}" target="_blank" style="color:#16a34a;font-weight:600;">${esc(repoUrl)}</a>
+    📦 Published at: <a href="${esc(repoUrl)}" target="_blank" style="color:#16a34a;font-weight:600;">${esc(repoUrl)}</a>
   </div>`;
 }
 
