@@ -591,7 +591,7 @@ body{width:1280px;height:720px;background:#1a1a2e;font-family:'Inter',sans-serif
 .kernel{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:12px;color:#68d391;}
 .kdot{width:8px;height:8px;border-radius:50%;background:#68d391;animation:pulse 2s infinite;}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.nb-body{position:absolute;top:47px;left:0;right:0;bottom:200px;padding:14px 20px;overflow:hidden;}
+.nb-body{position:absolute;top:47px;left:0;right:0;bottom:130px;padding:14px 20px;overflow:hidden;}
 .cell{margin-bottom:8px;display:flex;gap:10px;align-items:flex-start;}
 .cell-num{font-family:'JetBrains Mono',monospace;font-size:12px;color:#4a5568;min-width:44px;
   padding-top:12px;text-align:right;flex-shrink:0;}
@@ -607,12 +607,12 @@ body{width:1280px;height:720px;background:#1a1a2e;font-family:'Inter',sans-serif
 .output-cell{background:#0a0e1a;border:1px solid #1a2744;border-left:3px solid #0f3460;
   border-radius:4px;padding:10px 14px;margin-top:4px;display:none;}
 .output-cell.show{display:block;}
-.expl-bar{position:absolute;bottom:200px;left:0;right:0;background:rgba(233,69,96,.1);
+.expl-bar{position:absolute;bottom:130px;left:0;right:0;background:rgba(233,69,96,.1);
   border-top:1px solid rgba(233,69,96,.3);padding:7px 20px;font-size:14px;
   color:#feb2c0;display:none;}
 .expl-bar.show{display:flex;align-items:center;gap:8px;}
-.slide-brand{position:absolute;bottom:208px;right:18px;font-size:11px;color:#2d3748;}
-.slide-dots{position:absolute;bottom:180px;left:20px;display:flex;gap:5px;}
+.slide-brand{position:absolute;bottom:138px;right:18px;font-size:11px;color:#2d3748;}
+.slide-dots{position:absolute;bottom:110px;left:20px;display:flex;gap:5px;}
 /* syntax colours */
 .kw{color:#ff7b72}.fn{color:#d2a8ff}.st{color:#a5d6ff}
 .cm{color:#6e7681;font-style:italic}.nm{color:#79c0ff}
@@ -775,14 +775,14 @@ body{width:1280px;height:720px;background:#ffffff;font-family:'DM Sans',system-u
 .slide-title{position:absolute;top:34px;left:60px;right:360px;
   font-family:'Poppins',sans-serif;font-weight:700;font-size:30px;
   color:${NAVY};line-height:1.2;}
-.diagram-container{position:absolute;top:96px;left:40px;right:40px;bottom:215px;
+.diagram-container{position:absolute;top:96px;left:40px;right:40px;bottom:130px;
   display:flex;align-items:center;justify-content:center;
   background:#fafafa;border-radius:8px;border:1px solid #f0f0f0;
   overflow:hidden;padding:16px;}
 .mermaid{width:100%;height:100%;display:flex;align-items:center;justify-content:center;}
 .mermaid svg{max-width:100%!important;max-height:100%!important;}
-.progress{position:absolute;bottom:185px;left:60px;display:flex;gap:6px;align-items:center;}
-.brand{position:absolute;bottom:188px;right:60px;font-size:12px;color:#d1d5db;font-weight:500;}
+.progress{position:absolute;bottom:115px;left:60px;display:flex;gap:6px;align-items:center;}
+.brand{position:absolute;bottom:118px;right:60px;font-size:12px;color:#d1d5db;font-weight:500;}
 </style>
 </head><body>
 <div class="top-bar"></div>
@@ -1398,8 +1398,8 @@ async function compositeVideo(sections, heygenPath, outPath, totalDuration, ctaO
   }
 
   const pipChain = [
-    '[1:v]scale=320:-2:flags=lanczos[av_scaled]',
-    '[av_scaled]pad=iw+6:ih+6:3:3:color=white[av_bordered]',
+    '[1:v]scale=160:-2:flags=lanczos[av_scaled]',
+    '[av_scaled]pad=iw+4:ih+4:2:2:color=white[av_bordered]',
     ...(pipFade ? [pipFade] : []),
   ];
 
