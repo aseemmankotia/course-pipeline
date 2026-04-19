@@ -8,7 +8,7 @@
  * Output: chapter-{N}-{slug}.mp4
  *
  * Requirements:
- *   ANTHROPIC_API_KEY in .env · ffmpeg · npm install
+ *   ANTHROPIC_API_KEY or GEMINI_API_KEY in .env · ffmpeg · npm install
  */
 
 ;(function loadEnv() {
@@ -26,6 +26,7 @@ const path         = require('path');
 const axios        = require('axios');
 const puppeteer    = require('puppeteer');
 const { execSync, spawn } = require('child_process');
+const { callAI }   = require('./ai-client-node.js');
 
 // Chapter number: argv wins over whatever is in the JSON
 const CHAPTER_NUM  = process.argv[2] ? parseInt(process.argv[2]) : null;
@@ -200,15 +201,8 @@ async function main() {
 // ── Step 1: Split script into sections ───────────────────────────────────────
 
 async function splitChapterScript(script, input) {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) die('ANTHROPIC_API_KEY not set in .env');
-
-  const res = await axios.post(
-    'https://api.anthropic.com/v1/messages',
-    {
-      model: 'claude-opus-4-5',
-      max_tokens: 4000,
-      system: `You are a course slide designer. Split a chapter video script into slides for a professional online learning platform.
+  const sectionsText = await callAI({
+    systemPrompt: `You are a course slide designer. Split a chapter video script into slides for a professional online learning platform.
 
 Slide types available:
 - "concept"     : explanation slide with title + bullets (use for theory)
@@ -231,9 +225,7 @@ Rules:
 - Keep bullets to 3-5 per slide
 - Prefer "live_code" over "code" whenever demonstrating execution
 - Return ONLY a JSON array, no markdown`,
-      messages: [{
-        role: 'user',
-        content: `Chapter: ${input.chapter_title}
+    prompt: `Chapter: ${input.chapter_title}
 Concepts: ${(input.concepts || []).join(', ')}
 
 Script to split into slides:
@@ -309,16 +301,18 @@ Return JSON array of slides:
     "duration_seconds": 45
   }
 ]`,
-      }],
-    },
-    { headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' } }
-  );
+    maxTokens: 4000,
+    action:    'slide_splitting',
+  });
 
-  const text  = res.data.content.filter(b => b.type === 'text').map(b => b.text).join('\n');
-  const clean = text.replace(/```json|```/g, '').trim();
+  const clean = sectionsText.replace(/```json|```/g, '').trim();
   const match = clean.match(/\[[\s\S]*\]/);
-  if (!match) throw new Error('No JSON array in split response');
-  return JSON.parse(match[0]);
+  if (!match) throw new Error(`No JSON array in split response:\n${sectionsText.substring(0, 200)}`);
+  try {
+    return JSON.parse(match[0]);
+  } catch (e) {
+    throw new Error(`Failed to parse sections: ${e.message}\n${sectionsText.substring(0, 200)}`);
+  }
 }
 
 // ── Steps 2 & 3: Generate + screenshot slides ─────────────────────────────────
