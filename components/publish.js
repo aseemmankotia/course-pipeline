@@ -93,6 +93,29 @@ function mountPublish(container) {
     generateLandingPage(container, cur, s));
 }
 
+// ── Token refresh ─────────────────────────────────────────────────────────────
+
+async function refreshAccessToken(s) {
+  if (!s.youtubeClientId || !s.youtubeClientSecret || !s.youtubeToken) {
+    throw new Error('YouTube credentials incomplete — add Client ID, Client Secret and Refresh Token in ⚙ Settings.');
+  }
+  const res = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      client_id:     s.youtubeClientId,
+      client_secret: s.youtubeClientSecret,
+      refresh_token: s.youtubeToken,
+      grant_type:    'refresh_token',
+    }),
+  });
+  const data = await res.json();
+  if (!res.ok || data.error) {
+    throw new Error(`Token refresh failed: ${data.error_description || data.error || res.statusText}`);
+  }
+  return data.access_token;
+}
+
 // ── Playlist creation ─────────────────────────────────────────────────────────
 
 async function createPlaylist(container, cur, s, statusEl) {
@@ -105,12 +128,14 @@ async function createPlaylist(container, cur, s, statusEl) {
   statusEl.innerHTML = `<div class="status-bar info"><span class="loader"></span> Creating YouTube playlist…</div>`;
 
   try {
+    const accessToken = await refreshAccessToken(s);
+
     const res = await fetch(
       'https://www.googleapis.com/youtube/v3/playlists?part=snippet,status',
       {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${s.youtubeToken}`,
+          'Authorization': `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
