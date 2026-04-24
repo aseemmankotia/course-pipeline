@@ -64,9 +64,75 @@ async function callClaude(apiKey, { system, user, maxTokens = 2500 }) {
 }
 
 function parseJSON(text) {
-  const m = text.match(/```(?:json)?\s*([\s\S]+?)```/) || text.match(/(\[[\s\S]+\]|\{[\s\S]+\})/);
-  if (!m) throw new Error('No JSON found in response.');
-  return JSON.parse(m[1]);
+  // Strategy 1: Extract from code fence
+  try {
+    const fenced = text.match(/```(?:json)?\s*([\s\S]+?)```/);
+    if (fenced) return JSON.parse(fenced[1].trim());
+  } catch(e) {}
+
+  // Strategy 2: Extract outermost { } or [ ]
+  try {
+    const objMatch = text.match(/(\{[\s\S]+\}|\[[\s\S]+\])/);
+    if (objMatch) return JSON.parse(objMatch[1]);
+  } catch(e) {}
+
+  // Strategy 3: Find outermost braces manually
+  try {
+    const start = text.search(/[\[\{]/);
+    if (start !== -1) {
+      const isArray = text[start] === '[';
+      const end = text.lastIndexOf(isArray ? ']' : '}');
+      if (end > start) return JSON.parse(text.substring(start, end + 1));
+    }
+  } catch(e) {}
+
+  // Strategy 4: Fix truncated JSON — keep only complete top-level items
+  try {
+    const start = text.search(/[\[\{]/);
+    if (start !== -1) {
+      let jsonStr = text.substring(start);
+      const isArray = jsonStr[0] === '[';
+      let depth = 0, inStr = false, lastSafePos = 0;
+      for (let i = 0; i < jsonStr.length; i++) {
+        const ch = jsonStr[i];
+        if (ch === '"' && jsonStr[i - 1] !== '\\') inStr = !inStr;
+        if (!inStr) {
+          if (ch === '{' || ch === '[') depth++;
+          if (ch === '}' || ch === ']') {
+            depth--;
+            if (depth === (isArray ? 1 : 0)) lastSafePos = i + 1;
+          }
+        }
+      }
+      if (lastSafePos > 0) {
+        let fixed = jsonStr.substring(0, lastSafePos).replace(/,\s*$/, '');
+        fixed += isArray ? ']' : '}';
+        const parsed = JSON.parse(fixed);
+        console.warn(`⚠️ parseJSON: recovered truncated JSON (${lastSafePos}/${jsonStr.length} chars used)`);
+        return parsed;
+      }
+    }
+  } catch(e) {}
+
+  // Strategy 5: Extract individual question objects for practice tests
+  try {
+    if (text.includes('"question"') && text.includes('"correct"')) {
+      const questions = [];
+      const qRegex = /\{[^{}]*"question"\s*:\s*"[^"]*"[^{}]*"correct"\s*:\s*"[A-D]"[^{}]*\}/g;
+      let m;
+      while ((m = qRegex.exec(text)) !== null) {
+        try { questions.push(JSON.parse(m[0])); } catch(e) {}
+      }
+      if (questions.length > 0) {
+        console.warn(`⚠️ parseJSON: extracted ${questions.length} questions via regex`);
+        return questions;
+      }
+    }
+  } catch(e) {}
+
+  throw new Error(
+    `parseJSON: all strategies failed.\nResponse length: ${text.length}\nPreview: ${text.substring(0, 200)}`
+  );
 }
 
 function getApiKey() {
@@ -500,7 +566,14 @@ async function genBothPracticeTests(container, cur, certName) {
 
 async function genPracticeTest(cur, certName, testNum) {
   const apiKey     = getApiKey();
-  const domainDist = calculateDomainDistribution(cur.chapters, 55);
+
+  // Reduce batch size for Gemini to avoid truncation
+  const settings   = getSettings();
+  const usingGemini = !settings.claudeApiKey && !!settings.geminiApiKey;
+  const totalQ     = usingGemini ? 25 : 55;
+  console.log(`Generating ${totalQ} questions via ${usingGemini ? 'Gemini' : 'Claude'}...`);
+
+  const domainDist = calculateDomainDistribution(cur.chapters, totalQ);
   const entries    = Object.entries(domainDist);
   const half       = Math.ceil(entries.length / 2);
   const batch1     = entries.slice(0, half);
@@ -512,6 +585,9 @@ async function genPracticeTest(cur, certName, testNum) {
   ).join('\n');
   const extraNote  = testNum === 2
     ? '\n\nThis is Practice Test 2. Generate COMPLETELY DIFFERENT questions from Test 1. Focus more on scenario-based and harder questions. Include more edge cases and common exam traps.'
+    : '';
+  const geminiInstruction = usingGemini
+    ? `\n\nIMPORTANT: Generate exactly the number of questions specified only.\nKeep each explanation to 1 sentence per option.\nEnsure JSON is complete and valid.\nStart response with { and end with }`
     : '';
 
   const makeUserMsg = (batchDomains, startId, batchTotal) =>
@@ -525,15 +601,28 @@ ${batchDomains.map(([d,q]) => `${d}: ${q} questions`).join('\n')}
 
 Start IDs at PT${testNum}-${String(startId).padStart(3,'0')}.
 
-${ptQuestionFormat(`PT${testNum}`)}${extraNote}`;
+${ptQuestionFormat(`PT${testNum}`)}${extraNote}${geminiInstruction}`;
 
   const [raw1, raw2] = await Promise.all([
     callClaude(apiKey, { system: PT_SYSTEM, user: makeUserMsg(batch1, 1, b1Total), maxTokens: 8000 }),
     callClaude(apiKey, { system: PT_SYSTEM, user: makeUserMsg(batch2, b1Total + 1, b2Total), maxTokens: 8000 }),
   ]);
 
-  const q1 = parseJSON(raw1);
-  const q2 = parseJSON(raw2);
+  let q1, q2;
+  try {
+    q1 = parseJSON(raw1);
+  } catch(e) {
+    console.error('Practice test parse failed (batch 1):', e.message);
+    console.error('Response preview:', raw1.substring(0, 500));
+    throw new Error(`Practice test ${testNum} generation failed: ${e.message}\nTry generating again — AI sometimes returns incomplete JSON.`);
+  }
+  try {
+    q2 = parseJSON(raw2);
+  } catch(e) {
+    console.error('Practice test parse failed (batch 2):', e.message);
+    console.error('Response preview:', raw2.substring(0, 500));
+    throw new Error(`Practice test ${testNum} generation failed: ${e.message}\nTry generating again — AI sometimes returns incomplete JSON.`);
+  }
   const allQ = [...q1, ...q2];
 
   // Fisher-Yates shuffle
@@ -1130,7 +1219,14 @@ Return JSON array:
 }]`,
     maxTokens: 3000,
   });
-  const examples = parseJSON(text);
+  let examples;
+  try {
+    examples = parseJSON(text);
+  } catch(e) {
+    console.error('Code examples parse failed:', e.message);
+    console.error('Response preview:', text.substring(0, 500));
+    throw new Error(`Code examples generation failed: ${e.message}\nTry generating again — AI sometimes returns incomplete JSON.`);
+  }
   lset(MKEYS.code(cur.id, ch.number), examples);
   const cell = container.querySelector(`#mat-c-${ch.number}`);
   if (cell) cell.textContent = STATUS.ready;
