@@ -34,6 +34,7 @@ const PADDED_NUM   = CHAPTER_NUM ? String(CHAPTER_NUM).padStart(2, '0') : null;
 const CHAPTER_DIR  = CHAPTER_NUM
   ? path.join(__dirname, 'chapters', `chapter-${PADDED_NUM}`)
   : null;
+const FORCE_REGEN  = process.argv.includes('--force');
 
 console.log(`\n📚 Course Render${CHAPTER_NUM ? ` — Chapter ${CHAPTER_NUM}` : ''}`);
 
@@ -91,24 +92,8 @@ const DEEP_BLUE  = '#16213e';
 // ── Entry ─────────────────────────────────────────────────────────────────────
 
 async function main() {
-  log('📖 Reading course-render-input.json…');
-
   const inputFile = getInputPath();
-  log(`   Using: ${inputFile}`);
   const input = JSON.parse(fs.readFileSync(inputFile, 'utf8'));
-
-  // Validate chapter number matches argument — wrong JSON = hard fail
-  if (CHAPTER_NUM && input.chapter_number !== CHAPTER_NUM) {
-    const p = String(CHAPTER_NUM).padStart(2, '0');
-    console.error(`\n⚠️  Chapter mismatch!`);
-    console.error(`   Argument says: Chapter ${CHAPTER_NUM}`);
-    console.error(`   JSON file says: Chapter ${input.chapter_number}`);
-    console.error(`   The render input file contains data for the wrong chapter.`);
-    console.error(`   Fix: click "📋 Prepare" for Chapter ${CHAPTER_NUM} in the app,`);
-    console.error(`   then move the downloaded file to:`);
-    console.error(`   render/chapters/chapter-${p}/course-render-input.json`);
-    process.exit(1);
-  }
 
   const {
     course_title, chapter_number, chapter_title, chapter_subtitle,
@@ -117,17 +102,88 @@ async function main() {
     output_filename,
   } = input;
 
-  if (!script) die('script is missing from course-render-input.json');
-
   // Set up chapter-specific directory structure using the effective chapter number
   const PATHS = setupChapterPaths(chapter_number);
   SLIDES_DIR = PATHS.slidesDir;
   TEMP_DIR   = PATHS.tempDir;
   ensureChapterDirs(PATHS);
 
-  log(`   Chapter: ${chapter_number} — ${chapter_title}`);
-  log(`   Slides:  ${PATHS.slidesDir}`);
-  log(`   Output:  ${PATHS.finalVideo}`);
+  // ── Fix 3: Startup info banner ─────────────────────────────────────────────
+  const existingPNGs = fs.existsSync(PATHS.slidesDir)
+    ? fs.readdirSync(PATHS.slidesDir).filter(f => f.endsWith('.png')).length
+    : 0;
+  console.log('─'.repeat(50));
+  console.log(`📚 Course Render Pipeline`);
+  console.log(`   Course:     ${course_title}`);
+  console.log(`   Chapter:    ${chapter_number} — ${chapter_title}`);
+  console.log(`   Input:      ${inputFile}`);
+  console.log(`   Output:     ${PATHS.finalVideo}`);
+  console.log(`   Slides dir: ${PATHS.slidesDir}`);
+  console.log(`   Existing slides: ${existingPNGs > 0 ? existingPNGs + ' PNG files' : 'none'}`);
+  console.log('─'.repeat(50));
+
+  // ── Fix 6: Validate chapter number matches argument ────────────────────────
+  if (CHAPTER_NUM && chapter_number !== CHAPTER_NUM) {
+    const p = String(CHAPTER_NUM).padStart(2, '0');
+    console.error(`\n❌ CHAPTER MISMATCH!`);
+    console.error(`   You ran: node render/course-render.js ${CHAPTER_NUM}`);
+    console.error(`   But render input says: Chapter ${chapter_number}`);
+    console.error(`   Course in render input: ${course_title}`);
+    console.error(`\n   This usually means the render input file`);
+    console.error(`   has not been updated for the new course.`);
+    console.error(`\n   Fix: Go to app → Render tab → Prepare Chapter ${CHAPTER_NUM}`);
+    console.error(`   Then move the downloaded JSON to:`);
+    console.error(`   render/chapters/chapter-${p}/course-render-input.json`);
+    process.exit(1);
+  }
+
+  if (!script) die('script is missing from course-render-input.json');
+
+  // ── Fix 2: --force flag clears all slides unconditionally ─────────────────
+  if (FORCE_REGEN) {
+    console.log('\n🔄 Force regeneration — clearing all slides...');
+    const slides = fs.existsSync(PATHS.slidesDir)
+      ? fs.readdirSync(PATHS.slidesDir).filter(f => f.endsWith('.png') || f.endsWith('.html'))
+      : [];
+    slides.forEach(f => fs.unlinkSync(path.join(PATHS.slidesDir, f)));
+    console.log(`   ✓ Cleared ${slides.length} slides`);
+  } else {
+    // ── Fix 1: Auto-detect course/chapter change and clear stale slides ──────
+    const lastCourseKey   = path.join(PATHS.slidesDir, '.last-course-id');
+    const lastChapterKey  = path.join(PATHS.slidesDir, '.last-chapter-title');
+    const currentCourseId = String(input.course_id || course_title);
+    const lastCourseId    = fs.existsSync(lastCourseKey)
+      ? fs.readFileSync(lastCourseKey, 'utf8').trim() : null;
+    const lastChapterTitle = fs.existsSync(lastChapterKey)
+      ? fs.readFileSync(lastChapterKey, 'utf8').trim() : null;
+
+    let cleared = false;
+
+    if (lastCourseId && lastCourseId !== currentCourseId) {
+      console.log(`\n🔄 Course change detected!`);
+      console.log(`   Previous: ${lastCourseId}`);
+      console.log(`   Current:  ${currentCourseId}`);
+      console.log(`   Clearing old slides...`);
+      const slides = fs.readdirSync(PATHS.slidesDir)
+        .filter(f => f.endsWith('.png') || f.endsWith('.html'));
+      slides.forEach(f => fs.unlinkSync(path.join(PATHS.slidesDir, f)));
+      console.log(`   ✓ Cleared ${slides.length} old slide files`);
+      cleared = true;
+    }
+
+    if (!cleared && lastChapterTitle && lastChapterTitle !== chapter_title) {
+      console.log(`\n🔄 Chapter content changed!`);
+      console.log(`   Clearing old slides for fresh render...`);
+      const slides = fs.readdirSync(PATHS.slidesDir)
+        .filter(f => f.endsWith('.png') || f.endsWith('.html'));
+      slides.forEach(f => fs.unlinkSync(path.join(PATHS.slidesDir, f)));
+      console.log(`   ✓ Cleared ${slides.length} old slides`);
+    }
+
+    // Save current identifiers for next run
+    fs.writeFileSync(lastCourseKey, currentCourseId);
+    fs.writeFileSync(lastChapterKey, chapter_title);
+  }
 
   const ffmpeg  = findBinary('ffmpeg');
   const ffprobe = findBinary('ffprobe');

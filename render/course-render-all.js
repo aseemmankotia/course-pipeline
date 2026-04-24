@@ -46,6 +46,8 @@ function findInputFile(n) {
   return null;
 }
 
+const FORCE_FLAG = process.argv.includes('--force') ? ' --force' : '';
+
 async function main() {
   const totalChapters = loadCurriculum();
 
@@ -55,7 +57,7 @@ async function main() {
     process.exit(1);
   }
 
-  log(`\n📚 Rendering ${totalChapters} chapter(s)…\n`);
+  log(`\n📚 Rendering ${totalChapters} chapter(s)…${FORCE_FLAG ? ' (--force)' : ''}\n`);
 
   const results = [];
 
@@ -82,7 +84,7 @@ async function main() {
     log(`   Input: ${inputFile}`);
 
     try {
-      execSync(`node render/course-render.js ${n}`, {
+      execSync(`node render/course-render.js ${n}${FORCE_FLAG}`, {
         cwd: ROOT,
         stdio: 'inherit',
       });
