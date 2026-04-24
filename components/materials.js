@@ -187,6 +187,40 @@ function mount(container) {
       </div>
     </div>
 
+    <!-- Archive section -->
+    <div class="card" id="archive-section">
+      <h3 style="margin-bottom:6px;">📦 Archive Complete Course</h3>
+      <p style="font-size:.85rem;color:var(--muted);margin-bottom:16px;">
+        Create a dated ZIP archive of all videos, scripts, materials, and configs.
+      </p>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div style="display:flex;align-items:center;gap:14px;padding:12px;
+          background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);">
+          <span style="width:26px;height:26px;border-radius:50%;background:var(--primary);color:#fff;
+            display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;flex-shrink:0;">1</span>
+          <span style="font-size:.88rem;flex:1;">Export course data (scripts + materials)</span>
+          <button class="btn btn-secondary btn-sm" id="mat-export-btn">📤 Export</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;padding:12px;
+          background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);">
+          <span style="width:26px;height:26px;border-radius:50%;background:var(--primary);color:#fff;
+            display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;flex-shrink:0;">2</span>
+          <span style="font-size:.88rem;flex:1;">Run archive script in terminal</span>
+          <code style="font-size:.8rem;background:var(--surface);border:1px solid var(--border);
+            padding:4px 10px;border-radius:4px;">node archive.js</code>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;padding:12px;
+          background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);">
+          <span style="width:26px;height:26px;border-radius:50%;background:var(--primary);color:#fff;
+            display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;flex-shrink:0;">3</span>
+          <span style="font-size:.88rem;flex:1;">Find ZIP in exports/ folder</span>
+          <code style="font-size:.8rem;background:var(--surface);border:1px solid var(--border);
+            padding:4px 10px;border-radius:4px;">open ~/course-pipeline/exports/</code>
+        </div>
+      </div>
+      <div id="mat-archive-status" style="margin-top:10px;font-size:.82rem;color:var(--muted);"></div>
+    </div>
+
     <!-- Practice Test Full-screen Modal -->
     <div id="pt-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9999;overflow-y:auto;padding:20px;">
       <div id="pt-modal-inner" style="margin:0 auto;max-width:880px;background:var(--surface);border-radius:12px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.4);"></div>
@@ -243,6 +277,17 @@ function mount(container) {
   container.querySelector('#mat-gen-all-btn').addEventListener('click', () => genAll(container, cur, lang, isCert, certName));
   container.querySelector('#mat-zip-btn').addEventListener('click', () => downloadZip(container, cur));
   container.querySelector('#mat-github-btn').addEventListener('click', () => pushToGitHub(container, cur));
+  container.querySelector('#mat-export-btn')?.addEventListener('click', () => {
+    // Trigger the same export as Settings tab — dispatch to app.js helper via custom event
+    // The app-level exportCourseData is not importable here, so we emit a custom event.
+    window.dispatchEvent(new CustomEvent('course-export-requested'));
+    const archiveStatus = container.querySelector('#mat-archive-status');
+    if (archiveStatus) archiveStatus.textContent = 'Opening Settings tab for export…';
+  });
+  window.addEventListener('course-export-done', (e) => {
+    const archiveStatus = container.querySelector('#mat-archive-status');
+    if (archiveStatus) archiveStatus.textContent = e.detail?.msg || '✅ Exported! Run: node archive.js';
+  }, { once: false });
   container.querySelector('#mat-readme-preview-btn').addEventListener('click', () => showPreview(container, 'README.md', generateReadme(cur), 'README.md'));
   container.querySelector('#mat-preview-close').addEventListener('click', () => {
     container.querySelector('#mat-preview-panel').style.display = 'none';

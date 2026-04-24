@@ -70,6 +70,43 @@ npm run render:all
 # → chapter-01-*.mp4, chapter-02-*.mp4, ...
 ```
 
+## Archiving a Course
+
+The archive system exports all course assets into a timestamped ZIP for long-term storage or handoff.
+
+### Step 1 — Export course data from the browser
+
+1. Go to **⚙️ Settings** → scroll to **Export Course Data**
+2. Click **Export Course Data JSON** → `course-data-export.json` downloads automatically
+3. Move it to the project root: `mv ~/Downloads/course-data-export.json .`
+
+Or from the **Materials** tab, click **Export Course Data** in the Archive section.
+
+### Step 2 — Build the ZIP archive
+
+```bash
+npm run archive -- --course-id=1
+# → exports/course-1-kubernetes-2026-04-19.zip
+```
+
+The archive contains:
+- `curriculum.json` + `README.md` — course metadata
+- `scripts/` — chapter scripts (`.txt`)
+- `slides/` — rendered slide PNGs per chapter
+- `materials/` — questions, flashcards, cheatsheets, exam questions, code labs
+- `practice-tests/` — tests + answer keys per chapter
+- `render-configs/` — `course-render-input-N.json` files
+- `thumbnails/` — `Thumbnail-*.png` from project root
+- `manifest.json` — full file listing with sizes
+
+### Step 3 — List archives
+
+```bash
+npm run archive:list
+```
+
+Archives are saved to `exports/` (gitignored).
+
 ## Project Structure
 
 ```
@@ -77,6 +114,7 @@ course-pipeline/
 ├── index.html              # App entry point
 ├── styles.css              # Udemy-inspired light theme
 ├── app.js                  # Tab routing + settings
+├── archive.js              # Node.js: build ZIP archive from exported JSON
 ├── components/
 │   ├── curriculum.js       # Step 1: curriculum generator
 │   ├── chapter.js          # Step 2: chapter script editor

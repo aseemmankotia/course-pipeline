@@ -18,13 +18,16 @@
     "test": "node tests/test-runner.js",
     "test:watch": "node --watch --test tests/e2e.test.js",
     "test:verbose": "node --test --test-reporter=spec tests/e2e.test.js",
-    "predeploy": "bash scripts/pre-deploy-check.sh"
+    "predeploy": "bash scripts/pre-deploy-check.sh",
+    "archive": "node archive.js",
+    "archive:list": "ls -la exports/"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/aseemmankotia/course-pipeline.git"
   },
   "dependencies": {
+    "archiver": "^7.0.1",
     "axios": "^1.14.0",
     "node-fetch": "^2.7.0",
     "puppeteer": "^24.40.0"

@@ -200,6 +200,29 @@ function renderSettings(container) {
       <div class="btn-group">
         <button class="btn btn-primary" id="save-settings-btn">Save Settings</button>
       </div>
+
+      <div class="settings-section" style="margin-top:20px;">
+        <div class="settings-label">📦 Course Archive</div>
+        <p style="font-size:.83rem;color:var(--muted);margin-bottom:10px;">
+          Export all course data (scripts, materials, practice tests) to a JSON file,
+          then run <code>node archive.js</code> to build a dated ZIP archive.
+        </p>
+        <button class="btn btn-secondary" id="export-course-data-btn">
+          📤 Export Course Data for Archive
+        </button>
+        <div id="export-status" style="margin-top:8px;font-size:.82rem;color:var(--muted);"></div>
+        <div id="export-instructions" style="display:none;margin-top:10px;padding:12px;
+          background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);
+          font-size:.82rem;line-height:1.8;">
+          <strong>After downloading:</strong>
+          <ol style="margin:6px 0 0 16px;">
+            <li>Move file to project root:
+              <code>mv ~/Downloads/course-data-export.json ~/course-pipeline/</code></li>
+            <li>Run: <code>node archive.js</code>  or  <code>npm run archive</code></li>
+            <li>Find ZIP in <code>exports/</code> folder</li>
+          </ol>
+        </div>
+      </div>
     </div>
   `;
 
@@ -258,6 +281,9 @@ function renderSettings(container) {
     btn.textContent = '🤖 Test AI providers';
   });
 
+  container.querySelector('#export-course-data-btn').addEventListener('click', () =>
+    exportCourseData(container));
+
   container.querySelector('#save-settings-btn').addEventListener('click', () => {
     const updated = {
       claudeApiKey:      container.querySelector('#st-claude-key').value.trim(),
@@ -280,6 +306,92 @@ function renderSettings(container) {
     el.innerHTML = `<div class="status-bar success">✓ Settings saved.</div>`;
     setTimeout(() => { el.innerHTML = ''; }, 2500);
   });
+}
+
+// ── Export course data for archive ────────────────────────────────────────────
+
+async function exportCourseData(container) {
+  const btn      = container.querySelector('#export-course-data-btn');
+  const statusEl = container.querySelector('#export-status');
+
+  btn.disabled    = true;
+  btn.textContent = '⏳ Exporting…';
+  statusEl.textContent = 'Collecting course data…';
+
+  try {
+    const curriculum = getCurriculum();
+    if (!curriculum) throw new Error('No curriculum found — generate a course first.');
+
+    const id       = curriculum.id;
+    const chapters = curriculum.chapters || [];
+
+    const exportData = {
+      ...curriculum,
+      export_date:    new Date().toISOString(),
+      export_version: '1.0',
+      scripts:        {},
+      materials:      {},
+      practice_tests: [],
+    };
+
+    // Scripts (stored inside chapter data)
+    chapters.forEach(ch => {
+      const d = JSON.parse(localStorage.getItem(`course_chapter_${ch.number}`) || 'null');
+      if (d?.script) exportData.scripts[ch.number] = d.script;
+    });
+
+    // Materials
+    const matTypes = ['questions', 'flashcards', 'cheatsheet', 'code', 'exam_questions'];
+    chapters.forEach(ch => {
+      matTypes.forEach(type => {
+        const val = localStorage.getItem(`course_materials_${id}_ch${ch.number}_${type}`);
+        if (val) exportData.materials[`ch${ch.number}_${type}`] = val;
+      });
+    });
+
+    // Practice tests
+    [1, 2].forEach(n => {
+      const raw = localStorage.getItem(`course_practice_test_${id}_${n}`);
+      if (raw) {
+        try { exportData.practice_tests.push(JSON.parse(raw)); }
+        catch { exportData.practice_tests.push(raw); }
+      }
+    });
+
+    // YouTube video IDs (if uploaded)
+    chapters.forEach(ch => {
+      const videoId = JSON.parse(localStorage.getItem(`course_chapter_${ch.number}`) || 'null')?.videoId;
+      if (videoId) {
+        exportData.youtube_video_ids = exportData.youtube_video_ids || {};
+        exportData.youtube_video_ids[ch.number] = videoId;
+      }
+    });
+
+    const scriptCount   = Object.keys(exportData.scripts).length;
+    const materialCount = Object.keys(exportData.materials).length;
+    const testCount     = exportData.practice_tests.length;
+
+    statusEl.textContent = `Found: ${scriptCount} scripts, ${materialCount} material files, ${testCount} practice tests`;
+
+    const json = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = 'course-data-export.json';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(url);
+
+    statusEl.textContent = `✅ Exported! (${(json.length / 1024).toFixed(0)}KB) — move file to project root then run: node archive.js`;
+    statusEl.style.color = '#16a34a';
+    container.querySelector('#export-instructions').style.display = 'block';
+
+  } catch (e) {
+    statusEl.textContent = `❌ Export failed: ${e.message}`;
+    statusEl.style.color = '#dc2626';
+  }
+
+  btn.disabled    = false;
+  btn.textContent = '📤 Export Course Data for Archive';
 }
 
 // ── Script generation shared helpers ─────────────────────────────────────────

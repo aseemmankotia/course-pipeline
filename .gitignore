@@ -18,3 +18,7 @@ render/slides/*.html
 render/slides/*.png
 
 docs/courses/
+
+# Course archive exports
+exports/
+course-data-export.json
