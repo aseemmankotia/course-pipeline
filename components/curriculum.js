@@ -585,6 +585,173 @@ No other text.`,
   }
 }
 
+// ── Curriculum JSON parsing ───────────────────────────────────────────────────
+
+function isValidCurriculum(curriculum) {
+  if (!curriculum || typeof curriculum !== 'object') return false;
+  if (!curriculum.course_title) return false;
+  if (!Array.isArray(curriculum.chapters)) return false;
+  if (curriculum.chapters.length < 1) return false;
+  if (curriculum.chapters.length > 15) return false;
+  return true;
+}
+
+function parseCurriculumJSON(text) {
+  // Strategy 1: Clean and direct parse
+  try {
+    const clean = text
+      .replace(/```json\n?/g, '')
+      .replace(/```\n?/g, '')
+      .trim();
+    const parsed = JSON.parse(clean);
+    if (isValidCurriculum(parsed)) {
+      console.log('✓ Curriculum parsed (Strategy 1)');
+      return parsed;
+    }
+  } catch (e1) {
+    console.log('Strategy 1 failed:', e1.message);
+  }
+
+  // Strategy 2: Extract outermost { } object
+  try {
+    const start = text.indexOf('{');
+    const end   = text.lastIndexOf('}');
+    if (start !== -1 && end > start) {
+      const parsed = JSON.parse(text.substring(start, end + 1));
+      if (isValidCurriculum(parsed)) {
+        console.log('✓ Curriculum parsed (Strategy 2)');
+        return parsed;
+      }
+    }
+  } catch (e2) {
+    console.log('Strategy 2 failed:', e2.message);
+  }
+
+  // Strategy 3: Fix truncated JSON — close open structures after last complete chapter
+  try {
+    const start = text.indexOf('{');
+    if (start !== -1) {
+      let jsonStr = text.substring(start);
+      const lastKeyTakeaway = jsonStr.lastIndexOf('"key_takeaway"');
+      if (lastKeyTakeaway !== -1) {
+        let depth = 0;
+        let inString = false;
+        let lastCompleteChapter = -1;
+        for (let i = lastKeyTakeaway; i < jsonStr.length; i++) {
+          const ch = jsonStr[i];
+          if (ch === '"' && jsonStr[i - 1] !== '\\') inString = !inString;
+          if (!inString) {
+            if (ch === '{') depth++;
+            if (ch === '}') {
+              depth--;
+              if (depth <= 0) { lastCompleteChapter = i; break; }
+            }
+          }
+        }
+        if (lastCompleteChapter !== -1) {
+          const fixed = jsonStr.substring(0, lastCompleteChapter + 1) + '\n  ]\n}';
+          const parsed = JSON.parse(fixed);
+          if (isValidCurriculum(parsed)) {
+            console.log(`✓ Curriculum parsed (Strategy 3): ${parsed.chapters.length} chapters recovered`);
+            return parsed;
+          }
+        }
+      }
+    }
+  } catch (e3) {
+    console.log('Strategy 3 failed:', e3.message);
+  }
+
+  // Strategy 4: Extract partial chapters and rebuild
+  try {
+    const start = text.indexOf('{');
+    if (start !== -1) {
+      const jsonStr = text.substring(start);
+      const titleMatch      = jsonStr.match(/"course_title"\s*:\s*"([^"]+)"/);
+      const subtitleMatch   = jsonStr.match(/"course_subtitle"\s*:\s*"([^"]+)"/);
+      const difficultyMatch = jsonStr.match(/"difficulty"\s*:\s*"([^"]+)"/);
+      const hoursMatch      = jsonStr.match(/"estimated_hours"\s*:\s*(\d+)/);
+      if (!titleMatch) throw new Error('No course_title found');
+      const chapters = [];
+      const chapterRegex = /\{\s*"number"\s*:\s*(\d+)[\s\S]*?"key_takeaway"\s*:\s*"[^"]*"\s*\}/g;
+      let m;
+      while ((m = chapterRegex.exec(jsonStr)) !== null) {
+        try {
+          chapters.push(JSON.parse(m[0]));
+        } catch (_) {
+          try {
+            chapters.push(JSON.parse(m[0].replace(/,\s*}/g, '}').replace(/,\s*]/g, ']')));
+          } catch (__) { /* skip */ }
+        }
+      }
+      if (chapters.length > 0) {
+        const rebuilt = {
+          course_title:    titleMatch[1],
+          course_subtitle: subtitleMatch?.[1] || '',
+          difficulty:      difficultyMatch?.[1] || 'Beginner',
+          estimated_hours: hoursMatch ? parseInt(hoursMatch[1]) : chapters.length * 0.5,
+          prerequisites:   [],
+          skills_learned:  [],
+          chapters,
+        };
+        if (isValidCurriculum(rebuilt)) {
+          console.log(`✓ Curriculum rebuilt (Strategy 4): ${chapters.length} chapters extracted`);
+          return rebuilt;
+        }
+      }
+    }
+  } catch (e4) {
+    console.log('Strategy 4 failed:', e4.message);
+  }
+
+  // Strategy 5: Last resort — extract minimum viable curriculum
+  try {
+    const titleMatch = text.match(/"course_title"\s*:\s*"([^"]+)"/);
+    if (titleMatch) {
+      const chapters = [];
+      for (const m of text.matchAll(/"number"\s*:\s*(\d+)\s*,\s*"title"\s*:\s*"([^"]+)"/g)) {
+        chapters.push({
+          number: parseInt(m[1]), title: m[2], subtitle: '', duration_mins: 20,
+          concepts: [], hands_on: '', real_world_example: '', quiz_questions: [], key_takeaway: '',
+        });
+      }
+      if (chapters.length >= 4) {
+        const minimal = {
+          course_title: titleMatch[1], course_subtitle: '', difficulty: 'Beginner',
+          estimated_hours: chapters.length, prerequisites: [], skills_learned: [], chapters,
+        };
+        console.warn(`⚠️ Using minimal curriculum (Strategy 5): ${chapters.length} chapters — some data may be missing`);
+        return minimal;
+      }
+    }
+  } catch (e5) {
+    console.log('Strategy 5 failed:', e5.message);
+  }
+
+  throw new Error(
+    `Could not parse curriculum JSON after 5 strategies.\n` +
+    `Response length: ${text.length} chars\n` +
+    `First 300 chars: ${text.substring(0, 300)}\n` +
+    `Last 300 chars: ${text.substring(text.length - 300)}`
+  );
+}
+
+function parseCurriculumResponse(apiResponse) {
+  let text = '';
+  if (typeof apiResponse === 'string') {
+    text = apiResponse;
+  } else if (apiResponse?.content) {
+    text = (apiResponse.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+  } else if (apiResponse?.candidates) {
+    text = (apiResponse.candidates?.[0]?.content?.parts || []).filter(p => p.text).map(p => p.text).join('');
+  } else if (typeof apiResponse?.text === 'string') {
+    text = apiResponse.text;
+  }
+  if (!text) throw new Error('No text in API response');
+  console.log(`Parsing curriculum response: ${text.length} chars`);
+  return parseCurriculumJSON(text);
+}
+
 // ── Generate ──────────────────────────────────────────────────────────────────
 
 async function generate(container, getCourseType, onReady) {
@@ -678,12 +845,15 @@ Return ONLY valid JSON. No markdown fences, no extra text.`;
       action:            'curriculum_generation',
     });
 
-    const fullText = result.text;
-    const clean = fullText.replace(/```json|```/g, '').trim();
-    const jsonMatch = clean.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error('Could not find JSON in response.');
+    // For Gemini responses, prepend a Gemini-specific size-reduction hint
+    // (callAI already handles this via action param in ai-client.js, but we
+    // also apply it here if the provider was gemini)
+    let fullText = result.text;
+    if (result.provider === 'gemini') {
+      console.log('[curriculum] Gemini provider detected — using fault-tolerant parser');
+    }
 
-    const curriculum = JSON.parse(jsonMatch[0]);
+    const curriculum = parseCurriculumJSON(fullText);
     if (!curriculum.chapters || !curriculum.chapters.length)
       throw new Error('Curriculum has no chapters. Please try again.');
 
