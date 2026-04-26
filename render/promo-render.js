@@ -618,25 +618,46 @@ async function addURLOverlay(inputPath, outputPath, courseUrl) {
   console.log('   ✓ URL overlay image generated');
 
   // Step 3: Overlay PNG on video — appears at bottom for final 15 seconds
-  const yPosition = 720 - 80; // bottom of 720p frame
+  const hasAudio = execSync(
+    `ffprobe -v error -select_streams a -show_entries ` +
+    `stream=codec_type -of default=noprint_wrappers=1:nokey=1 ` +
+    `"${inputPath}"`,
+    { encoding: 'utf8' }
+  ).trim().length > 0;
 
-  runFFmpegCommand([
-    '-y',
-    '-i', inputPath,
-    '-i', overlayPngPath,
-    '-filter_complex',
-    `[1:v]format=rgba[overlay];` +
-    `[0:v][overlay]overlay=0:${yPosition}:` +
-    `enable='gte(t,${overlayStart.toFixed(2)})'[outv]`,
-    '-map', '[outv]',
-    '-map', '0:a?',
-    '-c:v', 'libx264',
-    '-crf', '18',
-    '-preset', 'slow',
-    '-pix_fmt', 'yuv420p',
-    '-c:a', 'copy',
-    outputPath,
-  ]);
+  const yPosition = 720 - 80;
+  const filterComplex =
+    `[0:v][1:v]overlay=0:${yPosition}:enable='gte(t,${overlayStart.toFixed(2)})'[outv]`;
+
+  if (hasAudio) {
+    runFFmpegCommand([
+      '-y',
+      '-i', inputPath,
+      '-i', overlayPngPath,
+      '-filter_complex', filterComplex,
+      '-map', '[outv]',
+      '-map', '0:a',
+      '-c:v', 'libx264',
+      '-crf', '18',
+      '-preset', 'slow',
+      '-pix_fmt', 'yuv420p',
+      '-c:a', 'copy',
+      outputPath,
+    ]);
+  } else {
+    runFFmpegCommand([
+      '-y',
+      '-i', inputPath,
+      '-i', overlayPngPath,
+      '-filter_complex', filterComplex,
+      '-map', '[outv]',
+      '-c:v', 'libx264',
+      '-crf', '18',
+      '-preset', 'slow',
+      '-pix_fmt', 'yuv420p',
+      outputPath,
+    ]);
+  }
 
   const sizeMB = (fs.statSync(outputPath).size / 1024 / 1024).toFixed(1);
   console.log(`   ✓ URL overlay applied (${sizeMB}MB)`);
