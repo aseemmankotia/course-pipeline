@@ -14,7 +14,7 @@
  */
 
 const puppeteer          = require('puppeteer');
-const { execSync }       = require('child_process');
+const { execSync, spawnSync } = require('child_process');
 const fs                 = require('fs');
 const path               = require('path');
 require('dotenv').config({ path: path.join(__dirname, '../.env') });
@@ -625,42 +625,57 @@ async function addURLOverlay(inputPath, outputPath, courseUrl) {
     { encoding: 'utf8' }
   ).trim().length > 0;
 
-  const yPosition = 720 - 80;
-  const filterComplex =
-    `[0:v][1:v]overlay=0:${yPosition}:enable='gte(t,${overlayStart.toFixed(2)})'[outv]`;
+  const audioCheck = execSync(
+    `ffprobe -v error -select_streams a ` +
+    `-show_entries stream=codec_type ` +
+    `-of default=noprint_wrappers=1:nokey=1 "${inputPath}"`,
+    { encoding: 'utf8' }
+  ).trim();
+  const hasAudio = audioCheck.length > 0;
+
+  const yPos = 720 - 80;
+
+  const spawnArgs = [
+    '-y',
+    '-i', inputPath,
+    '-i', overlayPngPath,
+    '-filter_complex',
+    `[0:v][1:v]overlay=0:${yPos}:enable='gte(t,${overlayStart.toFixed(2)})'`,
+    '-c:v', 'libx264',
+    '-crf', '18',
+    '-preset', 'slow',
+    '-pix_fmt', 'yuv420p',
+  ];
 
   if (hasAudio) {
-    runFFmpegCommand([
-      '-y',
-      '-i', inputPath,
-      '-i', overlayPngPath,
-      '-filter_complex', filterComplex,
-      '-map', '[outv]',
-      '-map', '0:a',
-      '-c:v', 'libx264',
-      '-crf', '18',
-      '-preset', 'slow',
-      '-pix_fmt', 'yuv420p',
-      '-c:a', 'copy',
-      outputPath,
-    ]);
-  } else {
-    runFFmpegCommand([
-      '-y',
-      '-i', inputPath,
-      '-i', overlayPngPath,
-      '-filter_complex', filterComplex,
-      '-map', '[outv]',
-      '-c:v', 'libx264',
-      '-crf', '18',
-      '-preset', 'slow',
-      '-pix_fmt', 'yuv420p',
-      outputPath,
-    ]);
+    spawnArgs.push('-map', '0:a', '-c:a', 'copy');
   }
 
-  const sizeMB = (fs.statSync(outputPath).size / 1024 / 1024).toFixed(1);
-  console.log(`   ✓ URL overlay applied (${sizeMB}MB)`);
+  spawnArgs.push(outputPath);
+
+  console.log('   Running FFmpeg overlay...');
+  const result = spawnSync('ffmpeg', spawnArgs, {
+    stdio: 'pipe',
+    encoding: 'utf8',
+  });
+
+  if (result.status !== 0) {
+    const stderr = result.stderr || '';
+    const errLines = stderr.split('\n')
+      .filter(l =>
+        l.includes('Error') ||
+        l.includes('Invalid') ||
+        l.includes('No such') ||
+        l.includes('not found')
+      )
+      .slice(-3)
+      .join('\n');
+    console.error('FFmpeg stderr:', stderr.slice(-500));
+    throw new Error(`FFmpeg failed:\n${errLines || stderr.slice(-200)}`);
+  }
+
+  const stats = fs.statSync(outputPath);
+  console.log(`   ✓ URL overlay applied (${(stats.size / 1024 / 1024).toFixed(1)}MB)`);
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
