@@ -478,72 +478,168 @@ async function compositeWithHeyGen(slideshowPath, outputPath) {
 
 // ── Vertical version for YouTube Shorts ──────────────────────────────────────
 async function createVerticalVersion(promoPath) {
-  console.log('\n📱 Step 6 — Creating YouTube Shorts version (9:16)...');
+  console.log('\n📱 Step 6 — Creating YouTube Shorts (9:16)...');
 
   const shortPath = path.join(PROMO_DIR, 'welcome-promo-short.mp4');
 
-  execSync([
-    `ffmpeg -y -i "${promoPath}"`,
-    '-filter_complex',
-    '"[0:v]scale=1080:1920:force_original_aspect_ratio=decrease,' +
-    'pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=black,setsar=1[outv]"',
-    '-map [outv] -map 0:a?',
-    '-c:v libx264 -crf 18 -preset slow',
-    '-pix_fmt yuv420p -c:a aac -b:a 192k',
-    `"${shortPath}"`,
-  ].join(' '), { stdio: 'pipe' });
+  runFFmpegCommand([
+    '-y',
+    '-i', promoPath,
+    '-vf',
+    'scale=1080:1920:force_original_aspect_ratio=decrease,' +
+    'pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=black,' +
+    'setsar=1',
+    '-c:v', 'libx264',
+    '-crf', '18',
+    '-preset', 'slow',
+    '-pix_fmt', 'yuv420p',
+    '-c:a', 'copy',
+    shortPath,
+  ]);
 
-  console.log('   ✓ welcome-promo-short.mp4 (9:16 for YouTube Shorts)');
+  console.log('   ✓ welcome-promo-short.mp4 (vertical 9:16)');
   return shortPath;
 }
 
-// ── URL overlay via FFmpeg drawtext ──────────────────────────────────────────
+// ── FFmpeg helper with readable errors ───────────────────────────────────────
+function runFFmpegCommand(args) {
+  const cmd = `ffmpeg ${args.map(a =>
+    a.includes(' ') && !a.startsWith('-')
+      ? `"${a}"`
+      : a
+  ).join(' ')}`;
+
+  try {
+    execSync(cmd, { stdio: 'pipe' });
+  } catch (e) {
+    const stderr = e.stderr?.toString() || '';
+    const errorLine = stderr
+      .split('\n')
+      .find(l => l.includes('Error') || l.includes('error') || l.includes('Invalid'))
+      || stderr.slice(-200);
+    throw new Error(`FFmpeg failed: ${errorLine}`);
+  }
+}
+
+// ── URL overlay via Puppeteer PNG + FFmpeg overlay filter ─────────────────────
 async function addURLOverlay(inputPath, outputPath, courseUrl) {
   if (!courseUrl) {
-    // No URL — just copy through
-    execSync(`ffmpeg -y -i "${inputPath}" -c copy "${outputPath}"`, { stdio: 'pipe' });
-    return outputPath;
+    console.log('   ⚠ No course URL — skipping overlay');
+    fs.copyFileSync(inputPath, outputPath);
+    return;
   }
 
   console.log(`\n🔗 Adding URL overlay: ${courseUrl}`);
 
-  // Probe total duration so we can start the overlay 15 s before the end
-  let duration = 60;
-  try {
-    const probe = execSync(
-      `ffprobe -v error -show_entries format=duration -of csv=p=0 "${inputPath}"`,
-      { stdio: 'pipe' }
-    ).toString().trim();
-    duration = parseFloat(probe) || 60;
-  } catch { /* use 60s default */ }
+  // Step 1: Get video duration
+  const duration = parseFloat(
+    execSync(
+      `ffprobe -v error -show_entries format=duration ` +
+      `-of default=noprint_wrappers=1:nokey=1 "${inputPath}"`,
+      { encoding: 'utf8' }
+    ).trim()
+  );
 
   const overlayStart = Math.max(0, duration - 15);
+  console.log(`   Overlay appears at ${overlayStart.toFixed(1)}s`);
 
-  // Escape special chars for FFmpeg drawtext
-  const safeUrl = courseUrl
-    .replace(/\\/g, '\\\\')
-    .replace(/'/g, "\\'")
-    .replace(/:/g, '\\:');
+  // Step 2: Generate URL overlay PNG with Puppeteer (1280×80, no drawtext needed)
+  const overlayHtml = `<!DOCTYPE html>
+<html>
+<head>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1280px;
+    height: 80px;
+    background: transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Arial', sans-serif;
+    position: relative;
+  }
+  .bg {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.72);
+    border-top: 2px solid rgba(233, 69, 96, 0.6);
+  }
+  .label {
+    position: relative;
+    z-index: 1;
+    font-size: 13px;
+    color: rgba(200, 200, 200, 0.85);
+    margin-bottom: 3px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .url {
+    position: relative;
+    z-index: 1;
+    font-size: 20px;
+    font-weight: bold;
+    color: #ffffff;
+    letter-spacing: 0.02em;
+    text-align: center;
+    padding: 0 20px;
+    max-width: 1240px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="label">Find this course at</div>
+  <div class="url">${escHtml(courseUrl)}</div>
+</body>
+</html>`;
 
-  execSync([
-    `ffmpeg -y -i "${inputPath}"`,
+  const overlayHtmlPath = path.join(TEMP_DIR, 'url-overlay.html');
+  const overlayPngPath  = path.join(TEMP_DIR, 'url-overlay.png');
+
+  fs.writeFileSync(overlayHtmlPath, overlayHtml);
+
+  const browser = await puppeteer.launch({ headless: 'new' });
+  const page    = await browser.newPage();
+  await page.setViewport({ width: 1280, height: 80, deviceScaleFactor: 1 });
+  await page.goto(`file://${overlayHtmlPath}`);
+  await new Promise(r => setTimeout(r, 300));
+  await page.screenshot({
+    path: overlayPngPath,
+    clip: { x: 0, y: 0, width: 1280, height: 80 },
+    omitBackground: false,
+  });
+  await browser.close();
+
+  console.log('   ✓ URL overlay image generated');
+
+  // Step 3: Overlay PNG on video — appears at bottom for final 15 seconds
+  const yPosition = 720 - 80; // bottom of 720p frame
+
+  runFFmpegCommand([
+    '-y',
+    '-i', inputPath,
+    '-i', overlayPngPath,
     '-filter_complex',
-    [
-      // Semi-transparent dark pill behind the text
-      `"drawbox=x=(W-600)/2:y=H-80:w=600:h=48:color=black@0.65:t=fill:enable='gte(t,${overlayStart})',`,
-      // URL text centred above bottom
-      `drawtext=fontsize=22:fontcolor=white:fontfile=/System/Library/Fonts/Helvetica.ttc:`,
-      `text='${safeUrl}':`,
-      `x=(W-text_w)/2:y=H-64:`,
-      `enable='gte(t,${overlayStart})'"`,
-    ].join(''),
-    '-c:v libx264 -crf 18 -preset slow -pix_fmt yuv420p',
-    '-c:a copy',
-    `"${outputPath}"`,
-  ].join(' '), { stdio: 'pipe' });
+    `[1:v]format=rgba[overlay];` +
+    `[0:v][overlay]overlay=0:${yPosition}:` +
+    `enable='gte(t,${overlayStart.toFixed(2)})'[outv]`,
+    '-map', '[outv]',
+    '-map', '0:a?',
+    '-c:v', 'libx264',
+    '-crf', '18',
+    '-preset', 'slow',
+    '-pix_fmt', 'yuv420p',
+    '-c:a', 'copy',
+    outputPath,
+  ]);
 
-  console.log('   ✓ URL overlay applied');
-  return outputPath;
+  const sizeMB = (fs.statSync(outputPath).size / 1024 / 1024).toFixed(1);
+  console.log(`   ✓ URL overlay applied (${sizeMB}MB)`);
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
