@@ -618,6 +618,85 @@ function uploadRowHtml(ch) {
   `;
 }
 
+// ── Post pinned promo comment with course URL ─────────────────────────────────
+
+export async function postPinnedPromoComment(videoId, accessToken, courseData) {
+  const udemyUrl =
+    courseData?.udemy_url ||
+    localStorage.getItem('courseUdemyUrl') ||
+    '';
+
+  if (!udemyUrl) {
+    console.log('[publish] No Udemy URL set — skipping pinned comment');
+    return null;
+  }
+
+  const commentText = [
+    `🎓 Enroll in the full course: ${udemyUrl}`,
+    '',
+    `📚 ${courseData?.course_title || 'Full Course'} — includes practice tests, cheat sheets, and hands-on labs.`,
+    '',
+    '✅ Use code YOUTUBE for a discount!',
+  ].join('\n');
+
+  // Post the comment
+  const postResp = await fetch(
+    'https://www.googleapis.com/youtube/v3/commentThreads?part=snippet',
+    {
+      method:  'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type':  'application/json',
+      },
+      body: JSON.stringify({
+        snippet: {
+          videoId,
+          topLevelComment: {
+            snippet: { textOriginal: commentText },
+          },
+        },
+      }),
+    }
+  );
+
+  if (!postResp.ok) {
+    const err = await postResp.json().catch(() => ({}));
+    console.warn('[publish] Promo comment failed:', err?.error?.message || postResp.statusText);
+    return null;
+  }
+
+  const commentData  = await postResp.json();
+  const commentId    = commentData?.snippet?.topLevelComment?.id;
+  console.log(`[publish] Promo comment posted: ${commentId}`);
+
+  // Attempt to pin — requires moderator permission; non-fatal if it fails
+  if (commentId) {
+    try {
+      const pinResp = await fetch(
+        `https://www.googleapis.com/youtube/v3/comments?part=snippet`,
+        {
+          method:  'PUT',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type':  'application/json',
+          },
+          body: JSON.stringify({
+            id: commentId,
+            snippet: { moderationStatus: 'published', pinnedCommentId: commentId },
+          }),
+        }
+      );
+      if (pinResp.ok) {
+        console.log('[publish] Promo comment pinned');
+      } else {
+        console.log('[publish] Pin skipped (requires channel moderator access)');
+      }
+    } catch { /* pin is best-effort */ }
+  }
+
+  return commentId;
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function buildChapterDescription(cur, ch, playlistId, academy) {

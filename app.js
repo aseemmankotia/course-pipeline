@@ -201,6 +201,33 @@ function renderSettings(container) {
         <button class="btn btn-primary" id="save-settings-btn">Save Settings</button>
       </div>
 
+      <div class="settings-section">
+        <div class="settings-label">🔗 Course URLs</div>
+        <p style="font-size:.82rem;color:var(--muted);margin:4px 0 12px;">
+          These URLs are embedded in promo videos and exported with course data.
+          Run <code>npm run promo:url -- --url=&lt;udemy-url&gt;</code> or set them here.
+        </p>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Udemy Course URL</label>
+            <input type="url" id="st-udemy-url" placeholder="https://www.udemy.com/course/your-course/"
+              value="${esc(localStorage.getItem('courseUdemyUrl') || '')}" />
+          </div>
+          <div class="form-group">
+            <label>Coursera Course URL <span style="font-size:.75rem;color:var(--muted);">(optional)</span></label>
+            <input type="url" id="st-coursera-url" placeholder="https://www.coursera.org/learn/your-course"
+              value="${esc(localStorage.getItem('courseCourseraUrl') || '')}" />
+          </div>
+        </div>
+        <div class="form-row single">
+          <div class="form-group">
+            <label>YouTube Playlist URL <span style="font-size:.75rem;color:var(--muted);">(optional)</span></label>
+            <input type="url" id="st-youtube-url" placeholder="https://www.youtube.com/playlist?list=..."
+              value="${esc(localStorage.getItem('courseYoutubeUrl') || '')}" />
+          </div>
+        </div>
+      </div>
+
       <div class="settings-section" style="margin-top:20px;">
         <div class="settings-label">📦 Course Archive</div>
         <p style="font-size:.83rem;color:var(--muted);margin-bottom:10px;">
@@ -302,6 +329,14 @@ function renderSettings(container) {
       githubToken:          container.querySelector('#st-github-token').value.trim(),
     };
     saveSettings(updated);
+
+    // Course URLs stored as standalone keys (not in settings blob) so promo-render.js can read them via export
+    const udemyUrl   = container.querySelector('#st-udemy-url').value.trim();
+    const courseraUrl = container.querySelector('#st-coursera-url').value.trim();
+    const youtubeUrl = container.querySelector('#st-youtube-url').value.trim();
+    if (udemyUrl)    localStorage.setItem('courseUdemyUrl',    udemyUrl);    else localStorage.removeItem('courseUdemyUrl');
+    if (courseraUrl) localStorage.setItem('courseCourseraUrl', courseraUrl); else localStorage.removeItem('courseCourseraUrl');
+    if (youtubeUrl)  localStorage.setItem('courseYoutubeUrl',  youtubeUrl);  else localStorage.removeItem('courseYoutubeUrl');
     const el = container.querySelector('#settings-status');
     el.innerHTML = `<div class="status-bar success">✓ Settings saved.</div>`;
     setTimeout(() => { el.innerHTML = ''; }, 2500);
@@ -357,6 +392,14 @@ async function exportCourseData(container) {
         catch { exportData.practice_tests.push(raw); }
       }
     });
+
+    // Course platform URLs
+    const udemyUrl   = localStorage.getItem('courseUdemyUrl')    || '';
+    const courseraUrl = localStorage.getItem('courseCourseraUrl') || '';
+    const ytPlaylist = localStorage.getItem('courseYoutubeUrl')  || '';
+    if (udemyUrl)    exportData.udemy_url    = udemyUrl;
+    if (courseraUrl) exportData.coursera_url = courseraUrl;
+    if (ytPlaylist)  exportData.youtube_url  = ytPlaylist;
 
     // YouTube video IDs (if uploaded)
     chapters.forEach(ch => {

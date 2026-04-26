@@ -70,6 +70,51 @@ npm run render:all
 # → chapter-01-*.mp4, chapter-02-*.mp4, ...
 ```
 
+## Promo Video
+
+Generate a 60-second course promo video with AI-written script, animated slides, and optional HeyGen avatar PIP.
+
+### Basic render
+
+```bash
+npm run promo
+# → render/promo/welcome-promo.mp4         (16:9  — Udemy + YouTube)
+# → render/promo/welcome-promo-short.mp4   (9:16  — YouTube Shorts)
+# → render/promo/promo-script.txt          (script for HeyGen voiceover)
+```
+
+### Embed a course URL
+
+Three ways to provide the Udemy (or any) course URL — it appears on the CTA slide and as a lower-third overlay in the last 15 seconds:
+
+**Option A — CLI arg** (one-off, overrides everything else):
+```bash
+node render/promo-render.js --url=https://www.udemy.com/course/your-course/
+```
+
+**Option B — Settings tab** (persists across renders):
+Go to ⚙️ Settings → **Course URLs** → paste the Udemy URL → Save Settings.
+The URL is written to `localStorage` and picked up automatically.
+
+**Option C — `.env` file** (CI/CD or shared machine):
+```bash
+COURSE_UDEMY_URL=https://www.udemy.com/course/your-course/
+```
+
+Priority: `--url=` arg > `course-data-export.json` field > `COURSE_UDEMY_URL` env var.
+
+### Other flags
+
+```bash
+npm run promo:preview        # generate script only, no render
+npm run promo:no-vertical    # skip 9:16 Shorts version
+```
+
+### With HeyGen avatar
+
+Place your avatar video in the project root as `heygen-promo.mp4` before running.
+The avatar appears as a PIP (picture-in-picture) in the bottom-right corner.
+
 ## Archiving a Course
 
 The archive system exports all course assets into a timestamped ZIP for long-term storage or handoff.

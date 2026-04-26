@@ -32,6 +32,7 @@
     "promo": "node render/promo-render.js",
     "promo:preview": "node render/promo-render.js --preview",
     "promo:no-vertical": "node render/promo-render.js --no-vertical",
+    "promo:url": "node render/promo-render.js --url=",
     "archive": "node archive.js",
     "archive:list": "ls -la exports/"
   },
@@ -42,7 +43,8 @@
   "dependencies": {
     "archiver": "^7.0.1",
     "axios": "^1.14.0",
+    "dotenv": "^17.4.2",
     "node-fetch": "^2.7.0",
-    "puppeteer": "^24.40.0"
+    "puppeteer": "^24.42.0"
   }
 }

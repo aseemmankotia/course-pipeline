@@ -262,12 +262,14 @@ function generateSlideHTML(slide, course, slideIndex, totalSlides) {
       </div>`;
 
   } else if (slide.type === 'cta') {
+    const courseUrl = slide._courseUrl || '';
     content = `
       <div class="cta-card">
         <div class="cta-icon">${slide.icon}</div>
         <div class="cta-headline">${escHtml(slide.headline)}</div>
         <div class="cta-sub">${escHtml(slide.subtext)}</div>
         <div class="cta-button">Start Learning Now →</div>
+        ${courseUrl ? `<div class="cta-url">${escHtml(courseUrl)}</div>` : ''}
         <div class="cta-platform">Available on Udemy · YouTube · TechNuggets Academy</div>
       </div>`;
   }
@@ -340,6 +342,7 @@ function generateSlideHTML(slide, course, slideIndex, totalSlides) {
   .cta-headline{font-family:'Poppins',sans-serif;font-size:72px;font-weight:900;color:white;line-height:1;margin-bottom:12px;text-shadow:0 0 40px rgba(233,69,96,0.5);}
   .cta-sub{font-size:24px;color:rgba(255,255,255,0.7);margin-bottom:28px;}
   .cta-button{display:inline-block;background:${accent};color:white;font-family:'Poppins',sans-serif;font-size:22px;font-weight:700;padding:14px 40px;border-radius:8px;margin-bottom:16px;box-shadow:0 0 40px rgba(233,69,96,0.4);}
+  .cta-url{font-size:18px;color:#f9a825;font-weight:700;margin-bottom:12px;letter-spacing:0.03em;word-break:break-all;}
   .cta-platform{font-size:14px;color:rgba(255,255,255,0.4);letter-spacing:0.05em;}
 </style>
 </head>
@@ -425,7 +428,7 @@ async function createSlideshowVideo(slidePaths) {
 }
 
 // ── Composite with HeyGen PIP ─────────────────────────────────────────────────
-async function compositeWithHeyGen(slideshowPath) {
+async function compositeWithHeyGen(slideshowPath, outputPath) {
   console.log('\n🎬 Step 5 — Compositing with HeyGen video...');
 
   const heygenPaths = [
@@ -439,7 +442,7 @@ async function compositeWithHeyGen(slideshowPath) {
     if (fs.existsSync(p)) { heygenPath = p; console.log(`   ✓ Found: ${p}`); break; }
   }
 
-  const outputPath = path.join(PROMO_DIR, 'welcome-promo.mp4');
+  outputPath = outputPath || path.join(PROMO_DIR, 'welcome-promo.mp4');
 
   if (!heygenPath) {
     console.log('   ⚠ No HeyGen video found — outputting slides only');
@@ -494,6 +497,55 @@ async function createVerticalVersion(promoPath) {
   return shortPath;
 }
 
+// ── URL overlay via FFmpeg drawtext ──────────────────────────────────────────
+async function addURLOverlay(inputPath, outputPath, courseUrl) {
+  if (!courseUrl) {
+    // No URL — just copy through
+    execSync(`ffmpeg -y -i "${inputPath}" -c copy "${outputPath}"`, { stdio: 'pipe' });
+    return outputPath;
+  }
+
+  console.log(`\n🔗 Adding URL overlay: ${courseUrl}`);
+
+  // Probe total duration so we can start the overlay 15 s before the end
+  let duration = 60;
+  try {
+    const probe = execSync(
+      `ffprobe -v error -show_entries format=duration -of csv=p=0 "${inputPath}"`,
+      { stdio: 'pipe' }
+    ).toString().trim();
+    duration = parseFloat(probe) || 60;
+  } catch { /* use 60s default */ }
+
+  const overlayStart = Math.max(0, duration - 15);
+
+  // Escape special chars for FFmpeg drawtext
+  const safeUrl = courseUrl
+    .replace(/\\/g, '\\\\')
+    .replace(/'/g, "\\'")
+    .replace(/:/g, '\\:');
+
+  execSync([
+    `ffmpeg -y -i "${inputPath}"`,
+    '-filter_complex',
+    [
+      // Semi-transparent dark pill behind the text
+      `"drawbox=x=(W-600)/2:y=H-80:w=600:h=48:color=black@0.65:t=fill:enable='gte(t,${overlayStart})',`,
+      // URL text centred above bottom
+      `drawtext=fontsize=22:fontcolor=white:fontfile=/System/Library/Fonts/Helvetica.ttc:`,
+      `text='${safeUrl}':`,
+      `x=(W-text_w)/2:y=H-64:`,
+      `enable='gte(t,${overlayStart})'"`,
+    ].join(''),
+    '-c:v libx264 -crf 18 -preset slow -pix_fmt yuv420p',
+    '-c:a copy',
+    `"${outputPath}"`,
+  ].join(' '), { stdio: 'pipe' });
+
+  console.log('   ✓ URL overlay applied');
+  return outputPath;
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 async function main() {
   const args         = process.argv.slice(2);
@@ -508,6 +560,16 @@ async function main() {
   const course = loadCourseData();
   console.log(`\n📚 Course: ${course.course_title}`);
   console.log(`   Chapters: ${course.chapters?.length || 0}`);
+
+  // Resolve course URL — CLI arg beats course data beats env var
+  const courseUrl =
+    args.find(a => a.startsWith('--url='))?.split('=').slice(1).join('=') ||
+    course.udemy_url ||
+    process.env.COURSE_UDEMY_URL ||
+    course.course_url ||
+    '';
+
+  if (courseUrl) console.log(`   URL: ${courseUrl}`);
 
   // Step 1: Script
   const script = await generatePromoScript(course);
@@ -534,18 +596,29 @@ async function main() {
   // Step 2: Slide plan
   const slides = await generatePromoSlides(course, script);
 
+  // Inject courseUrl into CTA slide so the screenshot includes it
+  if (courseUrl) {
+    const ctaSlide = slides.find(s => s.type === 'cta');
+    if (ctaSlide) ctaSlide._courseUrl = courseUrl;
+  }
+
   // Step 3: Screenshot
   const slidePaths = await screenshotSlides(slides, course);
 
   // Step 4: Slideshow
   const slideshowPath = await createSlideshowVideo(slidePaths);
 
-  // Step 5: Composite
-  const promoPath = await compositeWithHeyGen(slideshowPath);
+  // Step 5: Composite (write to temp first so overlay can overwrite the final name)
+  const compositeTempPath = path.join(TEMP_DIR, 'welcome-promo-no-url.mp4');
+  const finalPromoPath    = path.join(PROMO_DIR, 'welcome-promo.mp4');
+  await compositeWithHeyGen(slideshowPath, compositeTempPath);
 
-  // Step 6: Vertical
+  // Step 5b: URL overlay pass
+  await addURLOverlay(compositeTempPath, finalPromoPath, courseUrl);
+
+  // Step 6: Vertical (based on final output with overlay)
   if (!skipVertical) {
-    await createVerticalVersion(promoPath);
+    await createVerticalVersion(finalPromoPath);
   }
 
   console.log('\n' + '='.repeat(50));
@@ -557,6 +630,9 @@ async function main() {
     console.log('   welcome-promo-short.mp4   → YouTube Shorts (9:16)');
   }
   console.log('   promo-script.txt          → Script for HeyGen / voiceover');
+  if (courseUrl) {
+    console.log(`\n🔗 Course URL embedded: ${courseUrl}`);
+  }
   console.log('\n📋 Next steps:');
   console.log('   1. Upload welcome-promo.mp4 to YouTube as course trailer');
   console.log('   2. Upload to Udemy Studio → Course → Promo Video');
