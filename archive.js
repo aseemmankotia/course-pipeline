@@ -364,7 +364,22 @@ async function createArchive(courseData) {
     console.log(`   ✓ ${thumbs.length} thumbnails`);
   }
 
-  // ── 9. Manifest ───────────────────────────────────────────────────────────────
+  // ── 9. Promo videos ──────────────────────────────────────────────────────────
+  console.log('\n🎬 Promo videos…');
+  manifest.contents.promo = [];
+  const promoDir   = path.join(__dirname, 'render', 'promo');
+  const promoFiles = ['welcome-promo.mp4', 'welcome-promo-short.mp4', 'promo-script.txt'];
+  for (const file of promoFiles) {
+    const filePath = path.join(promoDir, file);
+    if (fs.existsSync(filePath)) {
+      addFile(filePath, `promo/${file}`);
+      manifest.contents.promo.push(file);
+      console.log(`   ✓ promo/${file}`);
+    }
+  }
+  if (!manifest.contents.promo.length) console.log('   (no promo files yet — run: npm run promo)');
+
+  // ── 11. Manifest ─────────────────────────────────────────────────────────────
   manifest.total_files           = totalFiles;
   manifest.total_video_size      = fileSize(totalSize);
   manifest.chapters_with_video   = manifest.contents.videos?.length || 0;

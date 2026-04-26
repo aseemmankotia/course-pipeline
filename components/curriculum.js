@@ -1026,7 +1026,12 @@ function showCurriculum(container, cur, onReady) {
         ${chaptersHtml}
       </div>
     </div>
+
+    ${promoCardHtml(cur)}
   `;
+
+  // Wire promo UI
+  mountPromoCard(container, cur);
 
   // Per-chapter generate buttons
   container.querySelectorAll('.gen-script-btn').forEach(btn => {
@@ -1098,6 +1103,212 @@ function showCurriculum(container, cur, onReady) {
   window.addEventListener('chapter-updated', () => {
     refreshChapterStatuses(container, cur);
   });
+}
+
+// ── Promo Video Card ──────────────────────────────────────────────────────────
+
+function promoCardHtml(cur) {
+  const savedScript = localStorage.getItem(`course_promo_script_${cur.id}`) || '';
+  const hasScript   = !!savedScript;
+
+  return `
+    <div class="card" id="promo-card" style="margin-top:16px;">
+      <h3 style="margin:0 0 4px;font-size:1rem;">🎬 Welcome / Promo Video</h3>
+      <p style="color:var(--muted);font-size:.85rem;margin-bottom:20px;">
+        60-second video for Udemy, Coursera &amp; YouTube Shorts
+      </p>
+
+      <div class="promo-steps">
+
+        <!-- Step 1: Generate script -->
+        <div class="promo-step">
+          <span class="step-badge">1</span>
+          <div class="step-content">
+            <strong>Generate promo script</strong>
+            <p style="color:var(--muted);font-size:.83rem;margin:4px 0 10px;">
+              Claude writes a 60-second promotional script (~150 words)
+            </p>
+            <button class="btn btn-primary btn-sm" id="promo-script-btn">
+              ${hasScript ? '✅ Script Ready — Regenerate' : '✍️ Generate Script'}
+            </button>
+            <div id="promo-script-preview" style="${hasScript ? '' : 'display:none;'}margin-top:12px;">
+              <textarea id="promo-script-text" rows="6" readonly
+                style="width:100%;font-size:.82rem;font-family:inherit;
+                  border:1px solid var(--border);border-radius:6px;
+                  padding:10px;background:var(--code-bg);color:var(--text);
+                  resize:vertical;">${esc(savedScript)}</textarea>
+              <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;align-items:center;">
+                <button class="btn btn-secondary btn-sm" id="promo-copy-btn">📋 Copy Script</button>
+                <a href="https://www.heygen.com" target="_blank" rel="noopener"
+                  class="btn btn-secondary btn-sm">Open HeyGen →</a>
+                <span style="font-size:.78rem;color:var(--muted);" id="promo-word-count">
+                  ${hasScript ? savedScript.trim().split(/\s+/).length + ' words' : ''}
+                </span>
+              </div>
+              <p style="font-size:.78rem;color:var(--muted);margin-top:8px;line-height:1.5;">
+                Paste script → Select avatar → Generate → Download →
+                Save as <code>heygen-promo.mp4</code> in project root
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Record with HeyGen -->
+        <div class="promo-step" id="promo-step2" style="opacity:${hasScript ? '1' : '0.4'};">
+          <span class="step-badge">2</span>
+          <div class="step-content">
+            <strong>Record with HeyGen</strong>
+            <p style="color:var(--muted);font-size:.83rem;margin:4px 0 0;">
+              Use your avatar to generate the voiceover video, then place
+              <code>heygen-promo.mp4</code> in the project root.
+            </p>
+          </div>
+        </div>
+
+        <!-- Step 3: Render -->
+        <div class="promo-step" id="promo-step3" style="opacity:${hasScript ? '1' : '0.4'};">
+          <span class="step-badge">3</span>
+          <div class="step-content">
+            <strong>Render promo video</strong>
+            <div style="background:var(--code-bg);border:1px solid var(--border);
+              border-radius:6px;padding:10px 14px;font-family:monospace;
+              font-size:.83rem;color:var(--text);margin:8px 0;">
+              npm run promo
+            </div>
+            <p style="font-size:.78rem;color:var(--muted);">
+              Generates: <code>welcome-promo.mp4</code> (16:9) +
+              <code>welcome-promo-short.mp4</code> (9:16 Shorts)
+            </p>
+          </div>
+        </div>
+
+        <!-- Step 4: Distribute -->
+        <div class="promo-step" id="promo-step4" style="opacity:${hasScript ? '1' : '0.4'};">
+          <span class="step-badge">4</span>
+          <div class="step-content">
+            <strong>Distribute</strong>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">
+              <span style="font-size:.82rem;padding:4px 10px;background:var(--code-bg);
+                border-radius:6px;border:1px solid var(--border);">
+                📺 YouTube course trailer
+              </span>
+              <span style="font-size:.82rem;padding:4px 10px;background:var(--code-bg);
+                border-radius:6px;border:1px solid var(--border);">
+                🎓 Udemy promo video
+              </span>
+              <span style="font-size:.82rem;padding:4px 10px;background:var(--code-bg);
+                border-radius:6px;border:1px solid var(--border);">
+                📱 YouTube Shorts (vertical)
+              </span>
+              <span style="font-size:.82rem;padding:4px 10px;background:var(--code-bg);
+                border-radius:6px;border:1px solid var(--border);">
+                📤 Social media
+              </span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <style>
+        .promo-steps { display: flex; flex-direction: column; gap: 16px; }
+        .promo-step  { display: flex; gap: 14px; align-items: flex-start; transition: opacity .3s; }
+        .step-badge  {
+          flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%;
+          background: var(--accent); color: #fff;
+          font-size: .8rem; font-weight: 700;
+          display: flex; align-items: center; justify-content: center;
+          margin-top: 2px;
+        }
+        .step-content { flex: 1; }
+        .step-content strong { font-size: .92rem; }
+      </style>
+    </div>
+  `;
+}
+
+function mountPromoCard(container, cur) {
+  const btn       = container.querySelector('#promo-script-btn');
+  const copyBtn   = container.querySelector('#promo-copy-btn');
+  const preview   = container.querySelector('#promo-script-preview');
+  const textArea  = container.querySelector('#promo-script-text');
+  const wordCount = container.querySelector('#promo-word-count');
+  const step2     = container.querySelector('#promo-step2');
+  const step3     = container.querySelector('#promo-step3');
+  const step4     = container.querySelector('#promo-step4');
+
+  if (!btn) return;
+
+  btn.addEventListener('click', async () => {
+    const { claudeApiKey, geminiApiKey } = getSettings();
+    if (!claudeApiKey && !geminiApiKey) {
+      alert('API key missing — add Anthropic or Gemini key in ⚙ Settings.');
+      return;
+    }
+
+    btn.disabled    = true;
+    btn.textContent = '⏳ Generating…';
+
+    try {
+      const result = await window.callAI({
+        prompt:       buildPromoScriptPrompt(cur),
+        systemPrompt: 'You write short punchy 60-second promotional video scripts. Exactly 150 words. Zero filler. Maximum impact.',
+        maxTokens:    500,
+        action:       'promo_script',
+      });
+
+      const script = result.text.trim();
+      const words  = script.split(/\s+/).filter(Boolean).length;
+
+      textArea.value      = script;
+      wordCount.textContent = `${words} words (~${Math.round(words / 150 * 60)}s)`;
+      preview.style.display = '';
+      [step2, step3, step4].forEach(el => { if (el) el.style.opacity = '1'; });
+
+      localStorage.setItem(`course_promo_script_${cur.id}`, script);
+
+      btn.textContent = '✅ Script Ready — Regenerate';
+
+    } catch (e) {
+      alert(`Script generation failed: ${e.message}`);
+      btn.textContent = '✍️ Generate Script';
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  if (copyBtn) {
+    copyBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(textArea.value).then(() => {
+        copyBtn.textContent = '✅ Copied!';
+        setTimeout(() => { copyBtn.textContent = '📋 Copy Script'; }, 2000);
+      });
+    });
+  }
+}
+
+function buildPromoScriptPrompt(curriculum) {
+  const chapters   = curriculum.chapters || [];
+  const highlights = chapters.slice(0, 5).map(ch => `- ${ch.title}`).join('\n');
+
+  return `Write a 60-second promotional video script.
+
+Course: ${curriculum.course_title}
+Difficulty: ${curriculum.difficulty || 'Beginner'}
+Chapters: ${chapters.length}
+Key topics:
+${highlights}
+Skills: ${(curriculum.skills_learned || []).slice(0, 3).join(', ')}
+
+Rules:
+- Exactly 150 words
+- Opens with a hook (pain point or surprising fact)
+- Mentions 3 specific things they will learn
+- Ends with one clear CTA
+- Natural spoken language only
+- No markdown, no headers, no stage directions
+
+Return ONLY the spoken script. Nothing else.`;
 }
 
 // ── Coverage Matrix ───────────────────────────────────────────────────────────
