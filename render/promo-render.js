@@ -482,22 +482,46 @@ async function createVerticalVersion(promoPath) {
 
   const shortPath = path.join(PROMO_DIR, 'welcome-promo-short.mp4');
 
-  runFFmpegCommand([
+  // Check for audio
+  const audioCheck = execSync(
+    `ffprobe -v error -select_streams a ` +
+    `-show_entries stream=codec_type ` +
+    `-of default=noprint_wrappers=1:nokey=1 "${promoPath}"`,
+    { encoding: 'utf8' }
+  ).trim();
+  const hasAudio = audioCheck.length > 0;
+
+  const spawnArgs = [
     '-y',
     '-i', promoPath,
-    '-vf',
-    'scale=1080:1920:force_original_aspect_ratio=decrease,' +
-    'pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=black,' +
-    'setsar=1',
+    '-vf', 'scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=black,setsar=1',
     '-c:v', 'libx264',
     '-crf', '18',
     '-preset', 'slow',
     '-pix_fmt', 'yuv420p',
-    '-c:a', 'copy',
-    shortPath,
-  ]);
+  ];
 
-  console.log('   ✓ welcome-promo-short.mp4 (vertical 9:16)');
+  if (hasAudio) {
+    spawnArgs.push('-c:a', 'copy');
+  }
+
+  spawnArgs.push(shortPath);
+
+  const result = spawnSync('ffmpeg', spawnArgs, {
+    stdio: 'pipe',
+    encoding: 'utf8',
+  });
+
+  if (result.status !== 0) {
+    const stderr = result.stderr || '';
+    throw new Error(`Vertical render failed: ${stderr.slice(-300)}`);
+  }
+
+  const stats = fs.statSync(shortPath);
+  console.log(
+    `   ✓ welcome-promo-short.mp4 ` +
+    `(${(stats.size / 1024 / 1024).toFixed(1)}MB, vertical 9:16)`
+  );
   return shortPath;
 }
 
