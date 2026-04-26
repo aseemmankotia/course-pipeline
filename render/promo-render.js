@@ -531,7 +531,7 @@ async function addURLOverlay(inputPath, outputPath, courseUrl) {
 
   console.log(`\n🔗 Adding URL overlay: ${courseUrl}`);
 
-  // Step 1: Get video duration
+  // Get video duration
   const duration = parseFloat(
     execSync(
       `ffprobe -v error -show_entries format=duration ` +
@@ -543,45 +543,33 @@ async function addURLOverlay(inputPath, outputPath, courseUrl) {
   const overlayStart = Math.max(0, duration - 15);
   console.log(`   Overlay appears at ${overlayStart.toFixed(1)}s`);
 
-  // Step 2: Generate URL overlay PNG with Puppeteer (1280×80, no drawtext needed)
+  // Generate URL overlay PNG with Puppeteer
   const overlayHtml = `<!DOCTYPE html>
 <html>
 <head>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
-    width: 1280px;
-    height: 80px;
-    background: transparent;
+    width: 1280px; height: 80px;
+    background: rgba(0,0,0,0.75);
+    border-top: 2px solid rgba(233,69,96,0.6);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    font-family: 'Arial', sans-serif;
-    position: relative;
-  }
-  .bg {
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.72);
-    border-top: 2px solid rgba(233, 69, 96, 0.6);
+    font-family: Arial, sans-serif;
   }
   .label {
-    position: relative;
-    z-index: 1;
-    font-size: 13px;
-    color: rgba(200, 200, 200, 0.85);
+    font-size: 12px;
+    color: rgba(200,200,200,0.8);
     margin-bottom: 3px;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
   }
   .url {
-    position: relative;
-    z-index: 1;
-    font-size: 20px;
+    font-size: 19px;
     font-weight: bold;
     color: #ffffff;
-    letter-spacing: 0.02em;
     text-align: center;
     padding: 0 20px;
     max-width: 1240px;
@@ -592,39 +580,28 @@ async function addURLOverlay(inputPath, outputPath, courseUrl) {
 </style>
 </head>
 <body>
-  <div class="bg"></div>
   <div class="label">Find this course at</div>
-  <div class="url">${escHtml(courseUrl)}</div>
+  <div class="url">${courseUrl}</div>
 </body>
 </html>`;
 
   const overlayHtmlPath = path.join(TEMP_DIR, 'url-overlay.html');
   const overlayPngPath  = path.join(TEMP_DIR, 'url-overlay.png');
-
   fs.writeFileSync(overlayHtmlPath, overlayHtml);
 
   const browser = await puppeteer.launch({ headless: 'new' });
   const page    = await browser.newPage();
   await page.setViewport({ width: 1280, height: 80, deviceScaleFactor: 1 });
   await page.goto(`file://${overlayHtmlPath}`);
-  await new Promise(r => setTimeout(r, 300));
+  await page.waitForTimeout(300);
   await page.screenshot({
     path: overlayPngPath,
     clip: { x: 0, y: 0, width: 1280, height: 80 },
-    omitBackground: false,
   });
   await browser.close();
-
   console.log('   ✓ URL overlay image generated');
 
-  // Step 3: Overlay PNG on video — appears at bottom for final 15 seconds
-  const hasAudio = execSync(
-    `ffprobe -v error -select_streams a -show_entries ` +
-    `stream=codec_type -of default=noprint_wrappers=1:nokey=1 ` +
-    `"${inputPath}"`,
-    { encoding: 'utf8' }
-  ).trim().length > 0;
-
+  // Check for audio stream
   const audioCheck = execSync(
     `ffprobe -v error -select_streams a ` +
     `-show_entries stream=codec_type ` +
@@ -633,6 +610,7 @@ async function addURLOverlay(inputPath, outputPath, courseUrl) {
   ).trim();
   const hasAudio = audioCheck.length > 0;
 
+  // Use spawnSync to avoid shell escaping issues with filter_complex
   const yPos = 720 - 80;
 
   const spawnArgs = [
@@ -671,7 +649,7 @@ async function addURLOverlay(inputPath, outputPath, courseUrl) {
       .slice(-3)
       .join('\n');
     console.error('FFmpeg stderr:', stderr.slice(-500));
-    throw new Error(`FFmpeg failed:\n${errLines || stderr.slice(-200)}`);
+    throw new Error(`FFmpeg overlay failed:\n${errLines || stderr.slice(-200)}`);
   }
 
   const stats = fs.statSync(outputPath);
