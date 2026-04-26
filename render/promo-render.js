@@ -593,7 +593,7 @@ async function addURLOverlay(inputPath, outputPath, courseUrl) {
   const page    = await browser.newPage();
   await page.setViewport({ width: 1280, height: 80, deviceScaleFactor: 1 });
   await page.goto(`file://${overlayHtmlPath}`);
-  await page.waitForTimeout(300);
+  await new Promise(r => setTimeout(r, 300));
   await page.screenshot({
     path: overlayPngPath,
     clip: { x: 0, y: 0, width: 1280, height: 80 },
