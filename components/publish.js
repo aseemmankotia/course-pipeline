@@ -335,9 +335,21 @@ async function createPlaylist(container, cur, s, statusEl) {
 // ── Real YouTube upload (resumable) ───────────────────────────────────────────
 
 async function uploadChapter(ch, videoFile, accessToken, playlistId, academy, cur, privacy) {
+  cur = cur || getCurriculum();
+  ch = ch || {};
   const metadata = {
     snippet: {
-      title:       `${cur.course_title} | Chapter ${ch.number}: ${ch.title}`,
+      title: (() => {
+        const c = cur || getCurriculum() || {};
+        const n = ch?.number || '';
+        const t = ch?.title || ch?.chapter_title || '';
+        const base = `${c.course_title || 'Course'} | Chapter ${n}: ${t}`;
+        const safe = base.replace(/\s+/g, ' ').trim().substring(0, 100);
+        if (!safe || safe.startsWith('|')) {
+          throw new Error(`Empty title. cur=${JSON.stringify(c).slice(0,100)} ch=${JSON.stringify(ch).slice(0,100)}`);
+        }
+        return safe;
+      })(),
       description: buildChapterDescription(cur, ch, playlistId || '', academy),
       tags:        buildChapterTags(cur, ch),
       categoryId:  '27', // Education
