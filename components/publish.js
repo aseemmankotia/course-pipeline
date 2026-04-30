@@ -131,7 +131,7 @@ function mountPublish(container) {
 
 // ── Token refresh ─────────────────────────────────────────────────────────────
 
-async function refreshAccessToken(s) {
+export async function refreshAccessToken(s) {
   if (!s.youtubeClientId || !s.youtubeClientSecret || !s.youtubeToken) {
     throw new Error('YouTube credentials incomplete — add Client ID, Client Secret and Refresh Token in ⚙ Settings.');
   }
@@ -145,11 +145,114 @@ async function refreshAccessToken(s) {
       grant_type:    'refresh_token',
     }),
   });
-  const data = await res.json();
+  const data = await res.json().catch(() => ({}));
   if (!res.ok || data.error) {
+    if (
+      data.error === 'invalid_grant' ||
+      data.error_description?.includes('expired') ||
+      data.error_description?.includes('revoked') ||
+      res.status === 401
+    ) {
+      throw new Error('TOKEN_EXPIRED');
+    }
     throw new Error(`Token refresh failed: ${data.error_description || data.error || res.statusText}`);
   }
   return data.access_token;
+}
+
+// ── Token-expired UI ──────────────────────────────────────────────────────────
+
+export function showTokenExpiredUI(targetEl) {
+  const panel = targetEl ||
+    document.getElementById('pub-status') ||
+    document.querySelector('.publish-status');
+
+  const html = `
+    <div style="
+      background:#fff4ce;
+      border:1.5px solid #f7d057;
+      border-radius:8px;
+      padding:16px 20px;
+      margin:12px 0;
+      font-size:13px;
+    ">
+      <div style="font-weight:700;font-size:15px;margin-bottom:10px;color:#92400e;">
+        ⚠️ YouTube Token Expired
+      </div>
+      <div style="color:#374151;margin-bottom:12px;">
+        Your YouTube authentication has expired and needs to be renewed.
+      </div>
+
+      <div style="
+        background:#1b1b1b;color:#50e6ff;
+        font-family:monospace;font-size:12px;
+        padding:12px;border-radius:6px;
+        margin-bottom:12px;line-height:1.8;
+      ">
+        <span style="color:#888;"># Run in Terminal:</span><br>
+        cd ~/course-pipeline<br>
+        node youtube-auth.js
+      </div>
+
+      <div style="color:#374151;margin-bottom:8px;">After running:</div>
+      <ol style="margin:0 0 12px 20px;color:#374151;line-height:2;">
+        <li>Log in with Google when browser opens</li>
+        <li>Copy the <code style="background:#f3f4f6;padding:1px 4px;border-radius:3px;">refresh_token</code> from youtube-token.json</li>
+        <li>Paste in Settings → OAuth Token</li>
+        <li>Come back and try uploading again</li>
+      </ol>
+
+      <div style="display:flex;gap:8px;">
+        <button class="copy-auth-cmd-btn" style="
+          padding:8px 16px;background:#e94560;color:white;
+          border:none;border-radius:6px;cursor:pointer;
+          font-size:13px;font-weight:600;">
+          📋 Copy Terminal Command
+        </button>
+        <button class="view-token-file-btn" style="
+          padding:8px 16px;background:white;color:#374151;
+          border:1px solid #d1d5db;border-radius:6px;
+          cursor:pointer;font-size:13px;">
+          📁 View Token File
+        </button>
+      </div>
+    </div>`;
+
+  let host;
+  if (panel) {
+    panel.innerHTML = html;
+    host = panel;
+  } else {
+    const div = document.createElement('div');
+    div.style.cssText = `
+      position:fixed;top:80px;right:20px;
+      width:380px;z-index:9999;
+      box-shadow:0 4px 20px rgba(0,0,0,0.15);
+      border-radius:8px;overflow:hidden;
+    `;
+    div.innerHTML = html;
+    document.body.appendChild(div);
+    host = div;
+  }
+
+  host.querySelector('.copy-auth-cmd-btn')?.addEventListener('click', e => {
+    navigator.clipboard.writeText('cd ~/course-pipeline && node youtube-auth.js');
+    e.currentTarget.textContent = '✅ Copied!';
+    setTimeout(() => { e.currentTarget.textContent = '📋 Copy Terminal Command'; }, 2000);
+  });
+  host.querySelector('.view-token-file-btn')?.addEventListener('click', () => {
+    alert(
+      'After running youtube-auth.js, run:\n\n' +
+      'cat ~/course-pipeline/youtube-token.json\n\n' +
+      'Copy the refresh_token value and paste\n' +
+      'into Settings → OAuth Token'
+    );
+  });
+}
+
+function isTokenExpiredError(err) {
+  const m = err?.message || '';
+  return m === 'TOKEN_EXPIRED' || m.includes('expired') || m.includes('revoked');
 }
 
 // ── Playlist creation ─────────────────────────────────────────────────────────
@@ -218,7 +321,11 @@ async function createPlaylist(container, cur, s, statusEl) {
       uploadAllChapters(container, cur, s, playlistId, academy, statusEl));
 
   } catch (err) {
-    statusEl.innerHTML = `<div class="status-bar error">${esc(err.message)}</div>`;
+    if (isTokenExpiredError(err)) {
+      showTokenExpiredUI(statusEl);
+    } else {
+      statusEl.innerHTML = `<div class="status-bar error">${esc(err.message)}</div>`;
+    }
   } finally {
     btn.disabled = false;
     btn.innerHTML = '📋 Create Playlist';
@@ -361,7 +468,9 @@ async function uploadSingleChapter(chNum, container, cur, s) {
   } catch (err) {
     if (statusEl) { statusEl.textContent = '❌ Failed'; statusEl.style.color = '#e94560'; }
     if (btn)      { btn.textContent = '↺ Retry'; btn.disabled = false; }
-    if (pubStatus) {
+    if (isTokenExpiredError(err)) {
+      showTokenExpiredUI(pubStatus);
+    } else if (pubStatus) {
       pubStatus.innerHTML = `<div class="status-bar error">Chapter ${chNum} upload failed: ${esc(err.message)}</div>`;
     }
     console.error(`[publish] Chapter ${chNum} upload error:`, err);

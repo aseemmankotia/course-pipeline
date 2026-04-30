@@ -6,7 +6,7 @@
 import { renderCurriculum } from './components/curriculum.js';
 import { renderChapter }    from './components/chapter.js';
 import { renderSlides }     from './components/slides.js';
-import { renderPublish }    from './components/publish.js';
+import { renderPublish, refreshAccessToken, showTokenExpiredUI } from './components/publish.js';
 import { renderMarketing }  from './components/marketing.js';
 import { renderMaterials }  from './components/materials.js';
 
@@ -108,6 +108,12 @@ function renderSettings(container) {
             <label>OAuth Token (auto-saved after auth)</label>
             <input type="password" id="st-yt-token" placeholder="Paste token or authenticate via Publish tab" value="${esc(s.youtubeToken || '')}" />
           </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:8px;flex-wrap:wrap;">
+          <button class="btn btn-secondary" id="st-yt-test-btn" style="font-size:.82rem;padding:5px 14px;">
+            🔗 Test YouTube Connection
+          </button>
+          <span id="st-yt-test-status" style="font-size:.82rem;color:var(--muted);"></span>
         </div>
       </div>
 
@@ -311,13 +317,30 @@ function renderSettings(container) {
   container.querySelector('#export-course-data-btn').addEventListener('click', () =>
     exportCourseData(container));
 
+  // YouTube connection test
+  container.querySelector('#st-yt-test-btn').addEventListener('click', () =>
+    testYouTubeToken(container));
+
+  // Token age warning + persist save timestamp on manual edits
+  const tokenInput = container.querySelector('#st-yt-token');
+  tokenInput?.addEventListener('change', () => {
+    localStorage.setItem('youtubeTokenSavedAt', new Date().toISOString());
+    checkTokenAge(container);
+  });
+  checkTokenAge(container);
+
   container.querySelector('#save-settings-btn').addEventListener('click', () => {
+    const prevToken = (getSettings().youtubeToken || '').trim();
+    const newToken  = container.querySelector('#st-yt-token').value.trim();
+    if (newToken && newToken !== prevToken) {
+      localStorage.setItem('youtubeTokenSavedAt', new Date().toISOString());
+    }
     const updated = {
       claudeApiKey:      container.querySelector('#st-claude-key').value.trim(),
       geminiApiKey:      container.querySelector('#st-gemini-key').value.trim(),
       youtubeClientId:   container.querySelector('#st-yt-client-id').value.trim(),
       youtubeClientSecret: container.querySelector('#st-yt-client-secret').value.trim(),
-      youtubeToken:      container.querySelector('#st-yt-token').value.trim(),
+      youtubeToken:      newToken,
       heygenAvatarId:     container.querySelector('#st-heygen-avatar-id').value.trim(),
       heygenVoiceId:      container.querySelector('#st-heygen-voice-id').value.trim(),
       academyName:          container.querySelector('#st-academy-name').value.trim() || 'TechNuggets Academy',
@@ -341,6 +364,76 @@ function renderSettings(container) {
     el.innerHTML = `<div class="status-bar success">✓ Settings saved.</div>`;
     setTimeout(() => { el.innerHTML = ''; }, 2500);
   });
+}
+
+// ── YouTube token age + connection test ───────────────────────────────────────
+
+function checkTokenAge(container) {
+  const savedAt = localStorage.getItem('youtubeTokenSavedAt');
+  const tokenField = container.querySelector('#st-yt-token')?.parentElement;
+  if (!tokenField) return;
+
+  tokenField.querySelector('.token-age-warning')?.remove();
+  if (!savedAt) return;
+
+  const days = Math.floor((Date.now() - new Date(savedAt).getTime()) / (1000 * 60 * 60 * 24));
+  if (days <= 150) return;
+
+  const warning = document.createElement('div');
+  warning.className = 'token-age-warning';
+  warning.style.cssText = `
+    font-size:12px;margin-top:4px;padding:4px 8px;border-radius:4px;
+    ${days > 180 ? 'background:#fde8ec;color:#e94560;' : 'background:#fff4ce;color:#92400e;'}
+  `;
+  warning.textContent = days > 180
+    ? `🔴 Token is ${days} days old — likely expired. Re-run youtube-auth.js`
+    : `⚠️ Token is ${days} days old — consider refreshing soon`;
+  tokenField.appendChild(warning);
+}
+
+async function testYouTubeToken(container) {
+  const btn    = container.querySelector('#st-yt-test-btn');
+  const result = container.querySelector('#st-yt-test-status');
+
+  btn.disabled    = true;
+  btn.textContent = 'Testing…';
+  result.textContent = '';
+  result.style.color = 'var(--muted)';
+
+  // Use the values currently in the form (not yet saved) so the user can test before saving.
+  const s = {
+    youtubeClientId:     container.querySelector('#st-yt-client-id').value.trim(),
+    youtubeClientSecret: container.querySelector('#st-yt-client-secret').value.trim(),
+    youtubeToken:        container.querySelector('#st-yt-token').value.trim(),
+  };
+
+  try {
+    const accessToken = await refreshAccessToken(s);
+    const resp = await fetch(
+      'https://www.googleapis.com/youtube/v3/channels?part=snippet&mine=true',
+      { headers: { 'Authorization': `Bearer ${accessToken}` } }
+    );
+    if (!resp.ok) throw new Error('TOKEN_EXPIRED');
+
+    const data = await resp.json();
+    const channel = data.items?.[0]?.snippet?.title || 'Your Channel';
+    result.textContent = `✅ Connected: ${channel}`;
+    result.style.color = '#16a34a';
+    localStorage.setItem('youtubeTokenSavedAt', new Date().toISOString());
+    checkTokenAge(container);
+  } catch (e) {
+    if (e.message === 'TOKEN_EXPIRED' || e.message?.includes('expired') || e.message?.includes('revoked')) {
+      result.textContent = '❌ Token expired — re-run youtube-auth.js';
+      result.style.color = '#e94560';
+      showTokenExpiredUI(container.querySelector('#settings-status'));
+    } else {
+      result.textContent = `❌ ${e.message}`;
+      result.style.color = '#e94560';
+    }
+  } finally {
+    btn.disabled    = false;
+    btn.textContent = '🔗 Test YouTube Connection';
+  }
 }
 
 // ── Export course data for archive ────────────────────────────────────────────
