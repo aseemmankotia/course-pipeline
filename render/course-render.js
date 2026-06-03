@@ -233,9 +233,11 @@ async function main() {
   // ── Step 4: Locate HeyGen video ─────────────────────────────────────────
   log('\n⬇  Step 4 — Locating HeyGen video…');
   const heygenVideoPath = findHeygenVideo(chapter_number);
-  const tempHeygenPath  = path.join(TEMP_DIR, 'heygen-raw.mp4');
+  const heygenExt       = path.extname(heygenVideoPath).toLowerCase().replace('.', '') || 'mp4';
+  log(`   Format: ${heygenExt}`);
+  const tempHeygenPath  = path.join(TEMP_DIR, `heygen-raw.${heygenExt}`);
   fs.copyFileSync(heygenVideoPath, tempHeygenPath);
-  log(`   ✓ Copied to temp/heygen-raw.mp4`);
+  log(`   ✓ Copied to temp/heygen-raw.${heygenExt}`);
 
   // ── Step 5: Get duration from HeyGen video ───────────────────────────────
   log('\n⏱  Step 5 — Getting video duration…');
@@ -1289,25 +1291,49 @@ function distributeTimings(sections, totalDuration) {
 // ── HeyGen video lookup ───────────────────────────────────────────────────────
 
 function findHeygenVideo(chapterNum) {
-  const paddedNum  = String(chapterNum).padStart(2, '0');
-  const chapterDir = CHAPTER_DIR || path.join(__dirname, 'chapters', `chapter-${paddedNum}`);
-  const candidates = [
-    path.join(chapterDir, `heygen-chapter-${paddedNum}.mp4`),
-    path.join(__dirname, '..', `heygen-chapter-${paddedNum}.mp4`),
-    path.join(process.env.HOME || '', 'Downloads', `heygen-chapter-${paddedNum}.mp4`),
-  ];
-  for (const c of candidates) {
-    if (fs.existsSync(c)) {
-      log(`   Found: ${c}`);
-      return c;
+  const paddedNum = String(chapterNum).padStart(2, '0');
+
+  // Support multiple video formats
+  const formats = ['mp4', 'webm', 'mov', 'avi', 'mkv'];
+
+  // Build all possible locations x formats
+  const locations = [];
+
+  formats.forEach(ext => {
+    const filename = `heygen-chapter-${paddedNum}.${ext}`;
+    locations.push(
+      // Chapter-specific directory
+      path.join(__dirname, 'chapters',
+        `chapter-${paddedNum}`, filename),
+      // Project root
+      path.join(process.cwd(), filename),
+      // Downloads folder
+      path.join(require('os').homedir(), 'Downloads', filename)
+    );
+  });
+
+  for (const loc of locations) {
+    if (fs.existsSync(loc)) {
+      console.log(`   ✓ Found: ${loc}`);
+      return loc;
     }
   }
-  die(
-    `HeyGen video not found for Chapter ${chapterNum}.\n` +
-    `Looked for heygen-chapter-${paddedNum}.mp4 in:\n` +
-    candidates.map(c => `  · ${c}`).join('\n') + '\n\n' +
-    `Export the HeyGen video and place it in one of those locations.`
+
+  // Show helpful error listing all formats checked
+  console.error(`\n❌ Chapter ${chapterNum} video not found.`);
+  console.error('Looked for these files:');
+  formats.forEach(ext => {
+    console.error(
+      `   heygen-chapter-${paddedNum}.${ext} ` +
+      `(in project root, chapter dir, or Downloads)`
+    );
+  });
+  console.error(`\nSupported formats: ${formats.join(', ')}`);
+  console.error(
+    `\nRename your video to: ` +
+    `heygen-chapter-${paddedNum}.webm (or .mp4)`
   );
+  process.exit(1);
 }
 
 // ── FFmpeg spawn wrapper ──────────────────────────────────────────────────────
@@ -1367,6 +1393,10 @@ async function compositeVideo(sections, heygenPath, outPath, totalDuration, ctaO
   const FPS       = 30;
   const FADE      = 0.4;
 
+  // For webm source, add format-specific flags before any -i so they apply globally
+  const heygenExt = path.extname(heygenPath).toLowerCase().replace('.', '');
+  const heygenInputFlags = heygenExt === 'webm' ? ['-fflags', '+genpts'] : [];
+
   const pipMode   = (renderInput && renderInput.pip_mode) || 'full';
   const introDur  = (renderInput && renderInput.pip_duration_intro) || 45;
   const outroDur  = (renderInput && renderInput.pip_duration_outro) || 30;
@@ -1422,6 +1452,7 @@ async function compositeVideo(sections, heygenPath, outPath, totalDuration, ctaO
 
     await runFFmpeg([
       '-y',
+      ...heygenInputFlags,
       ...inputs,
       '-i', heygenPath,
       '-filter_complex', filterComplex,
@@ -1480,6 +1511,7 @@ async function compositeVideo(sections, heygenPath, outPath, totalDuration, ctaO
 
   await runFFmpeg([
     '-y',
+    ...heygenInputFlags,
     ...inputs,
     '-filter_complex', filterComplex,
     '-map', '[outv]',

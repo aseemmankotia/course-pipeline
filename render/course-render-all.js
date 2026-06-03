@@ -10,7 +10,7 @@
  *   ...
  *
  * Falls back to course-render-input-N.json in the project root.
- * Requires heygen-chapter-NN.mp4 in each chapter dir (or ~/Downloads) for PIP overlay.
+ * Requires heygen-chapter-NN.{mp4,webm,mov,avi,mkv} in each chapter dir (or ~/Downloads) for PIP overlay.
  */
 
 const { execSync } = require('child_process');

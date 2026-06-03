@@ -85,7 +85,8 @@ function mountRender(container) {
         <div style="font-size:.8rem;font-weight:600;color:#166534;margin-bottom:6px;">Setup checklist:</div>
         <div style="font-size:.8rem;color:#15803d;line-height:1.9;">
           ✅ <code>ANTHROPIC_API_KEY</code> in <code>.env</code> — for curriculum &amp; script generation<br>
-          ✅ HeyGen avatar video exported as <code>heygen-chapter-NN.mp4</code> (place in chapter dir or <code>~/Downloads</code>)<br>
+          ✅ HeyGen avatar video exported as <code>heygen-chapter-NN.mp4</code> (or <code>.webm</code>, <code>.mov</code>) — place in chapter dir or <code>~/Downloads</code><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;Supported formats: <code>mp4</code>, <code>webm</code>, <code>mov</code>, <code>avi</code>, <code>mkv</code><br>
           ✅ <code>cta-overlay.png</code> in project root — subscribe CTA overlay (optional)<br>
           ✅ <code>ffmpeg</code> installed — <code>brew install ffmpeg</code>
         </div>
@@ -299,6 +300,7 @@ function buildRenderInput(ch, cur, d) {
     pip_mode:            pipMode,
     pip_duration_intro:  introDuration,
     pip_duration_outro:  outroDuration,
+    // heygen_local_file: supports .mp4, .webm, .mov, .avi, .mkv
     heygen_local_file:   `heygen-chapter-${paddedNum}.mp4`,
     output_filename:     `chapter-${paddedNum}-final.mp4`,
   };
