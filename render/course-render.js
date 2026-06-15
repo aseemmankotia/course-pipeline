@@ -25,7 +25,7 @@ const fs           = require('fs');
 const path         = require('path');
 const axios        = require('axios');
 const puppeteer    = require('puppeteer');
-const { execSync, spawn } = require('child_process');
+const { spawn, spawnSync } = require('child_process');
 const { callAI }   = require('./ai-client-node.js');
 
 // Chapter number: argv wins over whatever is in the JSON
@@ -1413,25 +1413,31 @@ async function compositeVideo(sections, heygenPath, outPath, totalDuration, ctaO
     const seg = path.join(TEMP_DIR, `seg-${i}.mp4`);
     const fadeOutStart = Math.max(0, dur - FADE).toFixed(3);
 
-    execSync(
-      `"${ffmpegBin}" -y -loop 1 -framerate ${FPS} -i "${path.join(SLIDES_DIR, `slide-${String(i).padStart(2,'0')}.png`)}" ` +
-      `-vf "scale=1280:720:flags=lanczos,fade=t=in:st=0:d=${FADE},fade=t=out:st=${fadeOutStart}:d=${FADE}" ` +
-      `-t ${dur.toFixed(3)} -c:v libx264 -preset slow -crf 18 -pix_fmt yuv420p "${seg}"`,
-      { stdio: 'pipe' }
-    );
+    runFFmpegSync(ffmpegBin, [
+      '-y',
+      '-loop', '1',
+      '-framerate', String(FPS),
+      '-i', path.join(SLIDES_DIR, `slide-${String(i).padStart(2,'0')}.png`),
+      '-vf', `scale=1280:720:flags=lanczos,fade=t=in:st=0:d=${FADE},fade=t=out:st=${fadeOutStart}:d=${FADE}`,
+      '-t', dur.toFixed(3),
+      '-c:v', 'libx264', '-preset', 'slow', '-crf', '18', '-pix_fmt', 'yuv420p',
+      seg,
+    ]);
     segPaths.push(seg);
     log(`   ✓ seg-${i}.mp4 (${dur.toFixed(1)}s)`);
   }
 
   // 6b: concat into slideshow
   const concatFile    = path.join(TEMP_DIR, 'concat.txt');
-  fs.writeFileSync(concatFile, segPaths.map(p => `file '${p.replace(/'/g,"'\\''")}'`).join('\n') + '\n');
+  fs.writeFileSync(concatFile, segPaths.map(p => `file '${toFFmpegPath(p)}'`).join('\n') + '\n');
 
   const slideshowPath = path.join(TEMP_DIR, 'slideshow.mp4');
-  execSync(
-    `"${ffmpegBin}" -y -f concat -safe 0 -i "${concatFile}" -c copy "${slideshowPath}"`,
-    { stdio: 'pipe' }
-  );
+  runFFmpegSync(ffmpegBin, [
+    '-y', '-f', 'concat', '-safe', '0',
+    '-i', concatFile,
+    '-c', 'copy',
+    slideshowPath,
+  ]);
   log('   ✓ slideshow.mp4 assembled');
 
   log(`   PIP Mode: ${pipMode}`);
@@ -1527,20 +1533,58 @@ async function compositeVideo(sections, heygenPath, outPath, totalDuration, ctaO
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function getVideoDuration(ffprobe, p) {
-  const out = execSync(
-    `"${ffprobe}" -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${p}"`,
-    { encoding: 'utf8' }
-  ).trim();
-  const d = parseFloat(out);
+  const res = spawnSync(ffprobe, [
+    '-v', 'error',
+    '-show_entries', 'format=duration',
+    '-of', 'default=noprint_wrappers=1:nokey=1',
+    p,
+  ], { encoding: 'utf8' });
+  if (res.status !== 0) die(`ffprobe failed on ${p}: ${(res.stderr || '').slice(-200)}`);
+  const d = parseFloat((res.stdout || '').trim());
   if (isNaN(d) || d <= 0) die(`Cannot read duration from ${p}`);
   return d;
 }
 
+// Cross-platform binary lookup. Checks PATH first via where/which, then
+// falls back to common Homebrew paths on macOS so existing setups keep working.
+const _binaryCache = {};
 function findBinary(name) {
-  for (const bin of [`/opt/homebrew/bin/${name}`, `/usr/local/bin/${name}`, name]) {
-    try { execSync(`"${bin}" -version 2>&1`, { stdio: 'ignore' }); return bin; } catch {}
+  if (_binaryCache[name]) return _binaryCache[name];
+
+  const cmd = process.platform === 'win32' ? 'where' : 'which';
+  const result = spawnSync(cmd, [name], { encoding: 'utf8' });
+  if (result.status === 0 && (result.stdout || '').trim()) {
+    return (_binaryCache[name] = name);
   }
-  throw new Error(`"${name}" not found. Install: brew install ffmpeg`);
+
+  if (process.platform === 'darwin') {
+    for (const bin of [`/opt/homebrew/bin/${name}`, `/usr/local/bin/${name}`]) {
+      if (fs.existsSync(bin)) return (_binaryCache[name] = bin);
+    }
+  }
+
+  console.error(`\n❌ ${name} not found in PATH.`);
+  console.error(process.platform === 'win32'
+    ? `   Install: winget install ffmpeg   (restart terminal after install)`
+    : `   Install: brew install ffmpeg`);
+  process.exit(1);
+}
+
+// Run ffmpeg/ffprobe synchronously with an argv array (no shell). Throws on
+// non-zero exit with a trimmed stderr tail so errors stay readable.
+function runFFmpegSync(bin, args) {
+  const res = spawnSync(bin, args, { stdio: ['ignore', 'pipe', 'pipe'], encoding: 'utf8' });
+  if (res.status !== 0) {
+    const tail = (res.stderr || '').split('\n').slice(-12).join('\n');
+    throw new Error(`${path.basename(bin)} exited with code ${res.status}\n${tail}`);
+  }
+  return res;
+}
+
+// Convert a Windows-style path (with backslashes) into a form ffmpeg's concat
+// demuxer can read. On *nix this is a no-op.
+function toFFmpegPath(p) {
+  return process.platform === 'win32' ? p.replace(/\\/g, '/') : p;
 }
 
 function esc(str) {

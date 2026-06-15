@@ -13,7 +13,7 @@
  * Requires heygen-chapter-NN.{mp4,webm,mov,avi,mkv} in each chapter dir (or ~/Downloads) for PIP overlay.
  */
 
-const { execSync } = require('child_process');
+const { spawnSync } = require('child_process');
 const fs   = require('fs');
 const path = require('path');
 
@@ -46,7 +46,7 @@ function findInputFile(n) {
   return null;
 }
 
-const FORCE_FLAG = process.argv.includes('--force') ? ' --force' : '';
+const FORCE_FLAG = process.argv.includes('--force');
 
 async function main() {
   const totalChapters = loadCurriculum();
@@ -58,6 +58,8 @@ async function main() {
   }
 
   log(`\n📚 Rendering ${totalChapters} chapter(s)…${FORCE_FLAG ? ' (--force)' : ''}\n`);
+
+  const renderScript = path.join(__dirname, 'course-render.js');
 
   const results = [];
 
@@ -83,21 +85,26 @@ async function main() {
     log(`🎬 Chapter ${n} of ${totalChapters}: ${input.chapter_title || ''}`);
     log(`   Input: ${inputFile}`);
 
-    try {
-      execSync(`node render/course-render.js ${n}${FORCE_FLAG}`, {
-        cwd: ROOT,
-        stdio: 'inherit',
-      });
+    const args = [renderScript, String(n)];
+    if (FORCE_FLAG) args.push('--force');
 
+    const res = spawnSync(process.execPath, args, {
+      cwd: ROOT,
+      stdio: 'inherit',
+    });
+
+    if (res.status === 0) {
       const finalPath = path.join(
         CHAPTERS_DIR, `chapter-${paddedNum}`, `chapter-${paddedNum}-final.mp4`
       );
       log(`✅ Chapter ${n} → ${finalPath}`);
       results.push({ chapter: n, status: 'done', path: finalPath });
-
-    } catch (err) {
-      console.error(`❌ Chapter ${n} failed: ${err.message}`);
-      results.push({ chapter: n, status: 'failed', error: err.message });
+    } else {
+      const err = res.error
+        ? res.error.message
+        : `exited with code ${res.status}`;
+      console.error(`❌ Chapter ${n} failed: ${err}`);
+      results.push({ chapter: n, status: 'failed', error: err });
     }
   }
 

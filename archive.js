@@ -118,9 +118,17 @@ ${chapters.map(ch => `${ch.number}. **${ch.title}**  \n   ${ch.subtitle || ''}`)
 ## 🔄 Re-rendering a Chapter
 
 \`\`\`bash
+# macOS / Linux
 cp render-configs/chapter-01-render-input.json \\
    ~/course-pipeline/render/chapters/chapter-01/course-render-input.json
 cd ~/course-pipeline && npm run render:1
+\`\`\`
+
+\`\`\`powershell
+# Windows (PowerShell)
+Copy-Item render-configs\\chapter-01-render-input.json \`
+  $env:USERPROFILE\\course-pipeline\\render\\chapters\\chapter-01\\course-render-input.json
+cd $env:USERPROFILE\\course-pipeline; npm run render:1
 \`\`\`
 
 ---
@@ -404,9 +412,17 @@ async function createArchive(courseData) {
       }
       console.log('='.repeat(52));
       console.log('\nTo extract:');
-      console.log(`  unzip "${zipPath}" -d ~/Desktop/`);
+      if (process.platform === 'win32') {
+        console.log(`  Expand-Archive -Path "${zipPath}" -DestinationPath "$env:USERPROFILE\\Desktop"`);
+      } else {
+        console.log(`  unzip "${zipPath}" -d ~/Desktop/`);
+      }
       console.log('\nTo list contents:');
-      console.log(`  unzip -l "${zipPath}"`);
+      if (process.platform === 'win32') {
+        console.log(`  tar -tf "${zipPath}"`);
+      } else {
+        console.log(`  unzip -l "${zipPath}"`);
+      }
       resolve({ zipPath, zipSz, totalFiles, manifest });
     });
     output.on('error', reject);

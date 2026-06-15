@@ -13,10 +13,11 @@
  *         render/promo/welcome-promo-short.mp4  (9:16  — YouTube Shorts)
  */
 
-const puppeteer          = require('puppeteer');
-const { execSync, spawnSync } = require('child_process');
-const fs                 = require('fs');
-const path               = require('path');
+const puppeteer       = require('puppeteer');
+const { spawnSync }   = require('child_process');
+const fs              = require('fs');
+const path            = require('path');
+const os              = require('os');
 require('dotenv').config({ path: path.join(__dirname, '../.env') });
 
 const { callAI } = require('./ai-client-node.js');
@@ -30,6 +31,54 @@ const TEMP_DIR     = path.join(PROMO_DIR, 'temp');
 [PROMO_DIR, SLIDES_DIR, TEMP_DIR].forEach(d => {
   if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true });
 });
+
+// ── Cross-platform binary lookup + ffmpeg helpers ────────────────────────────
+const _binaryCache = {};
+function findBinary(name) {
+  if (_binaryCache[name]) return _binaryCache[name];
+
+  const cmd = process.platform === 'win32' ? 'where' : 'which';
+  const result = spawnSync(cmd, [name], { encoding: 'utf8' });
+  if (result.status === 0 && (result.stdout || '').trim()) {
+    return (_binaryCache[name] = name);
+  }
+
+  if (process.platform === 'darwin') {
+    for (const bin of [`/opt/homebrew/bin/${name}`, `/usr/local/bin/${name}`]) {
+      if (fs.existsSync(bin)) return (_binaryCache[name] = bin);
+    }
+  }
+
+  console.error(`\n❌ ${name} not found in PATH.`);
+  console.error(process.platform === 'win32'
+    ? `   Install: winget install ffmpeg   (restart terminal after install)`
+    : `   Install: brew install ffmpeg`);
+  process.exit(1);
+}
+
+function runFFmpegSync(args) {
+  const bin = findBinary('ffmpeg');
+  const res = spawnSync(bin, args, { stdio: ['ignore', 'pipe', 'pipe'], encoding: 'utf8' });
+  if (res.status !== 0) {
+    const tail = (res.stderr || '').split('\n').slice(-12).join('\n');
+    throw new Error(`ffmpeg exited with code ${res.status}\n${tail}`);
+  }
+  return res;
+}
+
+function runFFprobeSync(args) {
+  const bin = findBinary('ffprobe');
+  const res = spawnSync(bin, args, { stdio: ['ignore', 'pipe', 'pipe'], encoding: 'utf8' });
+  if (res.status !== 0) {
+    const tail = (res.stderr || '').split('\n').slice(-12).join('\n');
+    throw new Error(`ffprobe exited with code ${res.status}\n${tail}`);
+  }
+  return (res.stdout || '').trim();
+}
+
+function toFFmpegPath(p) {
+  return process.platform === 'win32' ? p.replace(/\\/g, '/') : p;
+}
 
 // ── Load course data ──────────────────────────────────────────────────────────
 function loadCourseData() {
@@ -398,30 +447,32 @@ async function createSlideshowVideo(slidePaths) {
     const { path: imgPath, duration } = slidePaths[i];
     const segPath = path.join(TEMP_DIR, `seg-${i}.mp4`);
 
-    execSync([
-      'ffmpeg -y',
-      `-loop 1 -framerate 30 -i "${imgPath}"`,
-      `-t ${duration}`,
-      '-c:v libx264 -crf 18 -preset fast',
-      '-pix_fmt yuv420p',
-      '-vf "scale=1280:720:flags=lanczos"',
-      `"${segPath}"`,
-    ].join(' '), { stdio: 'pipe' });
+    runFFmpegSync([
+      '-y',
+      '-loop', '1',
+      '-framerate', '30',
+      '-i', imgPath,
+      '-t', String(duration),
+      '-c:v', 'libx264', '-crf', '18', '-preset', 'fast',
+      '-pix_fmt', 'yuv420p',
+      '-vf', 'scale=1280:720:flags=lanczos',
+      segPath,
+    ]);
 
     segments.push(segPath);
     console.log(`   ✓ seg-${i}.mp4 (${duration}s)`);
   }
 
   const concatFile = path.join(TEMP_DIR, 'concat.txt');
-  fs.writeFileSync(concatFile, segments.map(s => `file '${s}'`).join('\n'));
+  fs.writeFileSync(concatFile, segments.map(s => `file '${toFFmpegPath(s)}'`).join('\n') + '\n');
 
-  execSync([
-    'ffmpeg -y',
-    '-f concat -safe 0',
-    `-i "${concatFile}"`,
-    '-c copy',
-    `"${slideshowPath}"`,
-  ].join(' '), { stdio: 'pipe' });
+  runFFmpegSync([
+    '-y',
+    '-f', 'concat', '-safe', '0',
+    '-i', concatFile,
+    '-c', 'copy',
+    slideshowPath,
+  ]);
 
   console.log('   ✓ slideshow.mp4 assembled');
   return slideshowPath;
@@ -434,7 +485,7 @@ async function compositeWithHeyGen(slideshowPath, outputPath) {
   const heygenPaths = [
     path.join(PROJECT_ROOT, 'heygen-promo.mp4'),
     path.join(PROMO_DIR,    'heygen-promo.mp4'),
-    path.join(require('os').homedir(), 'Downloads', 'heygen-promo.mp4'),
+    path.join(os.homedir(), 'Downloads', 'heygen-promo.mp4'),
   ];
 
   let heygenPath = null;
@@ -448,27 +499,28 @@ async function compositeWithHeyGen(slideshowPath, outputPath) {
     console.log('   ⚠ No HeyGen video found — outputting slides only');
     console.log('   Place heygen-promo.mp4 in project root to add avatar PIP');
 
-    execSync([
-      `ffmpeg -y -i "${slideshowPath}"`,
-      '-c:v libx264 -crf 18 -preset slow -pix_fmt yuv420p',
-      `"${outputPath}"`,
-    ].join(' '), { stdio: 'pipe' });
+    runFFmpegSync([
+      '-y',
+      '-i', slideshowPath,
+      '-c:v', 'libx264', '-crf', '18', '-preset', 'slow', '-pix_fmt', 'yuv420p',
+      outputPath,
+    ]);
 
   } else {
-    execSync([
-      'ffmpeg -y',
-      `-i "${slideshowPath}"`,
-      `-i "${heygenPath}"`,
+    runFFmpegSync([
+      '-y',
+      '-i', slideshowPath,
+      '-i', heygenPath,
       '-filter_complex',
-      `"[0:v]scale=1280:720:flags=lanczos[bg];` +
-      `[1:v]scale=160:-2:flags=lanczos[av];` +
-      `[av]pad=iw+4:ih+4:2:2:color=white[av_b];` +
-      `[bg][av_b]overlay=W-w-20:H-h-20[outv]"`,
-      '-map [outv] -map 1:a',
-      '-c:v libx264 -crf 18 -preset slow',
-      '-pix_fmt yuv420p -c:a aac -b:a 192k -shortest',
-      `"${outputPath}"`,
-    ].join(' '), { stdio: 'pipe' });
+      '[0:v]scale=1280:720:flags=lanczos[bg];' +
+      '[1:v]scale=160:-2:flags=lanczos[av];' +
+      '[av]pad=iw+4:ih+4:2:2:color=white[av_b];' +
+      '[bg][av_b]overlay=W-w-20:H-h-20[outv]',
+      '-map', '[outv]', '-map', '1:a',
+      '-c:v', 'libx264', '-crf', '18', '-preset', 'slow',
+      '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '192k', '-shortest',
+      outputPath,
+    ]);
   }
 
   const sizeMB = (fs.statSync(outputPath).size / 1024 / 1024).toFixed(1);
@@ -483,12 +535,13 @@ async function createVerticalVersion(promoPath) {
   const shortPath = path.join(PROMO_DIR, 'welcome-promo-short.mp4');
 
   // Check for audio
-  const audioCheck = execSync(
-    `ffprobe -v error -select_streams a ` +
-    `-show_entries stream=codec_type ` +
-    `-of default=noprint_wrappers=1:nokey=1 "${promoPath}"`,
-    { encoding: 'utf8' }
-  ).trim();
+  const audioCheck = runFFprobeSync([
+    '-v', 'error',
+    '-select_streams', 'a',
+    '-show_entries', 'stream=codec_type',
+    '-of', 'default=noprint_wrappers=1:nokey=1',
+    promoPath,
+  ]);
   const hasAudio = audioCheck.length > 0;
 
   const spawnArgs = [
@@ -507,15 +560,7 @@ async function createVerticalVersion(promoPath) {
 
   spawnArgs.push(shortPath);
 
-  const result = spawnSync('ffmpeg', spawnArgs, {
-    stdio: 'pipe',
-    encoding: 'utf8',
-  });
-
-  if (result.status !== 0) {
-    const stderr = result.stderr || '';
-    throw new Error(`Vertical render failed: ${stderr.slice(-300)}`);
-  }
+  runFFmpegSync(spawnArgs);
 
   const stats = fs.statSync(shortPath);
   console.log(
@@ -523,26 +568,6 @@ async function createVerticalVersion(promoPath) {
     `(${(stats.size / 1024 / 1024).toFixed(1)}MB, vertical 9:16)`
   );
   return shortPath;
-}
-
-// ── FFmpeg helper with readable errors ───────────────────────────────────────
-function runFFmpegCommand(args) {
-  const cmd = `ffmpeg ${args.map(a =>
-    a.includes(' ') && !a.startsWith('-')
-      ? `"${a}"`
-      : a
-  ).join(' ')}`;
-
-  try {
-    execSync(cmd, { stdio: 'pipe' });
-  } catch (e) {
-    const stderr = e.stderr?.toString() || '';
-    const errorLine = stderr
-      .split('\n')
-      .find(l => l.includes('Error') || l.includes('error') || l.includes('Invalid'))
-      || stderr.slice(-200);
-    throw new Error(`FFmpeg failed: ${errorLine}`);
-  }
 }
 
 // ── URL overlay via Puppeteer PNG + FFmpeg overlay filter ─────────────────────
@@ -556,13 +581,12 @@ async function addURLOverlay(inputPath, outputPath, courseUrl) {
   console.log(`\n🔗 Adding URL overlay: ${courseUrl}`);
 
   // Get video duration
-  const duration = parseFloat(
-    execSync(
-      `ffprobe -v error -show_entries format=duration ` +
-      `-of default=noprint_wrappers=1:nokey=1 "${inputPath}"`,
-      { encoding: 'utf8' }
-    ).trim()
-  );
+  const duration = parseFloat(runFFprobeSync([
+    '-v', 'error',
+    '-show_entries', 'format=duration',
+    '-of', 'default=noprint_wrappers=1:nokey=1',
+    inputPath,
+  ]));
 
   const overlayStart = Math.max(0, duration - 15);
   console.log(`   Overlay appears at ${overlayStart.toFixed(1)}s`);
@@ -626,15 +650,15 @@ async function addURLOverlay(inputPath, outputPath, courseUrl) {
   console.log('   ✓ URL overlay image generated');
 
   // Check for audio stream
-  const audioCheck = execSync(
-    `ffprobe -v error -select_streams a ` +
-    `-show_entries stream=codec_type ` +
-    `-of default=noprint_wrappers=1:nokey=1 "${inputPath}"`,
-    { encoding: 'utf8' }
-  ).trim();
+  const audioCheck = runFFprobeSync([
+    '-v', 'error',
+    '-select_streams', 'a',
+    '-show_entries', 'stream=codec_type',
+    '-of', 'default=noprint_wrappers=1:nokey=1',
+    inputPath,
+  ]);
   const hasAudio = audioCheck.length > 0;
 
-  // Use spawnSync to avoid shell escaping issues with filter_complex
   const yPos = 720 - 80;
 
   const spawnArgs = [
@@ -656,25 +680,7 @@ async function addURLOverlay(inputPath, outputPath, courseUrl) {
   spawnArgs.push(outputPath);
 
   console.log('   Running FFmpeg overlay...');
-  const result = spawnSync('ffmpeg', spawnArgs, {
-    stdio: 'pipe',
-    encoding: 'utf8',
-  });
-
-  if (result.status !== 0) {
-    const stderr = result.stderr || '';
-    const errLines = stderr.split('\n')
-      .filter(l =>
-        l.includes('Error') ||
-        l.includes('Invalid') ||
-        l.includes('No such') ||
-        l.includes('not found')
-      )
-      .slice(-3)
-      .join('\n');
-    console.error('FFmpeg stderr:', stderr.slice(-500));
-    throw new Error(`FFmpeg overlay failed:\n${errLines || stderr.slice(-200)}`);
-  }
+  runFFmpegSync(spawnArgs);
 
   const stats = fs.statSync(outputPath);
   console.log(`   ✓ URL overlay applied (${(stats.size / 1024 / 1024).toFixed(1)}MB)`);
@@ -690,6 +696,12 @@ async function main() {
   console.log('='.repeat(50));
   console.log(`Mode: ${previewOnly ? '👁  Preview only' : '🚀 Full render'}`);
   console.log('='.repeat(50));
+
+  // Fail fast if ffmpeg/ffprobe is missing — clearer than dying mid-render.
+  if (!previewOnly) {
+    findBinary('ffmpeg');
+    findBinary('ffprobe');
+  }
 
   const course = loadCourseData();
   console.log(`\n📚 Course: ${course.course_title}`);

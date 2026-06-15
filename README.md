@@ -24,13 +24,31 @@ cp .env.example .env
 # Add your ANTHROPIC_API_KEY to .env
 ```
 
-Open `index.html` in a browser (or `npm start` on Mac).
+Then `npm start` and open http://localhost:8080 — works identically on macOS and Windows.
+
+### Windows Setup
+
+1. Install Node.js 18+ from [nodejs.org](https://nodejs.org)
+2. Install FFmpeg: `winget install ffmpeg` (restart your terminal after install so PATH refreshes)
+3. `git clone https://github.com/aseemmankotia/course-pipeline.git`
+4. `cd course-pipeline`
+5. `npm install`
+6. Copy `.env` from your Mac (or recreate from `.env.example`)
+7. `npm start` → http://localhost:8080
+8. Same commands as Mac: `npm run render:1`, `npm run promo`, etc.
+
+### Notes for dual Mac + Windows use
+
+- Push/pull via git to sync code changes — `.gitattributes` normalizes line endings.
+- `.env` is gitignored — copy it manually between machines.
+- HeyGen videos go in the project root on whichever machine you render on.
+- Render outputs are gitignored — they stay local to each machine.
 
 ## Requirements
 
 - **Browser**: Chrome/Edge/Firefox (ES modules, localStorage)
 - **Node.js** ≥ 18: for rendering chapters
-- **ffmpeg**: `brew install ffmpeg`
+- **ffmpeg**: `brew install ffmpeg` (macOS) · `winget install ffmpeg` (Windows)
 - **Anthropic API key**: for curriculum + script generation (primary)
 - **Google Gemini API key**: optional fallback (free tier available)
 
