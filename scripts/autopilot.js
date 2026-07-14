@@ -81,9 +81,14 @@ function editorialNeeded(course) {
       }
     }
 
-    // 4. heygen narration videos (Aseem's avatar + voice)
-    if (!SKIP.has('heygen')) {
-      run('heygen avatar videos', process.execPath, ['scripts/heygen-generate.js', `--slug=${course.slug}`]);
+    // 4. narration (voice) — TTS by default (free), HeyGen avatar if configured
+    if (!SKIP.has('voice') && !SKIP.has('heygen')) {
+      const cfg = JSON.parse(fs.readFileSync(path.join(ROOT, course.config), 'utf8'));
+      if (cfg.narration_mode === 'heygen') {
+        run('heygen avatar videos', process.execPath, ['scripts/heygen-generate.js', `--slug=${course.slug}`]);
+      } else {
+        run('tts narration (free)', process.execPath, ['scripts/tts-generate.js', `--slug=${course.slug}`]);
+      }
     }
 
     // 5. stage
@@ -119,9 +124,17 @@ function editorialNeeded(course) {
       console.log(`📦 collected → exports/${course.slug}/videos (${finals.length} files)`);
     }
 
-    // 8. promo + short
+    // 8. promo + short (script → TTS narration → audio-only composite)
     if (!SKIP.has('promo')) {
-      run('promo + short', process.execPath, ['render/promo-render.js'], { allowFail: true });
+      run('promo script', process.execPath, ['render/promo-render.js', '--preview'], { allowFail: true });
+      const promoScript = path.join(ROOT, 'render', 'promo', 'promo-script.txt');
+      const promoNarr = path.join(ROOT, 'heygen-promo.mp4');
+      if (fs.existsSync(promoScript)) {
+        if (fs.existsSync(promoNarr)) fs.unlinkSync(promoNarr); // never reuse another course's narration
+        run('promo narration (tts)', process.execPath, ['scripts/tts-generate.js', '--text-file=render/promo/promo-script.txt', '--out=heygen-promo.mp4'], { allowFail: true });
+      }
+      run('promo + short', process.execPath, ['render/promo-render.js', '--audio-only'], { allowFail: true });
+      if (fs.existsSync(promoNarr)) fs.unlinkSync(promoNarr);
       const promoDir = path.join(ROOT, 'render', 'promo');
       const outDir = path.join(ROOT, 'exports', course.slug);
       if (fs.existsSync(promoDir)) {

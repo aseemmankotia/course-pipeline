@@ -12,6 +12,7 @@
     "autopilot": "node scripts/autopilot.js",
     "qa": "node scripts/qa-course.js",
     "heygen": "node scripts/heygen-generate.js",
+    "tts": "node scripts/tts-generate.js",
     "shorts:upload": "node scripts/upload-short.js",
     "stage": "node scripts/stage-course.js",
     "stage:list": "node scripts/stage-course.js --list",

@@ -10,6 +10,7 @@
   "audience": "Cloud practitioners, developers, analysts, and business professionals who want to prove foundational AI/ML knowledge on AWS. No ML experience required; ~6 months of AWS familiarity helpful.",
   "difficulty": "Beginner",
   "chapters_target": 10,
+  "narration_mode": "tts",
   "author": "Aseem Mankotia",
   "brand": "TechNuggets Academy",
   "domains": [

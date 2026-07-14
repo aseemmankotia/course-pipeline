@@ -404,6 +404,8 @@ function assemble() {
       concepts: ch.concepts,
       heygen_local_file: `heygen-chapter-${String(ch.number).padStart(2, '0')}.mp4`,
       output_filename: `chapter-${String(ch.number).padStart(2, '0')}-${slugify(ch.title)}.mp4`,
+      // TTS narration mode: audio comes from the narration track, slides fill the screen
+      ...(CFG.narration_mode === 'tts' ? { pip_mode: 'none' } : {}),
     };
     fs.writeFileSync(path.join(OUT, `course-render-input-${ch.number}.json`), JSON.stringify(renderInput, null, 2));
     fs.writeFileSync(path.join(OUT, 'heygen', `chapter-${String(ch.number).padStart(2, '0')}-narration.txt`), extractNarration(state.scripts[ch.number]));

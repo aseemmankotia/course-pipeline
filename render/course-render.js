@@ -268,7 +268,7 @@ Slide types available:
 - "live_code"   : animated Jupyter-style cell — choose this when the script says "let me show you", "let's try", "let's write", "here's how we do this", or is demonstrating a function, walking through execution, or showing input → output
 - "analogy"     : split-pane analogy vs technical (use for real-world comparisons)
 - "diagram"     : Mermaid.js diagram — use flowchart LR (left-to-right) for process flows, flowchart TD for hierarchies. Maximum 8 nodes, short labels (2-4 words). No subgraphs, no style blocks, simple arrows only. LR fills horizontal space better.
-- "portal_demo" : REQUIRED when script mentions: 'in the Azure portal', 'navigate to' any Azure service, 'click on'/'select' in a UI context, 'you will see' a screen or form, 'go to' + any Azure service name, any hands-on lab step involving the portal, 'open' any Azure blade. Generate a realistic Azure portal mockup showing exactly what the student sees. Use realistic Azure resource names (az104-lab-rg, etc), real regions, real VM sizes. Highlight fields the exam commonly tests. Always include CLI equivalent command.
+- "portal_demo" : REQUIRED when script mentions: 'in the Azure portal', 'in the AWS console', 'in the Bedrock console', 'navigate to' any cloud service, 'click on'/'select' in a UI context, 'you will see' a screen or form, 'go to' + any cloud service name, any hands-on lab step involving a portal/console, 'open' any console page or blade. Generate a realistic cloud-console mockup (Azure portal, AWS Management Console, etc. — match the course's platform) showing exactly what the student sees. Use realistic resource names (aif-lab-bucket, az104-lab-rg, etc), real regions, real instance sizes. Highlight fields the exam commonly tests. Always include the CLI equivalent command.
 
 For live_code slides:
 - Write syntactically correct Python (or the course language) that actually runs
@@ -278,16 +278,17 @@ For live_code slides:
 - setup_comment is a single # comment line explaining intent
 
 Rules:
-- 6-10 slides per chapter
+- 10-16 slides per chapter, spread EVENLY across the ENTIRE script (start to finish — do not cluster on the opening sections)
 - Each slide covers ONE focused idea
 - Keep bullets to 3-5 per slide
-- Prefer "live_code" over "code" whenever demonstrating execution
+- VARIETY IS MANDATORY: use at least 4 different slide types per chapter; never more than 2 "concept" slides in a row — break theory up with live_code, diagram, portal_demo, or analogy slides
+- Prefer "live_code" over "code" whenever demonstrating execution; prefer "diagram" whenever the script describes an architecture, flow, or comparison
 - Return ONLY a JSON array, no markdown`,
     prompt: `Chapter: ${input.chapter_title}
 Concepts: ${(input.concepts || []).join(', ')}
 
-Script to split into slides:
-${script.slice(0, 6000)}
+Script to split into slides (cover ALL of it, not just the beginning):
+${script.slice(0, 24000)}
 
 Return JSON array of slides:
 [

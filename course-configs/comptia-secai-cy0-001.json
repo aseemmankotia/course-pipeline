@@ -10,6 +10,7 @@
   "audience": "Security analysts, SOC engineers, and IT security professionals with ~2 years hands-on cybersecurity experience who need to secure AI systems and use AI in security operations. Security+ level knowledge assumed.",
   "difficulty": "Intermediate",
   "chapters_target": 10,
+  "narration_mode": "tts",
   "author": "Aseem Mankotia",
   "brand": "TechNuggets Academy",
   "domains": [

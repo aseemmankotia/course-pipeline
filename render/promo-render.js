@@ -506,6 +506,19 @@ async function compositeWithHeyGen(slideshowPath, outputPath) {
       outputPath,
     ]);
 
+  } else if (process.argv.includes('--audio-only')) {
+    // Narration track only (e.g. TTS-generated heygen-promo.mp4): no PIP overlay
+    console.log('   Audio-only mode: using narration audio, no PIP');
+    runFFmpegSync([
+      '-y',
+      '-i', slideshowPath,
+      '-i', heygenPath,
+      '-filter_complex', '[0:v]scale=1280:720:flags=lanczos[outv]',
+      '-map', '[outv]', '-map', '1:a',
+      '-c:v', 'libx264', '-crf', '18', '-preset', 'slow',
+      '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '192k', '-shortest',
+      outputPath,
+    ]);
   } else {
     runFFmpegSync([
       '-y',
