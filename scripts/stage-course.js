@@ -44,6 +44,19 @@ for (const f of fs.readdirSync(ROOT)) {
   if (/^course-render-input-\d+\.json$/.test(f)) fs.unlinkSync(path.join(ROOT, f));
 }
 
+// Also clear stale per-chapter input copies — course-render.js prefers
+// render/chapters/chapter-N/course-render-input.json over the root files,
+// so a leftover copy from an earlier course would silently win.
+const chaptersDir = path.join(ROOT, 'render', 'chapters');
+if (fs.existsSync(chaptersDir)) {
+  let cleared = 0;
+  for (const d of fs.readdirSync(chaptersDir)) {
+    const stale = path.join(chaptersDir, d, 'course-render-input.json');
+    if (fs.existsSync(stale)) { fs.unlinkSync(stale); cleared++; }
+  }
+  if (cleared) console.log(`🧹 Cleared ${cleared} stale per-chapter render input(s) from render/chapters/`);
+}
+
 const inputs = fs.readdirSync(srcDir).filter(f => /^course-render-input-\d+\.json$/.test(f))
   .sort((a, b) => parseInt(a.match(/\d+/)[0]) - parseInt(b.match(/\d+/)[0]));
 if (!inputs.length) { console.error('❌ No render inputs found — generation may not be complete.'); process.exit(1); }

@@ -56,8 +56,33 @@ function editorialNeeded(course) {
   return s.scripts && s.scripts['1'] && s.scripts['1'].includes('with a ten-minute minimum');
 }
 
+function quarantineLegacyMedia() {
+  // Move pre-existing render outputs from earlier (manual) courses out of the
+  // way so they can't leak into a new course's package.
+  const legacyDir = path.join(ROOT, 'legacy-media');
+  const moves = [];
+  const fvDir = path.join(ROOT, 'render', 'Final Videos');
+  if (fs.existsSync(fvDir)) {
+    for (const f of fs.readdirSync(fvDir)) {
+      if (f.endsWith('.mp4')) moves.push([path.join(fvDir, f), path.join(legacyDir, 'final-videos', f)]);
+    }
+  }
+  for (const f of fs.readdirSync(ROOT)) {
+    if (/^chapter-\d+.*\.mp4$/.test(f)) moves.push([path.join(ROOT, f), path.join(legacyDir, f)]);
+  }
+  if (!moves.length) return;
+  for (const [src, dst] of moves) {
+    fs.mkdirSync(path.dirname(dst), { recursive: true });
+    let dest = dst, i = 1;
+    while (fs.existsSync(dest)) dest = dst.replace(/\.mp4$/, `-${i++}.mp4`);
+    fs.renameSync(src, dest);
+  }
+  console.log(`🗄  Quarantined ${moves.length} legacy video file(s) → legacy-media/ (nothing deleted)`);
+}
+
 (async () => {
   console.log(`🚀 Autopilot — ${COURSES.length} course(s): ${COURSES.map(c => c.slug).join(', ')}`);
+  quarantineLegacyMedia();
 
   for (const course of COURSES) {
     const gen = path.join(ROOT, 'generated', course.slug);

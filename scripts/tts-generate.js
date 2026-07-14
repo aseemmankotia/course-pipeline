@@ -59,6 +59,29 @@ if (HEYGEN_DIR && !fs.existsSync(HEYGEN_DIR)) { console.error(`❌ ${HEYGEN_DIR}
 const TEMP = path.join(ROOT, 'render', 'tts-temp');
 fs.mkdirSync(TEMP, { recursive: true });
 
+// Ownership manifest: records which narration files THIS tool created and for
+// which course. Any heygen-chapter-NN.mp4 in the root that we don't own (e.g.
+// legacy HeyGen avatar videos from an earlier course) is quarantined to
+// legacy-media/ instead of being silently reused as the wrong voice track.
+const MANIFEST = path.join(TEMP, 'manifest.json');
+const manifest = fs.existsSync(MANIFEST) ? JSON.parse(fs.readFileSync(MANIFEST, 'utf8')) : {};
+function saveManifest() { fs.writeFileSync(MANIFEST, JSON.stringify(manifest, null, 2)); }
+function ensureOwned(outMp4, slug) {
+  const name = path.basename(outMp4);
+  if (!fs.existsSync(outMp4)) return 'absent';
+  const rec = manifest[name];
+  if (rec && rec.slug === slug && fs.statSync(outMp4).size === rec.size) return 'ours';
+  // not ours (legacy HeyGen video or another course's narration) → quarantine
+  const legacyDir = path.join(ROOT, 'legacy-media');
+  fs.mkdirSync(legacyDir, { recursive: true });
+  let dest = path.join(legacyDir, name);
+  let i = 1;
+  while (fs.existsSync(dest)) dest = path.join(legacyDir, `${path.parse(name).name}-${i++}${path.parse(name).ext}`);
+  fs.renameSync(outMp4, dest);
+  console.log(`   ⚠️ quarantined stale ${name} → legacy-media/ (belonged to a different course)`);
+  return 'quarantined';
+}
+
 function findBinary(name) {
   const r = spawnSync(process.platform === 'win32' ? 'where' : 'which', [name], { encoding: 'utf8' });
   if (r.status === 0) return r.stdout.split(/\r?\n/)[0].trim();
@@ -164,7 +187,7 @@ function wrapAudio(mp3, outMp4) {
     const n = parseInt(f.match(/\d+/)[0]);
     const nn = String(n).padStart(2, '0');
     const outMp4 = path.join(ROOT, `heygen-chapter-${nn}.mp4`);
-    if (fs.existsSync(outMp4)) { console.log(`↷ ch${n}: heygen-chapter-${nn}.mp4 exists, skipping`); continue; }
+    if (ensureOwned(outMp4, args.slug) === 'ours') { console.log(`↷ ch${n}: heygen-chapter-${nn}.mp4 (ours), skipping`); continue; }
 
     const textFile = path.join(HEYGEN_DIR, f);
     const words = fs.readFileSync(textFile, 'utf8').split(/\s+/).length;
@@ -175,6 +198,8 @@ function wrapAudio(mp3, outMp4) {
     else ttsEdge(textFile, mp3);
 
     wrapAudio(mp3, outMp4);
+    manifest[path.basename(outMp4)] = { slug: args.slug, size: fs.statSync(outMp4).size, created: new Date().toISOString() };
+    saveManifest();
     const mins = (fs.statSync(outMp4).size / 1e6).toFixed(1);
     console.log(`   ✅ heygen-chapter-${nn}.mp4 (${mins} MB)`);
   }
