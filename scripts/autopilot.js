@@ -70,6 +70,14 @@ function quarantineLegacyMedia() {
   for (const f of fs.readdirSync(ROOT)) {
     if (/^chapter-\d+.*\.mp4$/.test(f)) moves.push([path.join(ROOT, f), path.join(legacyDir, f)]);
   }
+  // stale per-chapter finals from a previous course (collect() reads these paths)
+  const chDir = path.join(ROOT, 'render', 'chapters');
+  if (fs.existsSync(chDir)) {
+    for (const d of fs.readdirSync(chDir)) {
+      const fin = path.join(chDir, d, `${d}-final.mp4`);
+      if (fs.existsSync(fin)) moves.push([fin, path.join(legacyDir, 'chapter-finals', `${d}-final.mp4`)]);
+    }
+  }
   if (!moves.length) return;
   for (const [src, dst] of moves) {
     fs.mkdirSync(path.dirname(dst), { recursive: true });
