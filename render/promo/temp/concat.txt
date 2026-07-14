@@ -1,0 +1,8 @@
+file '/Users/macbookpro/course-pipeline/render/promo/temp/seg-0.mp4'
+file '/Users/macbookpro/course-pipeline/render/promo/temp/seg-1.mp4'
+file '/Users/macbookpro/course-pipeline/render/promo/temp/seg-2.mp4'
+file '/Users/macbookpro/course-pipeline/render/promo/temp/seg-3.mp4'
+file '/Users/macbookpro/course-pipeline/render/promo/temp/seg-4.mp4'
+file '/Users/macbookpro/course-pipeline/render/promo/temp/seg-5.mp4'
+file '/Users/macbookpro/course-pipeline/render/promo/temp/seg-6.mp4'
+file '/Users/macbookpro/course-pipeline/render/promo/temp/seg-7.mp4'

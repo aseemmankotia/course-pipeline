@@ -34,7 +34,7 @@ async function _callAnthropic({ prompt, systemPrompt, maxTokens, action }) {
   if (!apiKey) return null; // signal: no key, skip to Gemini
 
   const body = {
-    model:      'claude-sonnet-4-20250514',
+    model:      process.env.COURSE_GEN_MODEL || 'claude-sonnet-4-5',
     max_tokens: maxTokens || 4000,
     messages:   [{ role: 'user', content: prompt }],
   };

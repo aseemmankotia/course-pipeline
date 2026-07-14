@@ -215,7 +215,7 @@ async function main() {
     type: 'quiz',
     question:  quiz_questions[0].question,
     options:   quiz_questions[0].options,
-    correct:   quiz_questions[0].correct,
+    correct:   quiz_questions[0].correct ?? quiz_questions[0].correct_index,
     duration_seconds: 8,
   } : null;
 

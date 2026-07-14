@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;800;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{width:1280px;height:720px;background: radial-gradient(ellipse at center, #1a1a2e 0%, #0a0e1a 70%);font-family:'DM Sans',sans-serif;overflow:hidden;position:relative;color:white;}
+  body::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(233,69,96,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(233,69,96,0.03) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;}
+  .top-bar{position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#e94560,#f9a825,#e94560);}
+  .progress-bar{position:absolute;bottom:0;left:0;height:3px;width:62.5%;background:#e94560;}
+  .slide-counter{position:absolute;top:16px;right:20px;font-size:12px;color:rgba(255,255,255,0.3);}
+  .brand-wm{position:absolute;bottom:16px;right:20px;font-size:12px;color:rgba(255,255,255,0.25);display:flex;align-items:center;gap:6px;}
+  .brand-wm::before{content:'●';color:#f9a825;font-size:8px;}
+
+  /* TITLE CARD */
+  .title-card{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:60px;}
+  .course-badge{font-size:13px;font-weight:700;letter-spacing:0.2em;color:#e94560;border:1px solid #e94560;padding:4px 16px;border-radius:20px;margin-bottom:20px;}
+  .main-title{font-family:'Poppins',sans-serif;font-size:52px;font-weight:900;line-height:1.1;color:white;margin-bottom:16px;text-shadow:0 0 40px rgba(233,69,96,0.3);}
+  .accent-line{width:80px;height:4px;background:linear-gradient(90deg,#e94560,#f9a825);border-radius:2px;margin:0 auto 16px;}
+  .subtitle{font-size:22px;color:rgba(255,255,255,0.7);max-width:700px;line-height:1.4;margin-bottom:24px;}
+  .stat-row{display:flex;gap:20px;align-items:center;}
+  .stat{font-size:18px;font-weight:600;color:#f9a825;}
+  .difficulty{font-size:14px;padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.6);}
+  .brand{position:absolute;bottom:28px;left:50%;transform:translateX(-50%);font-size:14px;color:rgba(255,255,255,0.3);letter-spacing:0.1em;}
+
+  /* HOOK */
+  .hook-card{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:60px;}
+  .hook-icon{font-size:80px;margin-bottom:24px;}
+  .hook-headline{font-family:'Poppins',sans-serif;font-size:64px;font-weight:900;color:white;line-height:1.1;margin-bottom:16px;}
+  .hook-sub{font-size:26px;color:rgba(255,255,255,0.6);max-width:600px;}
+
+  /* OUTCOME */
+  .outcome-card{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:80px;}
+  .outcome-num{font-family:'Poppins',sans-serif;font-size:120px;font-weight:900;color:rgba(233,69,96,0.15);position:absolute;right:60px;top:50%;transform:translateY(-50%);line-height:1;}
+  .outcome-icon{font-size:52px;margin-bottom:16px;}
+  .outcome-headline{font-family:'Poppins',sans-serif;font-size:52px;font-weight:800;color:white;line-height:1.1;margin-bottom:12px;max-width:700px;}
+  .outcome-sub{font-size:24px;color:rgba(255,255,255,0.6);margin-bottom:20px;}
+  .outcome-check{display:inline-flex;align-items:center;gap:8px;font-size:16px;color:#e94560;font-weight:600;}
+
+  /* CHAPTER PREVIEW */
+  .chapter-card{position:absolute;inset:0;display:flex;padding:50px 60px;gap:60px;align-items:center;}
+  .chapter-label{font-size:12px;letter-spacing:0.2em;color:#e94560;font-weight:700;margin-bottom:8px;}
+  .chapter-stat{display:flex;flex-direction:column;align-items:flex-start;flex-shrink:0;}
+  .big-num{font-family:'Poppins',sans-serif;font-size:100px;font-weight:900;color:#e94560;line-height:1;text-shadow:0 0 40px #e9456040;}
+  .big-label{font-size:24px;color:rgba(255,255,255,0.6);font-weight:600;margin-top:-8px;}
+  .chapter-list{flex:1;display:flex;flex-direction:column;gap:10px;}
+  .ch-item{display:flex;align-items:center;gap:16px;padding:10px 16px;background:rgba(255,255,255,0.05);border-radius:8px;border-left:3px solid #e94560;}
+  .ch-num{font-family:'Poppins',sans-serif;font-size:14px;font-weight:700;color:#e94560;flex-shrink:0;}
+  .ch-title{font-size:15px;color:rgba(255,255,255,0.8);}
+  .chapter-total{font-size:14px;color:rgba(255,255,255,0.4);margin-top:8px;}
+
+  /* SOCIAL PROOF */
+  .proof-card{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:60px;}
+  .proof-logo{font-family:'Poppins',sans-serif;font-size:32px;font-weight:800;color:white;margin-bottom:24px;display:flex;align-items:center;gap:10px;}
+  .logo-dot{color:#f9a825;font-size:20px;}
+  .proof-headline{font-family:'Poppins',sans-serif;font-size:48px;font-weight:900;color:white;margin-bottom:12px;}
+  .proof-sub{font-size:22px;color:rgba(255,255,255,0.6);margin-bottom:20px;}
+  .proof-stars{font-size:36px;margin-bottom:12px;}
+  .proof-tagline{font-size:18px;color:#e94560;font-weight:600;letter-spacing:0.05em;}
+
+  /* CTA */
+  .cta-card{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:60px;background:radial-gradient(ellipse at center,rgba(233,69,96,0.15) 0%,transparent 70%);}
+  .cta-icon{font-size:64px;margin-bottom:16px;}
+  .cta-headline{font-family:'Poppins',sans-serif;font-size:72px;font-weight:900;color:white;line-height:1;margin-bottom:12px;text-shadow:0 0 40px rgba(233,69,96,0.5);}
+  .cta-sub{font-size:24px;color:rgba(255,255,255,0.7);margin-bottom:28px;}
+  .cta-button{display:inline-block;background:#e94560;color:white;font-family:'Poppins',sans-serif;font-size:22px;font-weight:700;padding:14px 40px;border-radius:8px;margin-bottom:16px;box-shadow:0 0 40px rgba(233,69,96,0.4);}
+  .cta-url{font-size:18px;color:#f9a825;font-weight:700;margin-bottom:12px;letter-spacing:0.03em;word-break:break-all;}
+  .cta-platform{font-size:14px;color:rgba(255,255,255,0.4);letter-spacing:0.05em;}
+</style>
+</head>
+<body>
+  <div class="top-bar"></div>
+  <div class="slide-counter">5/8</div>
+  
+      <div class="outcome-card">
+        <div class="outcome-num">04</div>
+        <div class="outcome-icon">🚀</div>
+        <div class="outcome-headline">Navigate Microsoft Foundry</div>
+        <div class="outcome-sub">Use enterprise AI tools like a pro</div>
+        <div class="outcome-check">✓ Included in this course</div>
+      </div>
+  <div class="progress-bar"></div>
+  <div class="brand-wm">TechNuggets Academy</div>
+</body>
+</html>

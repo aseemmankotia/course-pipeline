@@ -108,6 +108,17 @@ function quarantineLegacyMedia() {
 
     // 4. narration (voice) — TTS by default (free), HeyGen avatar if configured
     if (!SKIP.has('voice') && !SKIP.has('heygen')) {
+      // restore previously generated narration from this course's package if a
+      // prior collect() moved it out of the root
+      const srcDir = path.join(ROOT, 'exports', course.slug, 'heygen-src');
+      if (fs.existsSync(srcDir)) {
+        for (const f of fs.readdirSync(srcDir)) {
+          const dst = path.join(ROOT, f);
+          if (/^heygen-chapter-\d+\.mp4$/.test(f) && !fs.existsSync(dst)) {
+            fs.renameSync(path.join(srcDir, f), dst);
+          }
+        }
+      }
       const cfg = JSON.parse(fs.readFileSync(path.join(ROOT, course.config), 'utf8'));
       if (cfg.narration_mode === 'heygen') {
         run('heygen avatar videos', process.execPath, ['scripts/heygen-generate.js', `--slug=${course.slug}`]);
@@ -123,20 +134,31 @@ function quarantineLegacyMedia() {
       // 6. render all chapters
       run('render chapters', process.execPath, ['render/course-render-all.js']);
 
-      // 7. collect outputs
+      // 7. collect outputs — finals land in render/chapters/chapter-NN/chapter-NN-final.mp4;
+      // name each one from its render input's output_filename
       const outDir = path.join(ROOT, 'exports', course.slug);
       fs.mkdirSync(path.join(outDir, 'videos'), { recursive: true });
       fs.mkdirSync(path.join(outDir, 'heygen-src'), { recursive: true });
       const finals = [];
-      const fvDir = path.join(ROOT, 'render', 'Final Videos');
-      if (fs.existsSync(fvDir)) {
-        for (const f of fs.readdirSync(fvDir)) if (f.endsWith('.mp4')) finals.push(path.join(fvDir, f));
+      const chaptersDir = path.join(ROOT, 'render', 'chapters');
+      for (const f of fs.readdirSync(gen)) {
+        const m = f.match(/^course-render-input-(\d+)\.json$/);
+        if (!m) continue;
+        const n = m[1], nn = String(n).padStart(2, '0');
+        const ri = JSON.parse(fs.readFileSync(path.join(gen, f), 'utf8'));
+        const finalPath = path.join(chaptersDir, `chapter-${nn}`, `chapter-${nn}-final.mp4`);
+        if (fs.existsSync(finalPath)) {
+          fs.renameSync(finalPath, path.join(outDir, 'videos', ri.output_filename || `chapter-${nn}-final.mp4`));
+          finals.push(finalPath);
+        } else {
+          console.error(`❌ Missing rendered video for chapter ${n} (${finalPath})`);
+          console.error('   Re-run npm run autopilot after fixing the render.');
+          process.exit(1);
+        }
       }
+      // legacy locations (root / Final Videos) — sweep anything the render left there too
       for (const f of fs.readdirSync(ROOT)) {
-        if (/^chapter-\d+.*\.mp4$/.test(f)) finals.push(path.join(ROOT, f));
-      }
-      for (const f of finals) {
-        fs.renameSync(f, path.join(outDir, 'videos', path.basename(f)));
+        if (/^chapter-\d+.*\.mp4$/.test(f)) { fs.renameSync(path.join(ROOT, f), path.join(outDir, 'videos', f)); finals.push(f); }
       }
       for (const f of fs.readdirSync(ROOT)) {
         if (/^heygen-chapter-\d+\.mp4$/.test(f)) fs.renameSync(path.join(ROOT, f), path.join(outDir, 'heygen-src', f));

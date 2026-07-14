@@ -26,11 +26,15 @@ function loadCurriculum() {
   const dirs = fs.existsSync(CHAPTERS_DIR)
     ? fs.readdirSync(CHAPTERS_DIR).filter(d => /^chapter-\d+$/.test(d)).sort()
     : [];
-  if (dirs.length) return dirs.length;
 
-  const rootFiles = fs.readdirSync(ROOT)
-    .filter(f => /^course-render-input(-\d+)?\.json$/.test(f));
-  return rootFiles.length;
+  // Highest numbered root input — the staged course may have more chapters
+  // than there are leftover chapter dirs, so take the max of both signals.
+  let maxRootN = 0;
+  for (const f of fs.readdirSync(ROOT)) {
+    const m = f.match(/^course-render-input-(\d+)\.json$/);
+    if (m) maxRootN = Math.max(maxRootN, parseInt(m[1]));
+  }
+  return Math.max(dirs.length, maxRootN);
 }
 
 function findInputFile(n) {
@@ -125,6 +129,10 @@ async function main() {
     results.filter(r => r.status === 'done').forEach(r => log(`  ${r.path}`));
     log('\nGo to the Publish tab to upload to YouTube.');
   }
+
+  // Batch is only a success if every chapter with an input file rendered.
+  const failed = results.filter(r => r.status === 'failed').length;
+  if (failed > 0 || done === 0) process.exit(1);
 }
 
 main().catch(err => { console.error('Fatal:', err.message); process.exit(1); });
