@@ -219,7 +219,7 @@ function mount(container) {
         <div class="form-row">
           <div class="form-group">
             <label>Instructor name</label>
-            <input type="text" id="mkt-desc-instructor" placeholder="Aseem" />
+            <input type="text" id="mkt-desc-instructor" placeholder="Aseem Mankotia" />
           </div>
           <div class="form-group">
             <label>CTA link (course URL / landing page)</label>
@@ -746,7 +746,7 @@ function renderSeoOut(container, cur, playlistTitles, chapterTitles, seoKeywords
 async function genPlaylistDesc(container, cur) {
   const badge      = container.querySelector('#mkt-desc-badge');
   const out        = container.querySelector('#mkt-desc-out');
-  const instructor = container.querySelector('#mkt-desc-instructor')?.value.trim() || 'Aseem';
+  const instructor = container.querySelector('#mkt-desc-instructor')?.value.trim() || 'Aseem Mankotia';
   const link       = container.querySelector('#mkt-desc-link')?.value.trim() || '';
   setBadge(badge, 'generating');
   out.style.display = '';
@@ -789,7 +789,7 @@ Keep under 5000 characters.`,
 async function genChapterDescs(container, cur) {
   const badge      = container.querySelector('#mkt-desc-badge');
   const out        = container.querySelector('#mkt-desc-out');
-  const instructor = container.querySelector('#mkt-desc-instructor')?.value.trim() || 'Aseem';
+  const instructor = container.querySelector('#mkt-desc-instructor')?.value.trim() || 'Aseem Mankotia';
   const link       = container.querySelector('#mkt-desc-link')?.value.trim() || '';
   setBadge(badge, 'generating');
   out.style.display = '';

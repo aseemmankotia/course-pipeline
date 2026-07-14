@@ -67,6 +67,37 @@ The pipeline uses **Claude (Anthropic)** as the primary AI for curriculum design
 
 Click **🤖 Test AI providers** in Settings to verify both keys are working.
 
+## Headless Course Generation (no browser needed)
+
+Generate a complete certification course from a config file — curriculum, chapter
+scripts, materials, practice tests, render inputs, HeyGen narration text, and
+Udemy listing copy — with a single command:
+
+```bash
+# 1. Describe the course once (see course-configs/ for examples)
+# 2. Generate everything:
+npm run generate -- --config=course-configs/aws-ai-practitioner-aif-c01.json
+
+# Or run the two bundled 2026 cert courses back to back:
+npm run generate:both
+```
+
+Output lands in `generated/<slug>/`. Generation is checkpointed — if a run is
+interrupted, re-running the same command resumes where it left off. Uses
+`ANTHROPIC_API_KEY` from `.env` with Claude Sonnet (override with the
+`COURSE_GEN_MODEL` env var).
+
+When generation finishes, stage a course for rendering:
+
+```bash
+npm run stage:list                      # see what's been generated
+npm run stage -- --slug=<slug>          # copy render inputs + export JSON to root
+```
+
+`stage` clears any previously staged course first, so two courses never mix,
+and prints the HeyGen checklist (which avatar videos to create, from which
+narration files in `generated/<slug>/heygen/`).
+
 ## Rendering a Chapter
 
 1. In the **Render** tab, click **Render** next to a chapter with a ready script

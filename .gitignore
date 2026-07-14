@@ -22,3 +22,6 @@ docs/courses/
 # Course archive exports
 exports/
 course-data-export.json
+
+# Headless generator output (large, machine-specific)
+generated/

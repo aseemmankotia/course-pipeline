@@ -5,6 +5,13 @@
   "type": "commonjs",
   "scripts": {
     "start": "node serve.js",
+    "generate": "node scripts/generate-course.js",
+    "generate:aif": "node scripts/generate-course.js --config=course-configs/aws-ai-practitioner-aif-c01.json",
+    "generate:secai": "node scripts/generate-course.js --config=course-configs/comptia-secai-cy0-001.json",
+    "generate:both": "node scripts/generate-course.js --config=course-configs/aws-ai-practitioner-aif-c01.json && node scripts/generate-course.js --config=course-configs/comptia-secai-cy0-001.json",
+    "qa": "node scripts/qa-course.js",
+    "stage": "node scripts/stage-course.js",
+    "stage:list": "node scripts/stage-course.js --list",
     "render:1": "node render/course-render.js 1",
     "render:2": "node render/course-render.js 2",
     "render:3": "node render/course-render.js 3",

@@ -1,0 +1,23 @@
+{
+  "slug": "aws-certified-ai-practitioner-aif-c01",
+  "topic": "AWS Certified AI Practitioner (AIF-C01) certification exam preparation",
+  "cert_name": "AWS Certified AI Practitioner",
+  "exam_code": "AIF-C01",
+  "exam_vendor": "AWS",
+  "exam_cost_usd": 100,
+  "exam_format": "65 questions (50 scored + 15 unscored), 90 minutes, passing score 700/1000",
+  "question_types": "multiple choice, multiple response, ordering, matching, case study",
+  "audience": "Cloud practitioners, developers, analysts, and business professionals who want to prove foundational AI/ML knowledge on AWS. No ML experience required; ~6 months of AWS familiarity helpful.",
+  "difficulty": "Beginner",
+  "chapters_target": 10,
+  "author": "Aseem Mankotia",
+  "brand": "TechNuggets Academy",
+  "domains": [
+    { "name": "Domain 1: Fundamentals of AI and ML", "weight": "20%", "notes": "AI/ML/DL definitions, types of learning, ML lifecycle, AWS AI services (SageMaker, Comprehend, Rekognition, Transcribe, Polly, Translate, Lex, Personalize)" },
+    { "name": "Domain 2: Fundamentals of Generative AI", "weight": "24%", "notes": "Foundation models, tokens, embeddings, prompt basics, transformer concept, use cases, GenAI lifecycle, Amazon Bedrock, PartyRock, Amazon Q" },
+    { "name": "Domain 3: Applications of Foundation Models", "weight": "28%", "notes": "Prompt engineering techniques, inference parameters (temperature, top-p, top-k), RAG, vector databases (OpenSearch, Aurora pgvector), fine-tuning vs continued pre-training, Bedrock Agents, Knowledge Bases, Guardrails, model evaluation (BLEU, ROUGE, BERTScore)" },
+    { "name": "Domain 4: Guidelines for Responsible AI", "weight": "14%", "notes": "Bias, fairness, explainability, SageMaker Clarify, Model Cards, Bedrock Guardrails, human-centered design, dataset balance, legal risks (hallucination, IP)" },
+    { "name": "Domain 5: Security, Compliance, and Governance for AI Solutions", "weight": "14%", "notes": "IAM, encryption (KMS), Macie, PrivateLink, VPC endpoints, shared responsibility, AWS Artifact, Audit Manager, CloudTrail, data lineage, governance frameworks" }
+  ],
+  "extra_guidance": "Emphasize Bedrock heavily (most-tested service). Include exact inference parameter effects, pricing model comparisons (on-demand vs provisioned throughput), and RAG vs fine-tuning decision rules. Final chapter must be a full exam simulation walkthrough with strategy."
+}
