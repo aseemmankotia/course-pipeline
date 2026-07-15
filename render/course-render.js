@@ -360,7 +360,7 @@ Return JSON array of slides:
     "duration_seconds": 45
   }
 ]`,
-    maxTokens: 4000,
+    maxTokens: 16000,
     action:    'slide_splitting',
   });
 

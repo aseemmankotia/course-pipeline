@@ -12,6 +12,9 @@ heygen-chapter-*.mp4
 course-render-input.json
 course-render-input-*.json
 
+# Batch render logs
+render/logs/
+
 # Legacy paths (pre-chapter-dir structure)
 render/temp/
 render/slides/*.html
