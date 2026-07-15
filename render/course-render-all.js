@@ -141,6 +141,28 @@ async function main() {
     }
   }
 
+  // Second pass: retry failed chapters once in fresh processes — screenshot
+  // hangs are flaky and usually succeed on a clean attempt.
+  const firstPassFailed = results.filter(r => r.status === 'failed');
+  if (firstPassFailed.length) {
+    log(`\n🔁 Retrying ${firstPassFailed.length} failed chapter(s)…`);
+    for (const r of firstPassFailed) {
+      const n = r.chapter;
+      const paddedNum = String(n).padStart(2, '0');
+      log(`${'─'.repeat(60)}`);
+      log(`🎬 Retry Chapter ${n}`);
+      const args2 = [renderScript, String(n)];
+      const res2 = spawnSync(process.execPath, args2, { cwd: ROOT, stdio: 'inherit' });
+      if (res2.status === 0) {
+        const idx = results.findIndex(x => x.chapter === n);
+        results[idx] = { chapter: n, status: 'done', path: path.join(CHAPTERS_DIR, `chapter-${paddedNum}`, `chapter-${paddedNum}-final.mp4`) };
+        log(`✅ Chapter ${n} succeeded on retry`);
+      } else {
+        log(`❌ Chapter ${n} failed again`);
+      }
+    }
+  }
+
   // Summary
   log(`\n${'═'.repeat(60)}`);
   log('📊 Render Summary:');

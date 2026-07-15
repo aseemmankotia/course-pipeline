@@ -388,29 +388,37 @@ const PUPPETEER_ARGS = [
 async function generateSlides(sections, input) {
   const total = sections.length;
 
-  let browser = await puppeteer.launch({ headless: true, protocolTimeout: 60_000, args: PUPPETEER_ARGS });
+  let browser = await puppeteer.launch({ headless: true, protocolTimeout: 120_000, args: PUPPETEER_ARGS });
   let page = await browser.newPage();
   await page.setViewport({ width: 1280, height: 720, deviceScaleFactor: 1 });
 
-  // screenshot with up to 2 retries — second retry relaunches the whole browser,
+  // A hung Chrome can't be closed politely — force-kill so it can't linger and
+  // eat memory (leaked instances were making later chapters fail more often).
+  async function killBrowser(b) {
+    try { await Promise.race([b.close(), new Promise(r => setTimeout(r, 5000))]); } catch {}
+    try { b.process()?.kill('SIGKILL'); } catch {}
+  }
+
+  // screenshot with up to 3 retries — later retries relaunch the whole browser,
   // since a hung Chrome renderer is not recoverable from a new tab alone
   async function shoot(htmlPath, outPath, settleMs) {
-    for (let attempt = 1; attempt <= 3; attempt++) {
+    for (let attempt = 1; attempt <= 4; attempt++) {
       try {
         await page.screenshot({ path: outPath, type: 'png', captureBeyondViewport: false, clip: { x: 0, y: 0, width: 1280, height: 720 } });
         return;
       } catch (e) {
-        if (attempt === 3) throw e;
+        if (attempt === 4) throw e;
         log(`     ⚠ screenshot attempt ${attempt} failed (${e.message.slice(0, 50)}…) — ${attempt === 1 ? 'fresh page' : 'relaunching browser'}`);
         if (attempt === 1) {
           try { await page.close(); } catch {}
         } else {
-          try { await browser.close(); } catch {}
-          browser = await puppeteer.launch({ headless: true, protocolTimeout: 60_000, args: PUPPETEER_ARGS });
+          await killBrowser(browser);
+          await new Promise(r => setTimeout(r, 3000)); // let the OS reclaim memory
+          browser = await puppeteer.launch({ headless: true, protocolTimeout: 120_000, args: PUPPETEER_ARGS });
         }
         page = await browser.newPage();
         await page.setViewport({ width: 1280, height: 720, deviceScaleFactor: 1 });
-        await page.goto(`file://${htmlPath}`, { waitUntil: 'networkidle0', timeout: 30_000 });
+        await page.goto(`file://${htmlPath}`, { waitUntil: 'networkidle0', timeout: 60_000 });
         await page.evaluateHandle('document.fonts.ready');
         await new Promise(r => setTimeout(r, settleMs));
       }
@@ -493,7 +501,7 @@ async function generateSlides(sections, input) {
     log(`   ✓ slide-${String(i).padStart(2,'0')}.png (${s.type})`);
   }
 
-  await browser.close();
+  await killBrowser(browser);
 }
 
 // ── Slide builders ─────────────────────────────────────────────────────────────
