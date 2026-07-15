@@ -70,12 +70,26 @@ function quarantineLegacyMedia() {
   for (const f of fs.readdirSync(ROOT)) {
     if (/^chapter-\d+.*\.mp4$/.test(f)) moves.push([path.join(ROOT, f), path.join(legacyDir, f)]);
   }
-  // stale per-chapter finals from a previous course (collect() reads these paths)
+  // stale per-chapter finals from a previous course (collect() reads these
+  // paths) — but keep finals whose sentinel matches a known generated course,
+  // so resumed runs don't throw away finished renders
+  const knownIds = new Set();
+  const genRoot = path.join(ROOT, 'generated');
+  if (fs.existsSync(genRoot)) {
+    for (const d of fs.readdirSync(genRoot)) {
+      const st = path.join(genRoot, d, 'state.json');
+      try { const s = JSON.parse(fs.readFileSync(st, 'utf8')); if (s.course_id) knownIds.add(String(s.course_id)); } catch {}
+    }
+  }
   const chDir = path.join(ROOT, 'render', 'chapters');
   if (fs.existsSync(chDir)) {
     for (const d of fs.readdirSync(chDir)) {
       const fin = path.join(chDir, d, `${d}-final.mp4`);
-      if (fs.existsSync(fin)) moves.push([fin, path.join(legacyDir, 'chapter-finals', `${d}-final.mp4`)]);
+      if (!fs.existsSync(fin)) continue;
+      let sentinel = '';
+      try { sentinel = fs.readFileSync(path.join(chDir, d, 'slides', '.last-course-id'), 'utf8').trim(); } catch {}
+      if (knownIds.has(sentinel)) continue; // rendered by a current generated course — keep
+      moves.push([fin, path.join(legacyDir, 'chapter-finals', `${d}-final.mp4`)]);
     }
   }
   if (!moves.length) return;

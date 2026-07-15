@@ -409,7 +409,7 @@ function generateSlideHTML(slide, course, slideIndex, totalSlides) {
 async function screenshotSlides(slides, course) {
   console.log('\n📸 Step 3 — Generating slide images...');
 
-  const browser    = await puppeteer.launch({ headless: true, protocolTimeout: 300000, args: ['--disable-gpu', '--hide-scrollbars', '--force-color-profile=srgb', '--disable-dev-shm-usage'] });
+  const browser    = await puppeteer.launch({ headless: true, protocolTimeout: 60000, args: ['--disable-gpu', '--use-angle=swiftshader', '--disable-accelerated-2d-canvas', '--hide-scrollbars', '--force-color-profile=srgb', '--disable-dev-shm-usage'] });
   const slidePaths = [];
 
   for (let i = 0; i < slides.length; i++) {
@@ -650,7 +650,7 @@ async function addURLOverlay(inputPath, outputPath, courseUrl) {
   const overlayPngPath  = path.join(TEMP_DIR, 'url-overlay.png');
   fs.writeFileSync(overlayHtmlPath, overlayHtml);
 
-  const browser = await puppeteer.launch({ headless: true, protocolTimeout: 300000, args: ['--disable-gpu', '--hide-scrollbars', '--force-color-profile=srgb', '--disable-dev-shm-usage'] });
+  const browser = await puppeteer.launch({ headless: true, protocolTimeout: 60000, args: ['--disable-gpu', '--use-angle=swiftshader', '--disable-accelerated-2d-canvas', '--hide-scrollbars', '--force-color-profile=srgb', '--disable-dev-shm-usage'] });
   const page    = await browser.newPage();
   await page.setViewport({ width: 1280, height: 80, deviceScaleFactor: 1 });
   await page.goto(`file://${overlayHtmlPath}`);

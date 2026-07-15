@@ -335,7 +335,11 @@ function assemble() {
   console.log('▶ Stage 5/5: assemble outputs');
   const cur = state.curriculum;
   const now = new Date().toISOString();
-  const courseId = Date.now();
+  // Stable per-course id: changing it on every assemble made the renderer
+  // treat each re-run as a new course (cleared slide caches, invalidated
+  // finished renders). Persist the first one in state.
+  if (!state.course_id) { state.course_id = Date.now(); save(); }
+  const courseId = state.course_id;
 
   // materials in browser-export shape
   const materials = {};

@@ -376,34 +376,44 @@ Return JSON array of slides:
 
 // ── Steps 2 & 3: Generate + screenshot slides ─────────────────────────────────
 
-async function generateSlides(sections, input) {
-  const total   = sections.length;
-  const browser = await puppeteer.launch({
-    headless: true,
-    protocolTimeout: 300_000,
-    args: [
-      '--disable-gpu',                 // GPU compositing hangs captureScreenshot on some macOS/Chrome combos
-      '--hide-scrollbars',
-      '--force-color-profile=srgb',
-      '--disable-dev-shm-usage',
-    ],
-  });
-  let page = await browser.newPage();
-  await page.setViewport({ width: 1280, height: 720, deviceScaleFactor: 2 });
+const PUPPETEER_ARGS = [
+  '--disable-gpu',                    // GPU compositing hangs captureScreenshot on some macOS/Chrome combos
+  '--use-angle=swiftshader',          // force software rendering — slower per frame but never hangs
+  '--disable-accelerated-2d-canvas',
+  '--hide-scrollbars',
+  '--force-color-profile=srgb',
+  '--disable-dev-shm-usage',
+];
 
-  // screenshot with one retry on a fresh page — a hung renderer shouldn't kill the whole chapter
+async function generateSlides(sections, input) {
+  const total = sections.length;
+
+  let browser = await puppeteer.launch({ headless: true, protocolTimeout: 60_000, args: PUPPETEER_ARGS });
+  let page = await browser.newPage();
+  await page.setViewport({ width: 1280, height: 720, deviceScaleFactor: 1 });
+
+  // screenshot with up to 2 retries — second retry relaunches the whole browser,
+  // since a hung Chrome renderer is not recoverable from a new tab alone
   async function shoot(htmlPath, outPath, settleMs) {
-    try {
-      await page.screenshot({ path: outPath, type: 'png', captureBeyondViewport: false, clip: { x: 0, y: 0, width: 1280, height: 720 } });
-    } catch (e) {
-      log(`     ⚠ screenshot failed (${e.message.slice(0, 60)}…) — retrying on a fresh page`);
-      try { await page.close(); } catch {}
-      page = await browser.newPage();
-      await page.setViewport({ width: 1280, height: 720, deviceScaleFactor: 2 });
-      await page.goto(`file://${htmlPath}`, { waitUntil: 'networkidle0', timeout: 30_000 });
-      await page.evaluateHandle('document.fonts.ready');
-      await new Promise(r => setTimeout(r, settleMs));
-      await page.screenshot({ path: outPath, type: 'png', captureBeyondViewport: false, clip: { x: 0, y: 0, width: 1280, height: 720 } });
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        await page.screenshot({ path: outPath, type: 'png', captureBeyondViewport: false, clip: { x: 0, y: 0, width: 1280, height: 720 } });
+        return;
+      } catch (e) {
+        if (attempt === 3) throw e;
+        log(`     ⚠ screenshot attempt ${attempt} failed (${e.message.slice(0, 50)}…) — ${attempt === 1 ? 'fresh page' : 'relaunching browser'}`);
+        if (attempt === 1) {
+          try { await page.close(); } catch {}
+        } else {
+          try { await browser.close(); } catch {}
+          browser = await puppeteer.launch({ headless: true, protocolTimeout: 60_000, args: PUPPETEER_ARGS });
+        }
+        page = await browser.newPage();
+        await page.setViewport({ width: 1280, height: 720, deviceScaleFactor: 1 });
+        await page.goto(`file://${htmlPath}`, { waitUntil: 'networkidle0', timeout: 30_000 });
+        await page.evaluateHandle('document.fonts.ready');
+        await new Promise(r => setTimeout(r, settleMs));
+      }
     }
   }
 
