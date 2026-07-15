@@ -13,34 +13,14 @@
  * Requires heygen-chapter-NN.{mp4,webm,mov,avi,mkv} in each chapter dir (or ~/Downloads) for PIP overlay.
  */
 
-const { spawn } = require('child_process');
+const { spawnSync } = require('child_process');
 const fs   = require('fs');
 const path = require('path');
-
-// Every run is captured to a timestamped log so a failed chapter's error
-// survives the terminal scrollback (autopilot runs can be long).
-const LOG_DIR  = path.join(__dirname, 'logs');
-fs.mkdirSync(LOG_DIR, { recursive: true });
-const LOG_PATH = path.join(LOG_DIR, `render-${new Date().toISOString().replace(/[:.]/g, '-')}.log`);
-
-// Synchronous append so nothing is lost if a failure path calls process.exit().
-function logToFile(chunk) { try { fs.appendFileSync(LOG_PATH, chunk); } catch {} }
-
-// Run one chapter render, streaming output live to the console AND the log.
-function runChapter(args) {
-  return new Promise(resolve => {
-    const child = spawn(process.execPath, args, { cwd: ROOT, stdio: ['inherit', 'pipe', 'pipe'] });
-    child.stdout.on('data', d => { process.stdout.write(d); logToFile(d); });
-    child.stderr.on('data', d => { process.stderr.write(d); logToFile(d); });
-    child.on('error', err => resolve({ status: -1, error: err }));
-    child.on('close', code => resolve({ status: code, error: null }));
-  });
-}
 
 const ROOT         = path.join(__dirname, '..');
 const CHAPTERS_DIR = path.join(__dirname, 'chapters');
 
-function log(msg) { console.log(msg); logToFile(msg + '\n'); }
+function log(msg) { console.log(msg); }
 
 function loadCurriculum() {
   const dirs = fs.existsSync(CHAPTERS_DIR)
@@ -81,8 +61,7 @@ async function main() {
     process.exit(1);
   }
 
-  log(`\n📚 Rendering ${totalChapters} chapter(s)…${FORCE_FLAG ? ' (--force)' : ''}`);
-  log(`📝 Full output logged to: ${LOG_PATH}\n`);
+  log(`\n📚 Rendering ${totalChapters} chapter(s)…${FORCE_FLAG ? ' (--force)' : ''}\n`);
 
   const renderScript = path.join(__dirname, 'course-render.js');
 
@@ -113,7 +92,10 @@ async function main() {
     const args = [renderScript, String(n)];
     if (FORCE_FLAG) args.push('--force');
 
-    const res = await runChapter(args);
+    const res = spawnSync(process.execPath, args, {
+      cwd: ROOT,
+      stdio: 'inherit',
+    });
 
     if (res.status === 0) {
       const finalPath = path.join(
@@ -126,7 +108,6 @@ async function main() {
         ? res.error.message
         : `exited with code ${res.status}`;
       console.error(`❌ Chapter ${n} failed: ${err}`);
-      logToFile(`❌ Chapter ${n} failed: ${err}\n`);
       results.push({ chapter: n, status: 'failed', error: err });
     }
   }

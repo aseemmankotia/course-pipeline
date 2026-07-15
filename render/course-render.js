@@ -378,9 +378,34 @@ Return JSON array of slides:
 
 async function generateSlides(sections, input) {
   const total   = sections.length;
-  const browser = await puppeteer.launch({ headless: true });
-  const page    = await browser.newPage();
+  const browser = await puppeteer.launch({
+    headless: true,
+    protocolTimeout: 300_000,
+    args: [
+      '--disable-gpu',                 // GPU compositing hangs captureScreenshot on some macOS/Chrome combos
+      '--hide-scrollbars',
+      '--force-color-profile=srgb',
+      '--disable-dev-shm-usage',
+    ],
+  });
+  let page = await browser.newPage();
   await page.setViewport({ width: 1280, height: 720, deviceScaleFactor: 2 });
+
+  // screenshot with one retry on a fresh page — a hung renderer shouldn't kill the whole chapter
+  async function shoot(htmlPath, outPath, settleMs) {
+    try {
+      await page.screenshot({ path: outPath, type: 'png', captureBeyondViewport: false, clip: { x: 0, y: 0, width: 1280, height: 720 } });
+    } catch (e) {
+      log(`     ⚠ screenshot failed (${e.message.slice(0, 60)}…) — retrying on a fresh page`);
+      try { await page.close(); } catch {}
+      page = await browser.newPage();
+      await page.setViewport({ width: 1280, height: 720, deviceScaleFactor: 2 });
+      await page.goto(`file://${htmlPath}`, { waitUntil: 'networkidle0', timeout: 30_000 });
+      await page.evaluateHandle('document.fonts.ready');
+      await new Promise(r => setTimeout(r, settleMs));
+      await page.screenshot({ path: outPath, type: 'png', captureBeyondViewport: false, clip: { x: 0, y: 0, width: 1280, height: 720 } });
+    }
+  }
 
   const WAIT_MS = {
     chapter_title: 600, concept: 1000, code: 1200,
@@ -454,11 +479,7 @@ async function generateSlides(sections, input) {
     }
     await new Promise(r => setTimeout(r, wait));
 
-    await page.screenshot({
-      path: path.join(SLIDES_DIR, `slide-${String(i).padStart(2,'0')}.png`),
-      type: 'png',
-      clip: { x: 0, y: 0, width: 1280, height: 720 },
-    });
+    await shoot(htmlPath, path.join(SLIDES_DIR, `slide-${String(i).padStart(2,'0')}.png`), wait + 500);
     log(`   ✓ slide-${String(i).padStart(2,'0')}.png (${s.type})`);
   }
 
