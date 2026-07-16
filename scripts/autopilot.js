@@ -218,7 +218,6 @@ function quarantineLegacyMedia() {
         const src = path.join(gen, doc);
         if (fs.existsSync(src)) fs.copyFileSync(src, path.join(outDir, doc));
       }
-      console.log(`📦 collected → exports/${course.slug}/videos (${finals.length} files)`);
     }
 
     // 8. promo + short (script → TTS narration → audio-only composite)
