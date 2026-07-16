@@ -128,8 +128,13 @@ function quarantineLegacyMedia() {
       }
     }
 
-    // 4. narration (voice) — TTS by default (free), HeyGen avatar if configured
-    if (!SKIP.has('voice') && !SKIP.has('heygen')) {
+    // 4. narration (voice) — TTS by default (free), HeyGen avatar if configured.
+    // Skipped entirely when the course's video package is already complete.
+    const cfgChapters = JSON.parse(fs.readFileSync(path.join(ROOT, course.config), 'utf8')).chapters_target || 10;
+    const vidsDir = path.join(ROOT, 'exports', course.slug, 'videos');
+    const alreadyComplete = fs.existsSync(vidsDir) && fs.readdirSync(vidsDir).filter(f => f.endsWith('.mp4')).length >= cfgChapters;
+    if (alreadyComplete) console.log(`↷ ${course.slug}: video package already complete — skipping narration`);
+    if (!alreadyComplete && !SKIP.has('voice') && !SKIP.has('heygen')) {
       // restore previously generated narration from this course's package if a
       // prior collect() moved it out of the root
       const srcDir = path.join(ROOT, 'exports', course.slug, 'heygen-src');
@@ -149,39 +154,62 @@ function quarantineLegacyMedia() {
       }
     }
 
-    // 5. stage
+    // 5-7. stage → render → salvage. Progress accumulates monotonically:
+    // finished chapters live in exports/<slug>/videos and are never re-rendered,
+    // even across runs and course switches.
     if (!SKIP.has('render')) {
-      run('stage render inputs', process.execPath, ['scripts/stage-course.js', `--slug=${course.slug}`]);
-
-      // 6. render all chapters
-      run('render chapters', process.execPath, ['render/course-render-all.js']);
-
-      // 7. collect outputs — finals land in render/chapters/chapter-NN/chapter-NN-final.mp4;
-      // name each one from its render input's output_filename
       const outDir = path.join(ROOT, 'exports', course.slug);
       fs.mkdirSync(path.join(outDir, 'videos'), { recursive: true });
       fs.mkdirSync(path.join(outDir, 'heygen-src'), { recursive: true });
-      const finals = [];
       const chaptersDir = path.join(ROOT, 'render', 'chapters');
+
+      // Chapter plan: number → expected output filename
+      const plan = [];
       for (const f of fs.readdirSync(gen)) {
         const m = f.match(/^course-render-input-(\d+)\.json$/);
         if (!m) continue;
-        const n = m[1], nn = String(n).padStart(2, '0');
         const ri = JSON.parse(fs.readFileSync(path.join(gen, f), 'utf8'));
-        const finalPath = path.join(chaptersDir, `chapter-${nn}`, `chapter-${nn}-final.mp4`);
-        if (fs.existsSync(finalPath)) {
-          fs.renameSync(finalPath, path.join(outDir, 'videos', ri.output_filename || `chapter-${nn}-final.mp4`));
-          finals.push(finalPath);
-        } else {
-          console.error(`❌ Missing rendered video for chapter ${n} (${finalPath})`);
-          console.error('   Re-run npm run autopilot after fixing the render.');
+        plan.push({ n: parseInt(m[1]), nn: String(m[1]).padStart(2, '0'), out: ri.output_filename || `chapter-${String(m[1]).padStart(2, '0')}-final.mp4`, courseId: String(ri.course_id) });
+      }
+      const exported = () => plan.filter(p => fs.existsSync(path.join(outDir, 'videos', p.out)));
+      const missing = () => plan.filter(p => !fs.existsSync(path.join(outDir, 'videos', p.out)));
+
+      // Salvage: move any sentinel-matching finals from the shared chapter dirs
+      // into this course's package (protects partial progress from prior runs)
+      const salvage = () => {
+        for (const p of missing()) {
+          const fin = path.join(chaptersDir, `chapter-${p.nn}`, `chapter-${p.nn}-final.mp4`);
+          const sen = path.join(chaptersDir, `chapter-${p.nn}`, 'slides', '.last-course-id');
+          try {
+            if (fs.existsSync(fin) && fs.readFileSync(sen, 'utf8').trim() === p.courseId) {
+              fs.renameSync(fin, path.join(outDir, 'videos', p.out));
+              console.log(`📦 salvaged chapter ${p.n} → exports/${course.slug}/videos/${p.out}`);
+            }
+          } catch {}
+        }
+      };
+      salvage();
+
+      if (missing().length === 0) {
+        console.log(`↷ All ${plan.length} chapters already in exports/${course.slug}/videos — skipping render`);
+      } else {
+        run('stage render inputs', process.execPath, ['scripts/stage-course.js', `--slug=${course.slug}`]);
+        // prune staged inputs for chapters that are already exported
+        for (const p of exported()) {
+          const staged = path.join(ROOT, `course-render-input-${p.n}.json`);
+          if (fs.existsSync(staged)) fs.unlinkSync(staged);
+        }
+        console.log(`🎬 Rendering ${missing().length} remaining chapter(s): ${missing().map(p => p.n).join(', ')}`);
+        run('render chapters', process.execPath, ['render/course-render-all.js'], { allowFail: true });
+        salvage();
+        const still = missing();
+        if (still.length) {
+          console.error(`\n❌ ${still.length} chapter(s) still missing for ${course.slug}: ${still.map(p => p.n).join(', ')}`);
+          console.error('   Progress is saved. Re-run npm run autopilot to retry only these.');
           process.exit(1);
         }
       }
-      // legacy locations (root / Final Videos) — sweep anything the render left there too
-      for (const f of fs.readdirSync(ROOT)) {
-        if (/^chapter-\d+.*\.mp4$/.test(f)) { fs.renameSync(path.join(ROOT, f), path.join(outDir, 'videos', f)); finals.push(f); }
-      }
+      console.log(`📦 exports/${course.slug}/videos complete: ${exported().length}/${plan.length}`);
       for (const f of fs.readdirSync(ROOT)) {
         if (/^heygen-chapter-\d+\.mp4$/.test(f)) fs.renameSync(path.join(ROOT, f), path.join(outDir, 'heygen-src', f));
       }

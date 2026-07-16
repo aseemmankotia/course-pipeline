@@ -152,7 +152,7 @@ async function main() {
       log(`${'─'.repeat(60)}`);
       log(`🎬 Retry Chapter ${n}`);
       const args2 = [renderScript, String(n)];
-      const res2 = spawnSync(process.execPath, args2, { cwd: ROOT, stdio: 'inherit' });
+      const res2 = await runChapter(args2);
       if (res2.status === 0) {
         const idx = results.findIndex(x => x.chapter === n);
         results[idx] = { chapter: n, status: 'done', path: path.join(CHAPTERS_DIR, `chapter-${paddedNum}`, `chapter-${paddedNum}-final.mp4`) };
