@@ -1,0 +1,24 @@
+{
+  "slug": "iapp-aigp-ai-governance",
+  "topic": "IAPP Artificial Intelligence Governance Professional (AIGP) certification exam preparation",
+  "cert_name": "IAPP Artificial Intelligence Governance Professional",
+  "exam_code": "AIGP",
+  "exam_vendor": "IAPP",
+  "exam_cost_usd": 649,
+  "exam_format": "100 multiple-choice questions, 150 minutes, scaled scoring per IAPP; Body of Knowledge v2.1 effective February 2, 2026",
+  "question_types": "multiple choice, scenario-based multiple choice",
+  "audience": "Privacy professionals, compliance and legal teams, risk managers, and AI program leads who need to govern AI systems under the EU AI Act, NIST AI RMF, and ISO/IEC 42001. No technical AI background required. Especially urgent for organizations facing the EU AI Act high-risk obligations effective August 2, 2026.",
+  "difficulty": "Intermediate",
+  "chapters_target": 10,
+  "narration_mode": "tts",
+  "author": "Aseem Mankotia",
+  "brand": "TechNuggets Academy",
+  "domains": [
+    { "name": "Domain 1: Foundations of AI Systems", "weight": "~13%", "notes": "AI/ML fundamentals for a governance audience: types of models, training data, foundation models and generative AI, the 2026 BoK shift in emphasis from 'models' to 'systems', AI system lifecycle actors (provider, deployer, importer, distributor)" },
+    { "name": "Domain 2: AI Development Lifecycle", "weight": "~15%", "notes": "Data collection through deployment and monitoring, documentation artifacts (model cards, data sheets, impact assessments), roles and accountability across the lifecycle, procurement and third-party model risks" },
+    { "name": "Domain 3: Responsible AI Principles and Impacts", "weight": "~20%", "notes": "Fairness, bias types and mitigation, transparency and explainability, human oversight, safety and robustness, privacy-enhancing technologies, societal and sector-specific impacts (employment, credit, healthcare)" },
+    { "name": "Domain 4: AI Risk Management and Governance Implementation", "weight": "~25%", "notes": "NIST AI RMF (Govern/Map/Measure/Manage), ISO/IEC 42001 AI management systems, building an AI governance program, AI inventories and registries, risk assessments and conformity assessments, incident response for AI harms, audit and assurance" },
+    { "name": "Domain 5: AI Laws, Regulations, and Standards", "weight": "~27%", "notes": "HEAVIEST AND MOST-INCREASED DOMAIN in the 2026 refresh. EU AI Act in depth: risk tiers, prohibited practices, GPAI obligations, high-risk requirements and the August 2, 2026 deadline, penalties; GDPR intersection; US landscape (state laws, executive actions, FTC); other jurisdictions; sector regulators; emerging standards" }
+  ],
+  "extra_guidance": "Course must be aligned to Body of Knowledge v2.1 (effective February 2, 2026) - explicitly say so, since most competing courses are built on the older BoK. The 2026 refresh increased weight on AI-specific laws, so give the EU AI Act two full chapters including a practical compliance-countdown treatment of the August 2, 2026 high-risk obligations. This is a governance/legal audience: labs are exercises like drafting an AI inventory entry, classifying a system under EU AI Act risk tiers, or mapping a use case to NIST AI RMF functions - not coding. Final chapter must be a full 100-question exam simulation walkthrough with scenario-question strategy."
+}

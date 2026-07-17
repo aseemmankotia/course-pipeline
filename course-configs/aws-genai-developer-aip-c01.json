@@ -1,0 +1,24 @@
+{
+  "slug": "aws-genai-developer-aip-c01",
+  "topic": "AWS Certified Generative AI Developer - Professional (AIP-C01) certification exam preparation",
+  "cert_name": "AWS Certified Generative AI Developer - Professional",
+  "exam_code": "AIP-C01",
+  "exam_vendor": "AWS",
+  "exam_cost_usd": 300,
+  "exam_format": "65 scored questions (plus 10 unscored), 170 minutes, passing score 750/1000, compensatory scoring",
+  "question_types": "multiple choice, multiple response, ordering, matching, case study",
+  "audience": "Developers with 1+ years building GenAI applications on AWS who want the first professional-level AWS certification dedicated to generative AI. Ideal next step after AWS AI Practitioner (AIF-C01). Working knowledge of Python and AWS APIs assumed.",
+  "difficulty": "Expert",
+  "chapters_target": 10,
+  "narration_mode": "tts",
+  "author": "Aseem Mankotia",
+  "brand": "TechNuggets Academy",
+  "domains": [
+    { "name": "Domain 1: Foundation Model Integration, Data Management, and Compliance", "weight": "31%", "notes": "HEAVIEST DOMAIN. Bedrock model selection and invocation (Converse API, InvokeModel), multimodal FMs, embeddings and vector stores (OpenSearch Serverless, Aurora pgvector, S3 Vectors), data ingestion/chunking strategies for RAG, Knowledge Bases, data residency and compliance, prompt/completion logging, cross-region inference" },
+    { "name": "Domain 2: Implementation and Integration", "weight": "26%", "notes": "Bedrock Agents and multi-agent collaboration, action groups, tool use / function calling, agentic patterns (ReAct, orchestration), Step Functions and Lambda integration, streaming responses, session/memory management, structured output, API gateway patterns, frameworks (LangChain, LangGraph, Strands) on AWS" },
+    { "name": "Domain 3: AI Safety, Security, and Governance", "weight": "20%", "notes": "Bedrock Guardrails (content filters, denied topics, contextual grounding, PII), prompt injection defense, IAM least-privilege for GenAI apps, KMS encryption, VPC endpoints/PrivateLink, model invocation logging, CloudTrail auditing, responsible AI, watermarking and provenance" },
+    { "name": "Domain 4: Operational Efficiency and Optimization for GenAI Applications", "weight": "12%", "notes": "Cost optimization: on-demand vs provisioned throughput vs batch inference, prompt caching, model distillation, intelligent prompt routing, latency optimization, token budgeting, right-sizing model choice per task, caching strategies" },
+    { "name": "Domain 5: Testing, Validation, and Troubleshooting", "weight": "11%", "notes": "Model evaluation (Bedrock Evaluations, LLM-as-a-judge), RAG evaluation (retrieval precision/groundedness), prompt regression testing, A/B testing, troubleshooting throttling/quota errors, debugging agent traces, CloudWatch metrics and alarms for GenAI workloads" }
+  ],
+  "extra_guidance": "This is AWS's first professional-level GenAI certification, launched in 2026 - position as the definitive first-mover prep and the natural next step after AIF-C01. Professional level means scenario-heavy: every chapter needs realistic production scenarios with trade-off decisions (cost vs latency vs quality). Use current Bedrock model families and current API names (Converse API). Include Python/boto3 code in labs. Final chapter must be a full 65-question exam simulation walkthrough with professional-exam time strategy."
+}

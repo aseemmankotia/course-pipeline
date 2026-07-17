@@ -31,10 +31,20 @@ const args = Object.fromEntries(process.argv.slice(2).map(a => {
 }));
 const SKIP = new Set((args.skip || '').split(',').filter(Boolean));
 
-const COURSES = [
-  { config: 'course-configs/aws-ai-practitioner-aif-c01.json', slug: 'aws-certified-ai-practitioner-aif-c01', editorial: 'scripts/apply-editorial-aif.js' },
-  { config: 'course-configs/comptia-secai-cy0-001.json', slug: 'comptia-secai-plus-cy0-001', editorial: null },
-].filter(c => !args.only || c.slug === args.only);
+// One-time editorial scripts per slug (accuracy patches applied before regeneration)
+const EDITORIALS = {
+  'aws-certified-ai-practitioner-aif-c01': 'scripts/apply-editorial-aif.js',
+};
+
+// Every config in course-configs/ is a course; completed ones are skipped
+// automatically by the exports/<slug>/videos completeness check.
+const COURSES = fs.readdirSync(path.join(ROOT, 'course-configs'))
+  .filter(f => f.endsWith('.json'))
+  .map(f => {
+    const cfg = JSON.parse(fs.readFileSync(path.join(ROOT, 'course-configs', f), 'utf8'));
+    return { config: `course-configs/${f}`, slug: cfg.slug, editorial: EDITORIALS[cfg.slug] || null };
+  })
+  .filter(c => !args.only || c.slug === args.only);
 
 function run(label, cmd, cmdArgs, opts = {}) {
   console.log(`\n━━━ ${label} ━━━`);
