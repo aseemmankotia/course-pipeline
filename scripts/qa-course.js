@@ -88,10 +88,15 @@ for (const ch of (cur && cur.chapters) || []) {
 // ---------- practice tests ----------
 const testKeys = Object.keys(state.tests || {});
 const seen = new Set();
-let dupes = 0, totalQ = { 1: 0, 2: 0 };
+let dupes = 0, totalQ = { 1: 0, 2: 0 }, autoFixed = 0;
 for (const k of testKeys) {
   const n = k.startsWith('t1') ? 1 : 2;
   for (const q of state.tests[k] || []) {
+    // auto-heal: extra options beyond 4 when the correct answer is unaffected
+    if (Array.isArray(q.options) && q.options.length > 4 && Number.isInteger(q.correct_index) && q.correct_index < 4) {
+      q.options = q.options.slice(0, 4);
+      autoFixed++;
+    }
     totalQ[n]++;
     const sig = (q.question || '').toLowerCase().replace(/\W+/g, ' ').trim().slice(0, 120);
     if (seen.has(sig)) dupes++;
@@ -99,6 +104,10 @@ for (const k of testKeys) {
     chk(Array.isArray(q.options) && q.options.length === 4, `${k}: question with !=4 options`);
     chk(Number.isInteger(q.correct_index) && q.correct_index >= 0 && q.correct_index <= 3, `${k}: bad correct_index`);
   }
+}
+if (autoFixed) {
+  fs.writeFileSync(path.join(DIR, 'state.json'), JSON.stringify(state, null, 2));
+  warns.push(`auto-trimmed ${autoFixed} question(s) with >4 options (correct answer preserved) — re-run assemble stage`);
 }
 chk(totalQ[1] >= 40, `Practice test 1 has only ${totalQ[1]} questions`, false);
 chk(totalQ[2] >= 40, `Practice test 2 has only ${totalQ[2]} questions`, false);
