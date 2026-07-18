@@ -218,6 +218,8 @@ ${domainsBlock}
 EXTRA GUIDANCE: ${CFG.extra_guidance}
 AUTHOR: ${CFG.author} — use this exact name anywhere an author/instructor is referenced.
 
+UDEMY COMPLIANCE — the marketplace rejects overpromising copy. In course_title, course_subtitle, and course_description: NEVER promise outcomes. Banned: "pass" as a promise, "first attempt", "guaranteed", "you will pass", monetary/job/salary outcomes. Use "prepare for", "exam-focused preparation", "master the domains" framing instead.
+
 Create exactly ${CFG.chapters_target} chapters. Order chapters by exam-domain order. The final chapter is a full exam simulation + test-taking strategy. Respond with ONLY this JSON:
 {
   "course_title": "≤60 chars, includes cert code, compelling",

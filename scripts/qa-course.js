@@ -42,6 +42,13 @@ function chk(cond, msg, blocking = true) { if (!cond) (blocking ? issues : warns
 // ---------- curriculum ----------
 chk(!!cur, 'Curriculum missing');
 if (cur) {
+  // Udemy compliance: no outcome promises in public-facing copy
+  const BANNED = [/first[- ]attempt/i, /guarantee/i, /\bpass\b(?![a-z])/i, /you will pass/i];
+  for (const [field, val] of [['title', cur.course_title], ['subtitle', cur.course_subtitle], ['description', cur.course_description]]) {
+    for (const re of BANNED) {
+      if (re.test(val || '')) issues.push(`${field}: overpromising language matching ${re} (Udemy rejects outcome promises)`);
+    }
+  }
   chk(cur.course_title && cur.course_title.length <= 65, `Course title >65 chars (${(cur.course_title || '').length})`, false);
   chk(cur.course_subtitle && cur.course_subtitle.length <= 125, `Subtitle >125 chars`, false);
   chk((cur.chapters || []).length >= 8, `Only ${(cur.chapters || []).length} chapters`);
