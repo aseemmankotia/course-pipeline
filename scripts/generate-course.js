@@ -175,6 +175,29 @@ function parseJSON(text) {
       }
     }
   }
+  // Last resort for truncated ARRAYS: salvage every complete object
+  const start = text.indexOf('[');
+  if (start >= 0) {
+    let depth = 0, inStr = false, esc = false, lastComplete = -1;
+    for (let i = start; i < text.length; i++) {
+      const ch = text[i];
+      if (esc) { esc = false; continue; }
+      if (ch === '\\') { esc = true; continue; }
+      if (ch === '"') inStr = !inStr;
+      if (inStr) continue;
+      if (ch === '{' || ch === '[') depth++;
+      if (ch === '}' || ch === ']') { depth--; if (depth === 1 && ch === '}') lastComplete = i; }
+    }
+    if (lastComplete > start) {
+      try {
+        const salvaged = JSON.parse(text.slice(start, lastComplete + 1) + ']');
+        if (Array.isArray(salvaged) && salvaged.length) {
+          console.log(`   ⚠️ response truncated — salvaged ${salvaged.length} complete item(s)`);
+          return salvaged;
+        }
+      } catch {}
+    }
+  }
   throw new Error('Could not parse JSON from model response: ' + text.slice(0, 200));
 }
 
@@ -296,21 +319,29 @@ ACCURACY: The current year is ${new Date().getFullYear()} — use current model/
 async function genTests() {
   console.log('▶ Stage 4/5: practice tests (2 × 45 questions)');
   const cur = state.curriculum;
-  const perDomain = CFG.domains.map(d => ({
-    domain: d.name,
-    count: Math.max(3, Math.round(45 * parseInt(d.weight) / 100)),
-  }));
+  // Split each domain into batches of ≤6 questions so long scenario questions
+  // never overflow the output token limit.
+  const perDomain = [];
+  for (const d of CFG.domains) {
+    const total = Math.max(3, Math.round(45 * parseInt(d.weight) / 100));
+    let remaining = total, part = 1;
+    while (remaining > 0) {
+      const count = Math.min(6, remaining);
+      perDomain.push({ domain: d.name, count, part: total > 6 ? part : 0 });
+      remaining -= count; part++;
+    }
+  }
   for (const testNum of [1, 2]) {
     for (const pd of perDomain) {
-      const key = `t${testNum}:${pd.domain}`;
+      const key = `t${testNum}:${pd.domain}${pd.part ? `:part${pd.part}` : ''}`;
       if (state.tests[key]) { console.log(`   ↷ ${key} done, skipping`); continue; }
       const system = `${MASTER}\n\nYou are generating PRACTICE TEST questions. Respond with ONLY a valid JSON array.`;
-      const user = `Generate ${pd.count} exam-quality ${CFG.exam_code} practice-test questions for domain "${pd.domain}" (practice test #${testNum}${testNum === 2 ? ' — make these HARDER and fully distinct from a typical first test' : ''}).
+      const user = `Generate ${pd.count} exam-quality ${CFG.exam_code} practice-test questions for domain "${pd.domain}" (practice test #${testNum}${testNum === 2 ? ' — make these HARDER and fully distinct from a typical first test' : ''}${pd.part ? `, question set ${pd.part} — cover different sub-topics than other sets for this domain` : ''}).
 Follow the QUESTION STANDARDS distribution and SCENARIO QUESTION FORMAT.
 Respond ONLY with a JSON array:
 [{"question":"...","options":["...","...","...","..."],"correct_index":<0-3>,"domain":"${pd.domain}","why_correct":"...","why_others_wrong":["...","...","..."],"commonly_missed":true|false}]
 ACCURACY: The current year is ${new Date().getFullYear()} — use current model/service facts only; correct answers must be verifiably correct; never fabricate exam trivia. Randomize which option position holds the correct answer.`;
-      const text = await callClaude(system, user, 8000, key);
+      const text = await callClaude(system, user, 12000, key);
       state.tests[key] = parseJSON(text);
       save();
     }
@@ -355,7 +386,10 @@ function assemble() {
     const questions = [];
     const domain_breakdown = {};
     for (const d of CFG.domains) {
-      const qs = state.tests[`t${n}:${d.name}`] || [];
+      // gather both single-batch keys and :partN sub-batch keys
+      const qs = Object.keys(state.tests)
+        .filter(k => k === `t${n}:${d.name}` || k.startsWith(`t${n}:${d.name}:part`))
+        .flatMap(k => state.tests[k] || []);
       questions.push(...qs);
       domain_breakdown[d.name] = qs.length;
     }
