@@ -385,10 +385,24 @@ const PUPPETEER_ARGS = [
   '--disable-dev-shm-usage',
 ];
 
+async function launchBrowser() {
+  // chrome-headless-shell (the old headless architecture) has no GPU
+  // compositor and takes screenshots far more reliably than new headless,
+  // which repeatedly hung captureScreenshot on this machine. Fall back to
+  // new headless if the shell binary isn't installed.
+  try {
+    return await puppeteer.launch({ headless: 'shell', protocolTimeout: 120_000, args: PUPPETEER_ARGS });
+  } catch (e) {
+    log(`   ⚠ chrome-headless-shell unavailable (${e.message.slice(0, 60)}…) — using new headless`);
+    log('     Install it once for reliable renders:  npx puppeteer browsers install chrome-headless-shell');
+    return await puppeteer.launch({ headless: true, protocolTimeout: 120_000, args: PUPPETEER_ARGS });
+  }
+}
+
 async function generateSlides(sections, input) {
   const total = sections.length;
 
-  let browser = await puppeteer.launch({ headless: true, protocolTimeout: 120_000, args: PUPPETEER_ARGS });
+  let browser = await launchBrowser();
   let page = await browser.newPage();
   await page.setViewport({ width: 1280, height: 720, deviceScaleFactor: 1 });
 
@@ -414,7 +428,7 @@ async function generateSlides(sections, input) {
         } else {
           await killBrowser(browser);
           await new Promise(r => setTimeout(r, 3000)); // let the OS reclaim memory
-          browser = await puppeteer.launch({ headless: true, protocolTimeout: 120_000, args: PUPPETEER_ARGS });
+          browser = await launchBrowser();
         }
         page = await browser.newPage();
         await page.setViewport({ width: 1280, height: 720, deviceScaleFactor: 1 });

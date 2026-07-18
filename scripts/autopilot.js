@@ -203,6 +203,15 @@ function quarantineLegacyMedia() {
       if (missing().length === 0) {
         console.log(`↷ All ${plan.length} chapters already in exports/${course.slug}/videos — skipping render`);
       } else {
+        // Reliable screenshots need chrome-headless-shell (idempotent install,
+        // cached after the first download)
+        run('ensure chrome-headless-shell', 'npx', ['puppeteer', 'browsers', 'install', 'chrome-headless-shell'], { allowFail: true, shell: process.platform === 'win32' });
+        // Kill stray headless Chrome processes from earlier failed runs — they
+        // accumulate and starve new instances (never touches your real Chrome)
+        if (process.platform !== 'win32') {
+          spawnSync('pkill', ['-f', 'Chrome for Testing'], { stdio: 'ignore' });
+          spawnSync('pkill', ['-f', 'chrome-headless-shell'], { stdio: 'ignore' });
+        }
         run('stage render inputs', process.execPath, ['scripts/stage-course.js', `--slug=${course.slug}`]);
         // prune staged inputs for chapters that are already exported
         for (const p of exported()) {
