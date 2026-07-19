@@ -120,6 +120,15 @@ function quarantineLegacyMedia() {
     const gen = path.join(ROOT, 'generated', course.slug);
     console.log(`\n\n════════ ${course.slug} ════════`);
 
+    // Completed courses (full video package in exports) are DONE — don't
+    // regenerate, re-audit, or re-render them on later runs.
+    const cfgEarly = JSON.parse(fs.readFileSync(path.join(ROOT, course.config), 'utf8'));
+    const vidsEarly = path.join(ROOT, 'exports', course.slug, 'videos');
+    if (fs.existsSync(vidsEarly) && fs.readdirSync(vidsEarly).filter(f => f.endsWith('.mp4')).length >= (cfgEarly.chapters_target || 10)) {
+      console.log(`↷ ${course.slug}: complete package in exports — skipping entirely`);
+      continue;
+    }
+
     // 1+2. generate (+ editorial + regenerate if needed)
     if (!SKIP.has('generate')) {
       run('generate', process.execPath, ['scripts/generate-course.js', `--config=${course.config}`]);
