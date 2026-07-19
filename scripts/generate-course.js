@@ -120,7 +120,7 @@ function postJSON(url, headers, bodyObj) {
 
 // ---------- Anthropic call with retry ----------
 async function callClaude(system, user, maxTokens = 8000, label = '') {
-  for (let attempt = 1; attempt <= 5; attempt++) {
+  for (let attempt = 1; attempt <= 10; attempt++) {
     try {
       const res = await postJSON('https://api.anthropic.com/v1/messages', {
         'content-type': 'application/json',
@@ -145,9 +145,13 @@ async function callClaude(system, user, maxTokens = 8000, label = '') {
       console.log(`   ✅ ${label}: ${usage.output_tokens || '?'} tokens out`);
       return text;
     } catch (e) {
-      if (attempt === 5) throw e;
-      const wait = 5 * attempt;
-      console.log(`   ⚠️ ${label}: ${e.message} — retry in ${wait}s`);
+      // Network-level failures (wifi blip, DNS, reset) get a longer runway
+      // than API errors — they usually clear within a couple of minutes.
+      const isNetwork = /fetch failed|ECONNRESET|ETIMEDOUT|EAI_AGAIN|ENOTFOUND|socket|network/i.test(e.message || '');
+      const maxAttempts = isNetwork ? 10 : 5;
+      if (attempt >= maxAttempts) throw e;
+      const wait = isNetwork ? Math.min(120, 10 * attempt) : 5 * attempt;
+      console.log(`   ⚠️ ${label}: ${e.message} — retry in ${wait}s (${attempt}/${maxAttempts})`);
       await new Promise(r => setTimeout(r, wait * 1000));
     }
   }
