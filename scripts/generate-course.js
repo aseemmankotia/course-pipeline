@@ -205,6 +205,23 @@ function parseJSON(text) {
   throw new Error('Could not parse JSON from model response: ' + text.slice(0, 200));
 }
 
+// Call the model and parse JSON, retrying with a stricter instruction when the
+// response is malformed (long scenario content sometimes breaks JSON escaping).
+async function generateJSON(system, user, maxTokens, label) {
+  let lastErr;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    const extra = attempt === 1 ? '' :
+      '\n\nCRITICAL: Your previous response was not valid JSON. Respond with ONLY strictly valid JSON — escape all double quotes inside strings, no trailing commas, no commentary.';
+    const text = await callClaude(system, user + extra, maxTokens, `${label}${attempt > 1 ? ` (retry ${attempt - 1})` : ''}`);
+    try { return parseJSON(text); }
+    catch (e) {
+      lastErr = e;
+      console.log(`   ⚠️ ${label}: response was not valid JSON — regenerating (${attempt}/3)`);
+    }
+  }
+  throw lastErr;
+}
+
 const domainsBlock = CFG.domains.map(d => `- ${d.name} (${d.weight}): ${d.notes}`).join('\n');
 
 // ---------- Stage 1: curriculum ----------
@@ -255,8 +272,7 @@ Create exactly ${CFG.chapters_target} chapters. Order chapters by exam-domain or
   ]
 }
 Each chapter needs exactly 2 quiz_questions.`;
-  const text = await callClaude(system, user, 16000, 'curriculum');
-  const cur = parseJSON(text);
+  const cur = await generateJSON(system, user, 16000, 'curriculum');
   if (!cur.chapters || cur.chapters.length < CFG.chapters_target - 1) throw new Error('Curriculum missing chapters');
   state.curriculum = cur;
   save();
@@ -315,8 +331,7 @@ Respond ONLY with JSON:
   "cheatsheet": "markdown cheat sheet for this chapter: tables of limits/comparisons/commands, ≤600 words"
 }
 ACCURACY: The current year is ${new Date().getFullYear()} — use current model/service facts only; every stated number must be correct at publication time or omitted; never fabricate exam trivia.`;
-    const text = await callClaude(system, user, 14000, `${key} materials`);
-    state.materials[key] = parseJSON(text);
+    state.materials[key] = await generateJSON(system, user, 14000, `${key} materials`);
     save();
   }
 }
@@ -347,8 +362,7 @@ Follow the QUESTION STANDARDS distribution and SCENARIO QUESTION FORMAT.
 Respond ONLY with a JSON array:
 [{"question":"...","options":["...","...","...","..."],"correct_index":<0-3>,"domain":"${pd.domain}","why_correct":"...","why_others_wrong":["...","...","..."],"commonly_missed":true|false}]
 ACCURACY: The current year is ${new Date().getFullYear()} — use current model/service facts only; correct answers must be verifiably correct; never fabricate exam trivia. Randomize which option position holds the correct answer.`;
-      const text = await callClaude(system, user, 12000, key);
-      state.tests[key] = parseJSON(text);
+      state.tests[key] = await generateJSON(system, user, 12000, key);
       save();
     }
   }
