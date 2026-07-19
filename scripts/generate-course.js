@@ -344,7 +344,8 @@ async function genTests() {
   // never overflow the output token limit.
   const perDomain = [];
   for (const d of CFG.domains) {
-    const total = Math.max(3, Math.round(45 * parseInt(d.weight) / 100));
+    const weightNum = parseInt(String(d.weight).replace(/[^0-9]/g, ''), 10) || 20; // tolerate "~13%" etc.
+    const total = Math.max(3, Math.round(45 * weightNum / 100));
     let remaining = total, part = 1;
     while (remaining > 0) {
       const count = Math.min(6, remaining);
