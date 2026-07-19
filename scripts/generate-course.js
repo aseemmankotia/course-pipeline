@@ -315,7 +315,7 @@ Respond ONLY with JSON:
   "cheatsheet": "markdown cheat sheet for this chapter: tables of limits/comparisons/commands, ≤600 words"
 }
 ACCURACY: The current year is ${new Date().getFullYear()} — use current model/service facts only; every stated number must be correct at publication time or omitted; never fabricate exam trivia.`;
-    const text = await callClaude(system, user, 8000, `${key} materials`);
+    const text = await callClaude(system, user, 14000, `${key} materials`);
     state.materials[key] = parseJSON(text);
     save();
   }
