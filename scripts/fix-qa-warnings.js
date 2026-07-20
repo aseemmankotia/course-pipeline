@@ -135,11 +135,38 @@ function findLongScripts() {
 
 async function condense(ch) {
   const original = state.scripts[ch.number];
+  const examBefore = (original.match(/exam note/gi) || []).length;
+  const hadLab = /pause here/i.test(original);
+  let lastErr, feedback = '';
+
+  // Condensing is a judgement task and one pass often lands just over the cap,
+  // so retry with the actual miss fed back in and a progressively lower target.
+  for (let attempt = 1; attempt <= 4; attempt++) {
+    const target = Math.round(WORD_TARGET - (attempt - 1) * 250); // 3900 → 3150
+    try {
+      const r = await condenseOnce(ch, original, target, feedback, attempt);
+      if (r.w > WORD_CAP) throw new Error(`still ${r.w} words (cap ${WORD_CAP})`);
+      if (r.w < target * 0.6) throw new Error(`over-cut to ${r.w} words`);
+      if (r.examAfter < examBefore) throw new Error(`lost exam callouts (${examBefore} → ${r.examAfter})`);
+      if (hadLab && !/pause here/i.test(r.revised)) throw new Error('lost the lab pause instruction');
+      return r;
+    } catch (e) {
+      lastErr = e;
+      if (attempt === 4) break;
+      feedback = `\n\nYour previous attempt was rejected: ${e.message}. Cut harder this time, but keep every exam callout and the full lab walkthrough intact.`;
+      console.log(`\n      ⚠️  attempt ${attempt}: ${e.message} — retrying with target ${Math.round(WORD_TARGET - attempt * 250)}w`);
+      process.stdout.write('      ');
+    }
+  }
+  throw lastErr;
+}
+
+async function condenseOnce(ch, original, target, feedback, attempt) {
   const system = `You are a top certification-course scriptwriter. You are editing an existing
 narration script down to length. Return ONLY the revised script text — no preamble, no commentary,
 no markdown fences.`;
 
-  const user = `This chapter narration for "${cert}" runs ${ch.words} words. Tighten it to about ${WORD_TARGET} words (hard maximum ${WORD_CAP}).
+  const user = `This chapter narration for "${cert}" runs ${ch.words} words. Tighten it to about ${target} words (hard maximum ${WORD_CAP}).${feedback}
 
 Chapter ${ch.number}: ${ch.title}
 
@@ -158,16 +185,13 @@ Do not introduce new claims or new services. This is an edit for concision, not 
 SCRIPT:
 ${original}`;
 
-  const revised = (await callClaude(system, user, 8000, `ch${ch.number} condense`)).trim();
-  const w = words(revised);
-  const examBefore = (original.match(/exam note/gi) || []).length;
-  const examAfter = (revised.match(/exam note/gi) || []).length;
-  const labAfter = /pause here/i.test(revised);
-  if (w > WORD_CAP) throw new Error(`still ${w} words (cap ${WORD_CAP})`);
-  if (w < WORD_TARGET * 0.6) throw new Error(`over-cut to ${w} words`);
-  if (examAfter < examBefore) throw new Error(`lost exam callouts (${examBefore} → ${examAfter})`);
-  if (!labAfter && /pause here/i.test(original)) throw new Error('lost the lab pause instruction');
-  return { revised, w, examBefore, examAfter };
+  const revised = (await callClaude(system, user, 8000, `ch${ch.number} condense a${attempt}`)).trim();
+  return {
+    revised,
+    w: words(revised),
+    examBefore: (original.match(/exam note/gi) || []).length,
+    examAfter: (revised.match(/exam note/gi) || []).length,
+  };
 }
 
 // ---------- run ----------
