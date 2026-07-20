@@ -145,9 +145,25 @@ async function callClaude(system, user, maxTokens = 8000, label = '') {
       console.log(`   ✅ ${label}: ${usage.output_tokens || '?'} tokens out`);
       return text;
     } catch (e) {
+      const msg = e.message || '';
+
+      // Some failures can never succeed on retry — retrying just burns time and
+      // buries the real cause under a wall of identical warnings. Stop at once
+      // and say plainly what the operator has to go fix.
+      const fatal = [
+        [/credit balance is too low/i, 'Anthropic credits exhausted — top up at console.anthropic.com → Plans & Billing, then re-run to resume.'],
+        [/invalid[_ ]api[_ ]key|authentication[_ ]error|x-api-key/i, 'ANTHROPIC_API_KEY is missing or invalid — check .env, then re-run to resume.'],
+        [/permission[_ ]error|does not have access/i, 'API key lacks access to this model — check the key\'s permissions or set COURSE_GEN_MODEL.'],
+        [/model:.*not found|not_found_error/i, `Model "${MODEL}" not found — set COURSE_GEN_MODEL in .env to a current model.`],
+      ].find(([re]) => re.test(msg));
+      if (fatal) {
+        console.error(`\n   ⛔ ${label}: ${fatal[1]}`);
+        throw new Error(msg);
+      }
+
       // Network-level failures (wifi blip, DNS, reset) get a longer runway
       // than API errors — they usually clear within a couple of minutes.
-      const isNetwork = /fetch failed|ECONNRESET|ETIMEDOUT|EAI_AGAIN|ENOTFOUND|socket|network/i.test(e.message || '');
+      const isNetwork = /fetch failed|ECONNRESET|ETIMEDOUT|EAI_AGAIN|ENOTFOUND|socket|network/i.test(msg);
       const maxAttempts = isNetwork ? 10 : 5;
       if (attempt >= maxAttempts) throw e;
       const wait = isNetwork ? Math.min(120, 10 * attempt) : 5 * attempt;
