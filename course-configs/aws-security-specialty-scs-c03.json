@@ -1,0 +1,25 @@
+{
+  "slug": "aws-security-specialty-scs-c03",
+  "topic": "AWS Certified Security - Specialty (SCS-C03) certification exam preparation",
+  "cert_name": "AWS Certified Security - Specialty",
+  "exam_code": "SCS-C03",
+  "exam_vendor": "Amazon Web Services",
+  "exam_cost_usd": 300,
+  "exam_format": "65 questions (50 scored, 15 unscored), 170 minutes, scaled score 100-1000 with a minimum passing score of 750; SCS-C03 replaced SCS-C02 on December 2, 2025",
+  "question_types": "multiple choice, multiple response, ordering, matching",
+  "audience": "Cloud security engineers, security architects, DevSecOps engineers, and cloud administrators with roughly 3-5 years of experience securing cloud solutions who are responsible for securing AWS workloads. Assumes working knowledge of AWS core services, IAM, networking, and encryption.",
+  "difficulty": "Expert",
+  "chapters_target": 10,
+  "narration_mode": "tts",
+  "author": "Aseem Mankotia",
+  "brand": "TechNuggets Academy",
+  "domains": [
+    { "name": "Domain 1: Detection", "weight": "16%", "notes": "GuardDuty, Security Hub, Detective, Inspector, Macie, CloudTrail (including Lake), CloudWatch Logs and Insights, VPC Flow Logs, DNS query logging, EventBridge-driven detection. NEW IN C03: OCSF-aligned logging and normalization across log sources. Designing detection strategy for multi-account estates, log retention/immutability, and reducing alert fatigue." },
+    { "name": "Domain 2: Incident Response", "weight": "14%", "notes": "IR playbooks for credential compromise, exposed keys, compromised EC2/EKS workloads, and S3 data exposure. Isolation and containment patterns, forensic evidence capture (EBS snapshots, memory), automation via Lambda/SSM/EventBridge, root cause analysis, AWS Security Incident Response service, breach notification workflows. Reference the AWS Security Incident Response Guide." },
+    { "name": "Domain 3: Infrastructure Security", "weight": "18%", "notes": "VPC design, security groups vs NACLs, PrivateLink/VPC endpoints, Network Firewall, WAF, Shield, Route 53 Resolver DNS Firewall, edge protection, layer 3-7 firewall rules at scale, EC2/container/serverless hardening, patch and vulnerability management. IMPORTANT NEW C03 CONTENT: Skill 3.2.7 - implement protections and guardrails for generative AI applications, including Amazon Bedrock Guardrails and the OWASP LLM Top 10 (prompt injection, data leakage, insecure output handling). Also new: inter-resource encryption in transit." },
+    { "name": "Domain 4: Identity and Access Management", "weight": "20%", "notes": "HEAVIEST DOMAIN. IAM policy evaluation logic in depth (identity vs resource vs SCP vs permissions boundary vs session policy, and how they intersect), IAM Identity Center, federation and SAML/OIDC, IAM Roles Anywhere, cross-account access patterns, least-privilege design with Access Analyzer, temporary credentials and STS, resource control policies (RCPs), service control policies (SCPs), attribute-based access control. Troubleshooting 'why was this request denied/allowed' is a heavily tested exam skill." },
+    { "name": "Domain 5: Data Protection", "weight": "18%", "notes": "KMS in depth (key policies, grants, multi-Region keys, key material import and origin nuances, rotation, ABAC on keys), CloudHSM, encryption at rest across S3/EBS/RDS/DynamoDB, encryption in transit and TLS termination, ACM and Private CA, Secrets Manager vs Parameter Store, S3 access controls and Block Public Access, data classification with Macie, backup protection and immutability, data lifecycle and secure deletion." },
+    { "name": "Domain 6: Security Foundations and Governance", "weight": "14%", "notes": "AWS shared responsibility model applied to real scenarios, multi-account strategy with Organizations and Control Tower, Config rules and conformance packs, Audit Manager, Trusted Advisor, Well-Architected security pillar, compliance frameworks and audit evidence, software supply chain risk (CodeArtifact, Signer, ECR scanning, SBOMs), cost/security/complexity tradeoff decisions." }
+  ],
+  "extra_guidance": "Align explicitly to SCS-C03 (released December 2, 2025) and call out that this is the current version, since much competing material still targets the retired SCS-C02 - reference the official SCS-C02 vs SCS-C03 comparison appendix where useful. Two things are genuinely new in C03 and must be given real depth rather than a passing mention: generative AI guardrails (Domain 3, skill 3.2.7 - Bedrock Guardrails and OWASP LLM Top 10) and OCSF-aligned logging in Domain 1. Give IAM the most chapter time - it is the heaviest domain at 20% and policy-evaluation troubleshooting is where most candidates lose points. This is a hands-on engineering audience, so labs should be concrete console/CLI walkthroughs (build a least-privilege cross-account role, trace a deny through SCP + boundary + resource policy, attach a Bedrock guardrail, wire a GuardDuty finding to an automated containment Lambda). Note the exam includes ordering and matching question types, not just multiple choice - the final chapter's exam simulation must cover strategy for all four formats."
+}

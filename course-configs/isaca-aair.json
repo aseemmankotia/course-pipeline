@@ -1,0 +1,22 @@
+{
+  "slug": "isaca-aair-ai-risk",
+  "topic": "ISACA Advanced in AI Risk (AAIR) certification exam preparation",
+  "cert_name": "ISACA Advanced in AI Risk",
+  "exam_code": "AAIR",
+  "exam_vendor": "ISACA",
+  "exam_cost_usd": 575,
+  "exam_format": "90 questions, 2.5 hours, delivered by PSI, scored on an 800-point scale with a passing score of 450; launched April 15, 2026",
+  "question_types": "multiple choice, scenario-based multiple choice",
+  "audience": "Experienced IT risk, audit, and advisory professionals who already hold a prerequisite credential (CISA, CRISC, CISM, CGEIT, CDPSE, CISSP, and 19 other accepted certifications) and now need to govern AI risk at enterprise scale. Assumes fluency in enterprise risk management; does not assume machine learning expertise.",
+  "difficulty": "Expert",
+  "chapters_target": 10,
+  "narration_mode": "tts",
+  "author": "Aseem Mankotia",
+  "brand": "TechNuggets Academy",
+  "domains": [
+    { "name": "Domain 1: AI Risk Governance and Framework Integration", "weight": "37%", "notes": "1A AI models, frameworks, strategies and use cases. 1B AI organizational processes and alignment. 1C AI ownership, oversight and accountability. 1D AI policies, procedures and organizational training. 1E AI regulatory compliance and legal considerations. 1F AI trustworthiness, ethical and societal implications including ESG. Emphasis on integrating AI risk into an EXISTING enterprise risk management framework rather than building a parallel one - integration into risk registers, control taxonomies, and governance programs already in place." },
+    { "name": "Domain 2: AI Life Cycle Risk Management", "weight": "21%", "notes": "SMALLEST DOMAIN - keep proportionate. 2A AI design, development/procurement and documentation. 2B AI model training, testing and validation. 2C AI implementation, maintenance and decommissioning. 2D AI data and asset management. Covers model drift, suitability of algorithms, validation evidence, documentation artifacts, and decommissioning - framed as risk evaluation, not as hands-on ML work." },
+    { "name": "Domain 3: AI Risk Program Management", "weight": "42%", "notes": "HEAVIEST DOMAIN - must get the most chapter time. 3A AI risk scenario identification and assessment (threats, vulnerabilities, attacks). 3B AI risk treatment strategies. 3C AI controls management - evaluation, selection, validation. 3D AI risk metrics, monitoring and reporting, including board-level and management reporting. 3E AI supply chain and third-party risk management, including contracts, data usage and IP terms. 3F AI incident response, BIA, business continuity and disaster recovery for AI systems. Also covers human oversight controls at critical decision points and using AI itself to support the risk program." }
+  ],
+  "extra_guidance": "AAIR launched April 15, 2026 and is one of the newest credentials on the market, so state the alignment to the official three-domain exam content outline explicitly. CRITICAL WEIGHTING NOTE: the domain split is 37/21/42 - Domain 3 (AI Risk Program Management) is the single heaviest area at 42% and Domain 2 is the lightest at 21%. Do not fall into the common trap of over-weighting the lifecycle content; allocate chapters to match the real blueprint. This is a risk and audit audience, not an engineering one - they already know enterprise risk management, so the value is in translating AI-specific risk into the ERM language and artifacts they use daily. Labs should be practitioner exercises: write an AI risk scenario, populate a risk register entry for a model, select and validate a control, design a board-level AI risk metric, review third-party AI contract clauses for data usage and IP exposure. Where NIST AI RMF, ISO/IEC 42001 and the EU AI Act appear, treat them as inputs to the risk program rather than teaching them from scratch. Note the prerequisite requirement (an active CISA, CRISC, CISM, CGEIT, CDPSE, CISSP or one of the other accepted credentials) early in the course so learners are not surprised at registration. Final chapter must be a full 90-question exam simulation walkthrough with scenario-question strategy and 2.5-hour time management."
+}
