@@ -33,6 +33,12 @@ const FLUFF = [
   'moving on to our next topic', 'in today’s video', "in today's video",
 ];
 
+// Questions phrased as multi-select ("Select TWO", "Choose THREE") cannot be
+// represented by this pipeline's single-answer schema (one integer correct_index).
+// They render as unanswerable for the learner and mark only one option correct,
+// so they are blocking regardless of how many options they carry.
+const MULTISELECT = /\bselect\s+(two|three|four|2|3|4)\b|\bchoose\s+(two|three|four|2|3|4)\b|\(select\b|\(choose\b/i;
+
 const issues = [];   // blocking
 const warns = [];    // non-blocking
 const stats = [];
@@ -55,6 +61,7 @@ if (cur) {
   for (const ch of cur.chapters || []) {
     chk((ch.quiz_questions || []).length >= 2, `ch${ch.number}: <2 quiz questions`, false);
     for (const [qi, q] of (ch.quiz_questions || []).entries()) {
+      chk(!MULTISELECT.test(q.question || ''), `ch${ch.number} quiz${qi + 1}: multi-select phrasing ("Select TWO"/"Choose TWO") but schema stores a single correct answer — regenerate as single-answer`);
       chk(Array.isArray(q.options) && q.options.length === 4, `ch${ch.number} quiz${qi + 1}: needs 4 options`);
       chk(Number.isInteger(q.correct_index) && q.correct_index >= 0 && q.correct_index <= 3, `ch${ch.number} quiz${qi + 1}: bad correct_index`);
     }
@@ -87,6 +94,7 @@ for (const ch of (cur && cur.chapters) || []) {
   chk((m.flashcards || []).length >= 8, `ch${ch.number}: only ${(m.flashcards || []).length} flashcards`, false);
   chk((m.cheatsheet || '').length > 200, `ch${ch.number}: cheatsheet too thin`, false);
   for (const [qi, q] of (m.questions || []).entries()) {
+    chk(!MULTISELECT.test(q.question || ''), `ch${ch.number} matQ${qi + 1}: multi-select phrasing ("Select TWO"/"Choose TWO") but schema stores a single correct answer — regenerate as single-answer`);
     chk(Array.isArray(q.options) && q.options.length === 4, `ch${ch.number} matQ${qi + 1}: needs 4 options`);
     chk(Number.isInteger(q.correct_index) && q.correct_index >= 0 && q.correct_index <= 3, `ch${ch.number} matQ${qi + 1}: bad correct_index`);
   }
@@ -99,8 +107,11 @@ let dupes = 0, totalQ = { 1: 0, 2: 0 }, autoFixed = 0;
 for (const k of testKeys) {
   const n = k.startsWith('t1') ? 1 : 2;
   for (const q of state.tests[k] || []) {
-    // auto-heal: extra options beyond 4 when the correct answer is unaffected
-    if (Array.isArray(q.options) && q.options.length > 4 && Number.isInteger(q.correct_index) && q.correct_index < 4) {
+    // auto-heal: extra options beyond 4 when the correct answer is unaffected.
+    // NEVER trim a multi-select question — its other correct answers live in the
+    // options being dropped, so trimming silently destroys the answer key.
+    if (Array.isArray(q.options) && q.options.length > 4 && Number.isInteger(q.correct_index) && q.correct_index < 4
+        && !MULTISELECT.test(q.question || '')) {
       q.options = q.options.slice(0, 4);
       autoFixed++;
     }
@@ -108,6 +119,7 @@ for (const k of testKeys) {
     const sig = (q.question || '').toLowerCase().replace(/\W+/g, ' ').trim().slice(0, 120);
     if (seen.has(sig)) dupes++;
     seen.add(sig);
+    chk(!MULTISELECT.test(q.question || ''), `${k}: multi-select phrasing ("Select TWO"/"Choose TWO") but schema stores a single correct answer — regenerate as single-answer`);
     chk(Array.isArray(q.options) && q.options.length === 4, `${k}: question with !=4 options`);
     chk(Number.isInteger(q.correct_index) && q.correct_index >= 0 && q.correct_index <= 3, `${k}: bad correct_index`);
   }

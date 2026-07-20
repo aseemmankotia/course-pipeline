@@ -164,6 +164,18 @@ QUESTION STANDARDS:
 - Flag questions that are "commonly missed"
 - Include the exam domain each question maps to
 
+SINGLE-ANSWER ONLY — NON-NEGOTIABLE:
+Every question MUST have exactly 4 options and exactly ONE correct answer.
+NEVER write multiple-response questions. Specifically, never use the phrases
+"(Select TWO)", "(Select THREE)", "(Choose TWO)", "(Choose THREE)", "Which
+combination", or any wording that asks the learner for more than one answer.
+The delivery format stores a single correct_index, so a multi-answer question
+renders as unanswerable and marks only one option correct — it is a defect.
+If the real exam tests a concept using a multi-response question, convert it
+into a single-answer question instead: ask which ONE option is correct, or
+which single combination (bundled into one option, e.g. "Delete the key AND
+review CloudTrail") is the best response.
+
 QUESTION TYPES — use this exact distribution:
 - 40% Scenario-based (given situation, choose best option)
 - 30% Service selection (which service fits requirement)
