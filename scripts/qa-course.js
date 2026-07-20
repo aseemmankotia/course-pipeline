@@ -55,6 +55,60 @@ if (cur) {
       if (re.test(val || '')) issues.push(`${field}: overpromising language matching ${re} (Udemy rejects outcome promises)`);
     }
   }
+  // Domain names must match the config's official exam blueprint. The model
+  // sometimes recalls a RETIRED version of the exam (e.g. SCS-C02 domain names
+  // on an SCS-C03 course), which then surfaces on the Udemy landing page,
+  // section headers, and the per-domain practice-test score breakdown.
+  try {
+    const cfgPath = fs.readdirSync(path.join(ROOT, 'course-configs'))
+      .map(f => path.join(ROOT, 'course-configs', f))
+      .find(f => { try { return JSON.parse(fs.readFileSync(f, 'utf8')).slug === args.slug; } catch { return false; } });
+    if (cfgPath) {
+      const officialList = (JSON.parse(fs.readFileSync(cfgPath, 'utf8')).domains || []).map(d => d.name);
+      const official = new Set(officialList);
+      const isSummary = d => /^all domains/i.test(d || '');
+
+      // Strip decoration the model likes to add — a trailing "(17%)" weight or a
+      // " - Subtopic" qualifier — before comparing. Those are cosmetic.
+      const base = d => String(d || '').replace(/\s*\(\s*~?\d+\s*%?\s*\)\s*$/, '').replace(/\s+[-–—]\s+.*$/, '').trim();
+      const numOf = d => (String(d || '').match(/^domain\s*(\d+)/i) || [])[1];
+      const officialByNum = new Map(officialList.map(n => [numOf(n), n]));
+
+      // Cosmetic  = same domain, decorated or more granular  -> warning
+      // Wrong     = maps to a different domain number, or nothing at all -> blocking,
+      //             which is how a retired exam version's names show up.
+      function classify(d) {
+        if (!d || official.has(d) || isSummary(d)) return null;
+        const b = base(d), n = numOf(d);
+        if (official.has(b)) return 'cosmetic';
+        if (n && officialByNum.has(n)) {
+          const canonical = officialByNum.get(n);
+          return base(canonical).toLowerCase() === b.toLowerCase() ? 'cosmetic' : 'wrong';
+        }
+        if (officialList.some(o => base(o).toLowerCase() === b.toLowerCase())) return 'cosmetic';
+        return 'wrong';
+      }
+
+      const wrong = new Map(), cosmetic = new Map();
+      const record = (d, where) => {
+        const c = classify(d); if (!c) return;
+        const m = c === 'wrong' ? wrong : cosmetic;
+        m.set(d, (m.get(d) || 0) + 1);
+        if (c === 'wrong' && where) wrong.set(d, wrong.get(d)); // count only
+      };
+      for (const ch of cur.chapters || []) {
+        if (classify(ch.exam_domain) === 'wrong') issues.push(`ch${ch.number}: exam_domain "${ch.exam_domain}" does not match any official domain for this exam — check it was not recalled from a retired exam version`);
+        const m = (state.materials || {})[`ch${ch.number}`];
+        for (const q of (m && m.questions) || []) record(q.domain);
+      }
+      for (const k of Object.keys(state.tests || {})) for (const q of state.tests[k] || []) record(q.domain);
+
+      for (const [d, n] of wrong) issues.push(`${n} question(s) tagged with domain "${d}", which matches no official domain — wrong names would show in the practice-test score breakdown`);
+      const cosmeticTotal = [...cosmetic.values()].reduce((a, b) => a + b, 0);
+      if (cosmeticTotal) warns.push(`${cosmeticTotal} question(s) use a decorated or more granular domain label (e.g. "${[...cosmetic.keys()][0]}") — harmless, but the score breakdown reads cleaner with the exact domain name`);
+    }
+  } catch { /* config lookup is best-effort */ }
+
   chk(cur.course_title && cur.course_title.length <= 65, `Course title >65 chars (${(cur.course_title || '').length})`, false);
   chk(cur.course_subtitle && cur.course_subtitle.length <= 125, `Subtitle >125 chars`, false);
   chk((cur.chapters || []).length >= 8, `Only ${(cur.chapters || []).length} chapters`);
