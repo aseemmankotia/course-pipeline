@@ -190,8 +190,30 @@ chk(dupes === 0, `${dupes} duplicate questions across practice tests`, false);
 const dist = [0, 0, 0, 0];
 for (const k of testKeys) for (const q of state.tests[k] || []) if (Number.isInteger(q.correct_index)) dist[q.correct_index]++;
 const total = dist.reduce((a, b) => a + b, 0) || 1;
+
+// Check chapter quizzes and materials separately — they are their own pools, and
+// checking only the practice tests once let a 95%-on-B quiz bank through unnoticed.
+for (const [label, pool] of [
+  ['chapter quizzes', (cur && cur.chapters || []).flatMap(ch => ch.quiz_questions || [])],
+  ['chapter materials', (cur && cur.chapters || []).flatMap(ch => ((state.materials || {})[`ch${ch.number}`] || {}).questions || [])],
+]) {
+  const d = [0, 0, 0, 0];
+  for (const q of pool) if (Number.isInteger(q.correct_index) && q.correct_index < 4) d[q.correct_index]++;
+  const n = d.reduce((a, b) => a + b, 0);
+  if (n < 12) continue;
+  const share = Math.max(...d) / n;
+  chk(share < 0.50, `${label}: answer positions badly unbalanced ${d.join('/')} (max ${(share * 100).toFixed(0)}%) — run scripts/balance-answers.js`);
+  chk(share < 0.40, `${label}: answer positions uneven ${d.join('/')} (max ${(share * 100).toFixed(0)}%)`, false);
+}
 const maxShare = Math.max(...dist) / total;
-chk(maxShare < 0.45, `Answer positions unbalanced: ${dist.join('/')} (max ${(maxShare * 100).toFixed(0)}%)`, false);
+// Models bias heavily toward B. Past 50% on one letter, "always guess B" beats
+// chance badly enough that the test bank is misleading rather than merely uneven,
+// so that is blocking. Between 40% and 50% it is a warning worth acting on.
+// Fix with: node scripts/balance-answers.js --slug=<slug>
+chk(maxShare < 0.50, `Answer positions badly unbalanced: ${dist.join('/')} (max ${(maxShare * 100).toFixed(0)}%) — guessing one letter would beat chance; run scripts/balance-answers.js`);
+chk(maxShare < 0.40, `Answer positions uneven: ${dist.join('/')} (max ${(maxShare * 100).toFixed(0)}%) — consider scripts/balance-answers.js`, false);
+const emptySlots = dist.filter(d => total >= 40 && d / total < 0.05).length;
+chk(emptySlots === 0, `${emptySlots} answer position(s) almost never used: ${dist.join('/')} — learners notice a letter that is never correct`, false);
 
 // ---------- report ----------
 const report = `# QA Report — ${cur ? cur.course_title : args.slug}
