@@ -1,0 +1,25 @@
+{
+  "slug": "databricks-genai-engineer-associate",
+  "topic": "Databricks Certified Generative AI Engineer Associate certification exam preparation",
+  "cert_name": "Databricks Certified Generative AI Engineer Associate",
+  "exam_code": "Databricks GenAI Engineer Associate",
+  "exam_vendor": "Databricks",
+  "exam_cost_usd": 200,
+  "exam_format": "45 scored multiple-choice questions, 90 minutes, passing score 70 out of 100; delivered online-proctored. Databricks recommends 6+ months of hands-on experience building generative AI solutions on Databricks.",
+  "question_types": "scenario-based multiple choice (single answer only, exactly 4 options)",
+  "audience": "Data engineers, ML engineers and AI developers who build and deploy production generative AI applications on the Databricks platform. Assumes working Python, SQL and basic ML knowledge, plus familiarity with LLMs and RAG concepts. Not for absolute beginners.",
+  "difficulty": "Intermediate",
+  "chapters_target": 10,
+  "narration_mode": "tts",
+  "author": "Aseem Mankotia",
+  "brand": "TechNuggets Academy",
+  "domains": [
+    { "name": "Domain 1: Design Applications", "weight": "14%", "notes": "Translate business requirements into a GenAI application design: choose the right model for a task, decide between prompt engineering, RAG, fine-tuning and agents, define the components of a compound AI system, select the correct prompt/response format, and scope guardrails and tools an agent needs. Design decisions and trade-offs, not code." },
+    { "name": "Domain 2: Data Preparation", "weight": "14%", "notes": "Prepare source data for RAG: document parsing and extraction, chunking strategies (fixed, recursive, semantic) and how chunk size and overlap affect retrieval, embedding model selection, writing chunks and embeddings to Databricks Vector Search, and Delta tables as the source of truth. Data quality and filtering for retrieval." },
+    { "name": "Domain 3: Application Development", "weight": "30%", "notes": "HEAVIEST DOMAIN. Build the application: construct prompts and prompt templates, implement RAG retrieval with Databricks Vector Search, build multi-stage reasoning chains and agents with LangChain / LlamaIndex on Databricks, use tools and function calling, register models and chains with MLflow (including the MLflow Deployments and langchain flavors), apply prompt-engineering techniques (few-shot, chain-of-thought), and mitigate hallucination through grounding." },
+    { "name": "Domain 4: Assembling and Deploying Applications", "weight": "22%", "notes": "Package and serve: log a chain/model with MLflow, deploy to Databricks Model Serving and Foundation Model APIs (pay-per-token and provisioned throughput), external model endpoints, real-time vs batch inference, and building the end-to-end serving architecture. Configure Vector Search indexes for production and connect the served app to retrieval." },
+    { "name": "Domain 5: Governance", "weight": "8%", "notes": "SMALLEST DOMAIN - keep proportionate. Unity Catalog for governing data, models, functions and Vector Search indexes; access control and lineage for GenAI assets; guardrails and content safety (Databricks AI Guardrails, Llama Guard-style filtering); Personally Identifiable Information handling; legal/licensing considerations for foundation models and training data; masking sensitive data before it reaches a model." },
+    { "name": "Domain 6: Evaluation and Monitoring", "weight": "12%", "notes": "Evaluate and operate: MLflow LLM evaluation, LLM-as-a-judge and metric selection (faithfulness, answer relevance, context precision/recall for RAG), offline vs online evaluation, cost and latency trade-offs across model choices, Databricks Lakehouse Monitoring and inference tables for production monitoring, and detecting drift or degradation in a deployed GenAI app." }
+  ],
+  "extra_guidance": "This is a HANDS-ON Databricks-platform course, not a vendor-neutral GenAI overview - every concept must be grounded in the specific Databricks tools the exam tests: Databricks Vector Search, Model Serving, Foundation Model APIs, MLflow (Deployments, evaluate, langchain/pyfunc flavors), Unity Catalog, Delta tables, and Databricks-hosted LangChain/LlamaIndex workflows. Weight the build heavily toward Domain 3 (Application Development, 30%) and Domain 4 (Deploying, 22%); keep Governance (8%) proportionate. Labs must be concrete notebook-style walkthroughs a learner could follow in a Databricks workspace: create a Vector Search index from a Delta table, build a RAG chain and log it with MLflow, deploy it to Model Serving, run an MLflow LLM evaluation with an LLM judge, attach a Unity Catalog guardrail. Where general GenAI concepts appear (chunking, embeddings, RAG, agents, prompt engineering), always tie them back to how Databricks implements them. Final chapter must be a full 45-question exam simulation walkthrough with scenario-question strategy and 90-minute time management."
+}

@@ -1,0 +1,26 @@
+{
+  "slug": "nvidia-nca-genl-generative-ai-llms",
+  "topic": "NVIDIA-Certified Associate: Generative AI and LLMs (NCA-GENL) certification exam preparation",
+  "cert_name": "NVIDIA-Certified Associate: Generative AI and LLMs",
+  "exam_code": "NCA-GENL",
+  "exam_vendor": "NVIDIA",
+  "exam_cost_usd": 135,
+  "exam_format": "50-51 multiple-choice questions, 60 minutes, online remote-proctored, passing score approximately 70%; certification valid for two years. No formal prerequisites, but basic ML knowledge and some Python experience are recommended.",
+  "question_types": "multiple choice (single answer only, exactly 4 options)",
+  "audience": "Developers, data scientists and ML practitioners entering generative AI who want an NVIDIA-recognised associate credential. Foundational level: assumes some Python and basic machine-learning familiarity but teaches transformer and LLM concepts from the ground up.",
+  "difficulty": "Beginner",
+  "chapters_target": 10,
+  "narration_mode": "tts",
+  "author": "Aseem Mankotia",
+  "brand": "TechNuggets Academy",
+  "domains": [
+    { "name": "Machine Learning and Neural Network Fundamentals", "weight": "~14%", "notes": "Core ML: supervised vs unsupervised vs reinforcement learning, training/validation/test splits, overfitting and regularisation, loss and gradient descent, neural network structure (layers, activations, backpropagation), embeddings and vector representations. The conceptual foundation LLMs build on." },
+    { "name": "Transformer Architecture and Large Language Models", "weight": "~15%", "notes": "Self-attention and multi-head attention, positional encoding, encoder/decoder vs decoder-only architectures, tokenisation, pretraining objectives, context windows, model families and scale, how autoregressive generation works. The architectural core of the exam." },
+    { "name": "Prompt Engineering", "weight": "~13%", "notes": "Zero-shot, few-shot and chain-of-thought prompting, system vs user prompts, prompt templates, controlling output with temperature/top-p/max tokens, structured output, and common prompt-design pitfalls. Practical technique-heavy area." },
+    { "name": "Alignment, Safety and Responsible AI", "weight": "~12%", "notes": "RLHF and instruction tuning, guardrails, bias and toxicity, hallucination and grounding, jailbreaks and prompt injection at an awareness level, and responsible/ethical use of generative models. Ensuring model behaviour is safe and aligned with human intent." },
+    { "name": "Data Preprocessing, Feature Engineering, Analysis and Visualisation", "weight": "~14%", "notes": "Preparing text and data for LLM workflows: cleaning and normalisation, tokenisation and encoding, feature engineering, handling imbalanced or noisy data, exploratory data analysis, and using visualisation to interpret datasets and model behaviour." },
+    { "name": "Experimentation and Evaluation", "weight": "~12%", "notes": "Designing experiments, A/B and ablation testing, evaluation metrics for generative models (perplexity, BLEU/ROUGE, human and LLM-as-judge evaluation), benchmarking, and validating whether a generative solution meets its goal." },
+    { "name": "LLM Integration, Deployment and the NVIDIA Software Stack", "weight": "~20%", "notes": "Building applications with LLMs: RAG at an associate level, Python libraries for LLMs (Hugging Face Transformers, LangChain), APIs and inference, and NVIDIA-specific tooling and optimisation - NeMo, NIM microservices, Triton Inference Server, TensorRT-LLM, and GPU-accelerated inference concepts. The exam is NVIDIA-branded, so NVIDIA tools get real weight here." }
+  ],
+  "extra_guidance": "IMPORTANT ACCURACY NOTE: NVIDIA publishes NCA-GENL as a list of topic areas, NOT as fixed percentage-weighted domains the way AWS, Databricks or ISACA do. The weights in this config are approximate planning estimates (marked with ~) to allocate chapter time sensibly - do NOT state exact percentage weightings as if they were official, and do not claim 'the exam is X% this domain'. Say the course covers the official NCA-GENL topic areas. This is a FOUNDATIONAL, mostly vendor-neutral GenAI/LLM course, but because it is an NVIDIA credential it must give genuine coverage to the NVIDIA software stack (NeMo, NIM, Triton, TensorRT-LLM, GPU-accelerated inference) rather than ignoring it - that is a real differentiator from generic LLM courses. Teach transformers and LLM fundamentals from the ground up since the audience is entry-level. Labs should be approachable conceptual and light-code exercises: tokenise text and inspect embeddings, write and compare zero-shot vs few-shot prompts, sketch a small RAG pipeline, read an attention diagram, choose an evaluation metric for a scenario. Do not assume access to NVIDIA GPUs - keep hands-on portions runnable in a notebook or explained conceptually. Final chapter must be a full 50-question exam simulation walkthrough with 60-minute time-management strategy."
+}
