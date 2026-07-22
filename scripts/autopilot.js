@@ -138,6 +138,21 @@ function quarantineLegacyMedia() {
       }
     }
 
+    // 2.5 auto-heal — deterministically fix the two issues the generator
+    // reliably introduces, BEFORE QA, so recoverable drift never hard-blocks a
+    // run. Both are safe, no model call, and run pre-render so quiz pools (baked
+    // into video) are corrected too:
+    //   • domain tags drift off the config's exact names ("Design Applications"
+    //     vs "Domain 1: Design Applications") — snap them back.
+    //   • correct-answer positions skew hard to B — even them out.
+    // normalize-domains exits non-zero only when a tag can't be mapped at all
+    // (a genuinely wrong/retired exam version), which SHOULD reach QA and block.
+    if (!SKIP.has('generate')) {
+      run('normalize domain tags', process.execPath, ['scripts/normalize-domains.js', `--slug=${course.slug}`], { allowFail: true });
+      run('balance answer positions', process.execPath, ['scripts/balance-answers.js', `--slug=${course.slug}`], { allowFail: true });
+      run('re-assemble after heal', process.execPath, ['scripts/generate-course.js', `--config=${course.config}`, '--stage=assemble'], { allowFail: true });
+    }
+
     // 3. qa
     if (!SKIP.has('qa')) {
       const ok = run('qa audit', process.execPath, ['scripts/qa-course.js', `--slug=${course.slug}`], { allowFail: true });

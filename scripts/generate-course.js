@@ -240,6 +240,12 @@ async function generateJSON(system, user, maxTokens, label) {
 
 const domainsBlock = CFG.domains.map(d => `- ${d.name} (${d.weight}): ${d.notes}`).join('\n');
 
+// The exam_domain / domain fields are surfaced verbatim on the Udemy landing
+// page, section headers, and the per-domain practice-test score breakdown, so
+// they must be the EXACT official names — not paraphrased, weighted, or
+// sub-topic'd. This reminder is appended wherever a domain tag is requested.
+const DOMAIN_RULE = `\n\nDOMAIN NAMING — COPY EXACTLY: whenever you output an "exam_domain" or "domain" field, use one of these strings VERBATIM, character for character, including the "Domain N:" prefix — do NOT paraphrase the title, do NOT append a "(NN%)" weight, do NOT add a " - subtopic" suffix:\n${CFG.domains.map(d => `  "${d.name}"`).join('\n')}\nFor a final review/exam-simulation chapter that spans everything, use exactly "All Domains".`;
+
 // ---------- Stage 1: curriculum ----------
 async function genCurriculum() {
   if (state.curriculum) { console.log('▶ curriculum: already done, skipping'); return; }
@@ -287,7 +293,7 @@ Create exactly ${CFG.chapters_target} chapters. Order chapters by exam-domain or
     }
   ]
 }
-Each chapter needs exactly 2 quiz_questions.`;
+Each chapter needs exactly 2 quiz_questions.${DOMAIN_RULE}`;
   const cur = await generateJSON(system, user, 16000, 'curriculum');
   if (!cur.chapters || cur.chapters.length < CFG.chapters_target - 1) throw new Error('Curriculum missing chapters');
   state.curriculum = cur;
@@ -347,7 +353,11 @@ Respond ONLY with JSON:
   "cheatsheet": "markdown cheat sheet for this chapter: tables of limits/comparisons/commands, ≤600 words"
 }
 ACCURACY: The current year is ${new Date().getFullYear()} — use current model/service facts only; every stated number must be correct at publication time or omitted; never fabricate exam trivia.`;
-    state.materials[key] = await generateJSON(system, user, 14000, `${key} materials`);
+    const mat = await generateJSON(system, user, 14000, `${key} materials`);
+    // Force the canonical domain — this chapter's domain is known, so never
+    // trust the model's paraphrase of it. Guarantees exact domain tags.
+    for (const q of mat.questions || []) q.domain = ch.exam_domain;
+    state.materials[key] = mat;
     save();
   }
 }
@@ -379,7 +389,11 @@ Follow the QUESTION STANDARDS distribution and SCENARIO QUESTION FORMAT.
 Respond ONLY with a JSON array:
 [{"question":"...","options":["...","...","...","..."],"correct_index":<0-3>,"domain":"${pd.domain}","why_correct":"...","why_others_wrong":["...","...","..."],"commonly_missed":true|false}]
 ACCURACY: The current year is ${new Date().getFullYear()} — use current model/service facts only; correct answers must be verifiably correct; never fabricate exam trivia. Randomize which option position holds the correct answer.`;
-      state.tests[key] = await generateJSON(system, user, 12000, key);
+      const batch = await generateJSON(system, user, 12000, key);
+      // Force the canonical domain — this batch's domain is known (pd.domain
+      // comes straight from the config), so never trust the model's paraphrase.
+      for (const q of batch || []) q.domain = pd.domain;
+      state.tests[key] = batch;
       save();
     }
   }
