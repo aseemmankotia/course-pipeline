@@ -65,3 +65,10 @@ roughly a hundred clicks.
 attaches another course's video. Verify after attaching:
 
     GET /api-2.0/users/me/taught-courses/{c}/lectures/{id}/?fields[lecture]=asset&fields[asset]=title,length
+
+## NEVER navigate directly to /course/create/1
+
+Navigating to `https://www.udemy.com/course/create/1` (or /course/manage/create/)
+by URL bounces through `/user/logout/` and DESTROYS the session — it has logged
+the instructor out twice. Always start course creation by clicking the
+**New course** button on `https://www.udemy.com/instructor/courses/` instead.
