@@ -315,7 +315,7 @@ for (const c of COURSES) {
 }
 if (!INCLUDE_ALL) {
   const pending = COURSES.filter(c => !c.live).map(c => c.name.replace(/ \(.*\)$/, ''));
-  cards.push(`<div class="card"><h2>${pending.length} more certs on the way</h2><p>${esc(pending.join(', '))} practice tests go live here as each course completes Udemy review.</p></div>`);
+  if (pending.length) cards.push(`<div class="card"><h2>${pending.length} more certs on the way</h2><p>${esc(pending.join(', '))} practice tests go live here as each course completes Udemy review.</p></div>`);
 }
 fs.writeFileSync(path.join(OUT, 'index.html'), indexPage(cards.join('\n')));
 
