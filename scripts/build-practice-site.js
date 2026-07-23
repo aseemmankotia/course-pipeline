@@ -272,7 +272,9 @@ fs.writeFileSync(path.join(OUT, 'quiz.js'), QUIZ_JS.trim() + '\n');
 
 const cards = [];
 const sitemapPaths = [''];
+const INCLUDE_ALL = process.argv.includes('--all'); // in-review certs have dead Udemy links until approved
 for (const c of COURSES) {
+  if (!c.live && !INCLUDE_ALL) { console.log(`skip ${c.slug}: course in review (use --all to include)`); continue; }
   const stateFile = path.join(ROOT, 'generated', c.slug, 'state.json');
   if (!fs.existsSync(stateFile)) { console.log(`skip ${c.slug}: no state`); continue; }
   const state = JSON.parse(fs.readFileSync(stateFile, 'utf8'));
@@ -300,6 +302,10 @@ for (const c of COURSES) {
   cards.push(`<div class="card"><h2>${esc(c.name)}<span class="badge ${c.live ? 'live' : 'soon'}">${c.live ? 'Course live' : 'Course in review'}</span>${deal}</h2>
   <p>${esc(c.tagline)}</p><a class="go" href="${c.page}.html">Take the free ${qs.length}-question practice test →</a></div>`);
   console.log(`✅ ${c.page}.html (${qs.length} questions, ${domainPages.length} domain pages)`);
+}
+if (!INCLUDE_ALL) {
+  const pending = COURSES.filter(c => !c.live).map(c => c.name.replace(/ \(.*\)$/, ''));
+  cards.push(`<div class="card"><h2>${pending.length} more certs on the way</h2><p>${esc(pending.join(', '))} practice tests go live here as each course completes Udemy review.</p></div>`);
 }
 fs.writeFileSync(path.join(OUT, 'index.html'), indexPage(cards.join('\n')));
 
