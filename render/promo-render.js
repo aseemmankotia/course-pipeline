@@ -730,8 +730,13 @@ async function main() {
 
   if (courseUrl) console.log(`   URL: ${courseUrl}`);
 
-  // Step 1: Script
-  const script = await generatePromoScript(course);
+  // Step 1: Script — reuse an existing script file (so TTS audio generated
+  // from it beforehand stays in sync with the slides), or generate fresh.
+  const scriptFileArg = args.find(a => a.startsWith('--script-file='))?.split('=').slice(1).join('=');
+  const script = scriptFileArg
+    ? fs.readFileSync(path.resolve(PROJECT_ROOT, scriptFileArg), 'utf8').trim()
+    : await generatePromoScript(course);
+  if (scriptFileArg) console.log(`\n📖 Using existing script: ${scriptFileArg}`);
 
   console.log('\n📝 Promo Script:');
   console.log('─'.repeat(50));
