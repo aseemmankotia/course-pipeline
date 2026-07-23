@@ -3,13 +3,23 @@
  * build-practice-site.js — generate a static free-practice-test site from the
  * question banks in generated/<slug>/state.json.
  *
- * The site is the top of the marketing funnel: 12 free questions per cert with
- * real explanations, then a link to the full Udemy course. Sales through the
- * referral links carry a 97% instructor share vs 37% organic, so every student
- * this site converts is worth ~2.6x an organic one.
+ * The site is the top of the marketing funnel: free questions per cert with
+ * real explanations, then a coupon-powered link to the full Udemy course.
+ * Sales through referral/coupon links carry a 97% instructor share vs 37%
+ * organic, so every student this site converts is worth ~2.6x an organic one.
  *
- * Output: site/ (index.html + one page per cert). Pure static HTML/JS/CSS,
- * no dependencies, deployable on GitHub Pages as-is.
+ * Output: site/
+ *   index.html, style.css, quiz.js
+ *   <page>.html                       — 12-question mixed test per cert
+ *   <page>-<domain-slug>.html         — 6-question per-domain pages (live certs, long-tail SEO)
+ *   sitemap.xml, robots.txt
+ *
+ * Conversion features:
+ *   - coupon CTA (code + discounted price) on live-cert pages
+ *   - score-gated reveal: on completion, shows missed-domain gaps + coupon highlight
+ *
+ * NOTE: coupons expire monthly (Udemy 31-day custom-price coupons). When
+ * refreshing coupons, update the `coupon` fields below and rebuild + redeploy.
  *
  * Usage: node scripts/build-practice-site.js
  */
@@ -19,18 +29,25 @@ const path = require('path');
 
 const ROOT = path.join(__dirname, '..');
 const OUT = path.join(ROOT, 'site');
+const SITE_URL = 'https://aseemmankotia.github.io';
 
 // slug -> { file, name, tagline, udemy (referral if live, plain if in review), badge }
 const COURSES = [
   { slug: 'aws-certified-ai-practitioner-aif-c01', name: 'AWS Certified AI Practitioner (AIF-C01)',
     tagline: 'Foundational AWS AI/ML and generative AI', page: 'aws-aif-c01',
-    udemy: 'https://www.udemy.com/course/aws-ai-practitioner-aif-c01-first-attempt-certification/?referralCode=003B046A1F6935BDE16F', live: true },
+    udemy: 'https://www.udemy.com/course/aws-ai-practitioner-aif-c01-first-attempt-certification/?referralCode=003B046A1F6935BDE16F', live: true,
+    coupon: { code: 'FREETEST33', price: '$17.99', list: '$54.99', expires: 'August 22',
+      url: 'https://www.udemy.com/course/aws-ai-practitioner-aif-c01-first-attempt-certification/?couponCode=FREETEST33' } },
   { slug: 'iapp-aigp-ai-governance', name: 'IAPP AI Governance Professional (AIGP)',
     tagline: 'EU AI Act, NIST AI RMF, ISO/IEC 42001', page: 'iapp-aigp',
-    udemy: 'https://www.udemy.com/course/iapp-aigp-certification-eu-ai-act/?referralCode=0B6A80F71D9FCB827C55', live: true },
+    udemy: 'https://www.udemy.com/course/iapp-aigp-certification-eu-ai-act/?referralCode=0B6A80F71D9FCB827C55', live: true,
+    coupon: { code: 'FREETEST33', price: '$34.99', list: '$109.99', expires: 'August 22',
+      url: 'https://www.udemy.com/course/iapp-aigp-certification-eu-ai-act/?couponCode=FREETEST33' } },
   { slug: 'aws-genai-developer-aip-c01', name: 'AWS Certified GenAI Developer (AIP-C01)',
     tagline: 'Bedrock, RAG and production GenAI on AWS', page: 'aws-aip-c01',
-    udemy: 'https://www.udemy.com/course/aws-certified-genai-developer-aip-c01/?referralCode=25D9BA793B6B69835FCB', live: true },
+    udemy: 'https://www.udemy.com/course/aws-certified-genai-developer-aip-c01/?referralCode=25D9BA793B6B69835FCB', live: true,
+    coupon: { code: 'FREETEST33', price: '$17.99', list: '$54.99', expires: 'August 22',
+      url: 'https://www.udemy.com/course/aws-certified-genai-developer-aip-c01/?couponCode=FREETEST33' } },
   { slug: 'comptia-secai-plus-cy0-001', name: 'CompTIA SecAI+ (CY0-001)',
     tagline: 'AI security: MITRE ATLAS, OWASP LLM Top 10', page: 'comptia-secai',
     udemy: 'https://www.udemy.com/course/comptia-secai-cy0-001-certification/', live: false },
@@ -49,18 +66,27 @@ const COURSES = [
 ];
 
 const N_QUESTIONS = 12;
+const N_DOMAIN_QUESTIONS = 6;
 
-// pick questions spread across domains, deterministically
-function pickQuestions(state) {
+const validQ = q => Array.isArray(q.options) && q.options.length === 4 &&
+  Number.isInteger(q.correct_index) && q.correct_index >= 0 && q.correct_index <= 3;
+
+// pool questions by domain from a given test prefix
+function poolByDomain(state, prefix) {
   const byDomain = {};
   for (const k of Object.keys(state.tests || {})) {
-    if (!k.startsWith('t1')) continue;
+    if (!k.startsWith(prefix)) continue;
     for (const q of state.tests[k] || []) {
-      if (!Array.isArray(q.options) || q.options.length !== 4) continue;
-      if (!Number.isInteger(q.correct_index) || q.correct_index < 0 || q.correct_index > 3) continue;
+      if (!validQ(q)) continue;
       (byDomain[q.domain || 'General'] = byDomain[q.domain || 'General'] || []).push(q);
     }
   }
+  return byDomain;
+}
+
+// pick questions spread across domains, deterministically (t1 pool)
+function pickQuestions(state) {
+  const byDomain = poolByDomain(state, 't1');
   const domains = Object.keys(byDomain);
   const picked = [];
   let i = 0;
@@ -73,6 +99,9 @@ function pickQuestions(state) {
 }
 
 const esc = s => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+const domainLabel = d => String(d || '').replace(/^Domain \d+:\s*/i, '').replace(/\s*\(\d+%?\)\s*$/,'').trim();
+const slugify = s => domainLabel(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
 
 const CSS = `
 :root{--bg:#0f172a;--card:#1e293b;--txt:#e2e8f0;--dim:#94a3b8;--acc:#38bdf8;--ok:#4ade80;--bad:#f87171;--btn:#0ea5e9}
@@ -97,68 +126,137 @@ header{padding:28px 0 8px}h1{font-size:1.5rem}h1 a{color:var(--txt);text-decorat
 .cta a{display:inline-block;background:#fff;color:#0f172a;font-weight:700;text-decoration:none;
  padding:11px 22px;border-radius:8px;margin-top:10px}
 .cta p{color:#e0f2fe}
+.cta .strike{text-decoration:line-through;opacity:.7}
+.cta .code{background:rgba(255,255,255,.18);border:1px dashed #fff;border-radius:6px;padding:2px 8px;font-weight:700}
 .score{font-size:1.1rem;font-weight:700;margin:18px 0 6px}
+.gaps{display:none;background:var(--card);border-radius:12px;padding:16px 20px;margin:10px 0;color:var(--dim);font-size:.95rem}
+.gaps strong{color:var(--txt)}
+.domains{margin:26px 0}.domains a{display:inline-block;margin:4px 8px 4px 0;color:var(--acc);text-decoration:none;font-size:.9rem}
 footer{color:var(--dim);font-size:.8rem;margin-top:44px;border-top:1px solid #1e293b;padding-top:16px}
 footer a{color:var(--dim)}
 .badge{display:inline-block;font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:99px;margin-left:8px;vertical-align:middle}
 .badge.live{background:#052e16;color:var(--ok)}.badge.soon{background:#1e3a5f;color:var(--acc)}
+.badge.deal{background:#450a0a;color:#fca5a5}
 `;
 
-function questionJS() {
-  return `
+// shared quiz behavior: per-domain miss tracking + score-gated gap/coupon reveal
+const QUIZ_JS = `
 function answer(btn, qi, oi, correct){
   const qdiv=document.getElementById('q'+qi);
   if(qdiv.dataset.done) return;
   qdiv.dataset.done='1';
   const opts=qdiv.querySelectorAll('.opt');
   opts[correct].classList.add('correct');
-  if(oi!==correct) btn.classList.add('wrong');
+  if(oi!==correct){btn.classList.add('wrong');
+    const d=qdiv.dataset.domain||'General';
+    window.__missed=window.__missed||{}; window.__missed[d]=(window.__missed[d]||0)+1;}
   qdiv.querySelector('.expl').style.display='block';
   window.__score=(window.__score||0)+(oi===correct?1:0);
   window.__answered=(window.__answered||0)+1;
   const total=document.querySelectorAll('.qcard').length;
-  if(window.__answered===total){
-    const s=document.getElementById('score');
-    s.textContent='Your score: '+window.__score+' / '+total+(window.__score>=total*0.7?' — on track. ':' — the full course covers every gap. ');
-    s.scrollIntoView({behavior:'smooth'});
+  if(window.__answered===total) finish(total);
+}
+function finish(total){
+  const s=document.getElementById('score');
+  const pass=window.__score>=total*0.7;
+  s.textContent='Your score: '+window.__score+' / '+total+(pass?' — on track.':' — below the 70% bar most exams set.');
+  const g=document.getElementById('gaps');
+  if(g){
+    const missed=Object.entries(window.__missed||{}).sort((a,b)=>b[1]-a[1]);
+    let html='';
+    if(missed.length){
+      html='<strong>Where you lost points:</strong> '+missed.map(m=>m[0].replace(/^Domain \\d+:\\s*/i,'')+' ('+m[1]+')').join(', ')+'. ';
+      html+='The full course has a dedicated chapter, lab and practice-test coverage for each of these.';
+    } else {
+      html='<strong>Perfect score.</strong> The two full-length timed practice tests in the course are the natural next step.';
+    }
+    const c=g.dataset.coupon;
+    if(c) html+=' Use code <strong>'+c+'</strong> at checkout — the link below applies it automatically.';
+    g.innerHTML=html; g.style.display='block';
   }
+  s.scrollIntoView({behavior:'smooth'});
 }`;
+
+function head(title, desc, canonicalPath) {
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${title}</title>
+<meta name="description" content="${desc}">
+<link rel="canonical" href="${SITE_URL}/${canonicalPath}">
+<link rel="stylesheet" href="style.css"></head><body><div class="wrap">`;
 }
 
-function certPage(course, questions) {
-  const qHtml = questions.map((q, qi) => `
-  <div class="card qcard" id="q${qi}">
+function ctaBlock(course) {
+  if (course.coupon) {
+    const c = course.coupon;
+    return `<div class="cta">
+  <strong>Ready for the real thing?</strong>
+  <p>Full course: two full-length practice tests, video lessons for every exam domain, hands-on labs and detailed explanations.</p>
+  <p><span class="strike">${c.list}</span> <strong>${c.price}</strong> with code <span class="code">${c.code}</span> — valid through ${c.expires}.</p>
+  <a href="${c.url}" rel="sponsored">Get the full course for ${c.price} →</a>
+</div>`;
+  }
+  return `<div class="cta">
+  <strong>Ready for the real thing?</strong>
+  <p>The full course has ${course.live ? 'two full-length practice tests, ' : ''}video lessons for every exam domain, hands-on labs and detailed answer explanations.</p>
+  <a href="${course.udemy}" rel="sponsored">${course.live ? 'Get the full course on Udemy →' : 'See the full course on Udemy →'}</a>
+</div>`;
+}
+
+function questionsHtml(questions) {
+  return questions.map((q, qi) => `
+  <div class="card qcard" id="q${qi}" data-domain="${esc(q.domain || 'General')}">
     <div class="meta">Question ${qi + 1} of ${questions.length}${q.domain ? ' · ' + esc(q.domain) : ''}</div>
     <div class="q">${esc(q.question)}</div>
     ${q.options.map((o, oi) => `<button class="opt" onclick="answer(this,${qi},${oi},${q.correct_index})">${'ABCD'[oi]}. ${esc(o)}</button>`).join('')}
     <div class="expl">${esc(q.explanation || q.why_correct || '')}</div>
   </div>`).join('\n');
+}
 
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Free ${esc(course.name)} Practice Test — ${questions.length} Real Exam-Style Questions</title>
-<meta name="description" content="Free ${esc(course.name)} practice questions with detailed explanations. Test yourself before the real exam.">
-<style>${CSS}</style></head><body><div class="wrap">
+const footerHtml = `<footer>Questions © TechNuggets Academy (Aseem Mankotia). Course links may be referral links.
+Not affiliated with or endorsed by the certification vendor. <a href="index.html">All free practice tests</a></footer>
+</div><script src="quiz.js"></script></body></html>`;
+
+function certPage(course, questions, domainPages) {
+  const domainsNav = domainPages.length
+    ? `<div class="domains"><span class="meta">More free practice by exam domain:</span><br>${
+        domainPages.map(dp => `<a href="${dp.file}">${esc(dp.label)} →</a>`).join('')}</div>`
+    : '';
+  return head(
+    `Free ${esc(course.name)} Practice Test — ${questions.length} Real Exam-Style Questions`,
+    `Free ${esc(course.name)} practice questions with detailed explanations. Test yourself before the real exam.`,
+    `${course.page}.html`) + `
 <header><h1><a href="index.html">TechNuggets Academy</a></h1>
 <p class="sub">Free ${esc(course.name)} practice test — ${questions.length} exam-style questions with explanations. No sign-up.</p></header>
-${qHtml}
+${questionsHtml(questions)}
 <div class="score" id="score"></div>
-<div class="cta">
-  <strong>Ready for the real thing?</strong>
-  <p>The full course has ${course.live ? 'two full-length practice tests, ' : ''}video lessons for every exam domain, hands-on labs and detailed answer explanations.</p>
-  <a href="${course.udemy}" rel="sponsored">${course.live ? 'Get the full course on Udemy →' : 'See the full course on Udemy →'}</a>
-</div>
-<footer>Questions © TechNuggets Academy (Aseem Mankotia). Course links may be referral links.
-Not affiliated with or endorsed by the certification vendor. <a href="index.html">All free practice tests</a></footer>
-</div><script>${questionJS()}</script></body></html>`;
+<div class="gaps" id="gaps"${course.coupon ? ` data-coupon="${course.coupon.code}"` : ''}></div>
+${ctaBlock(course)}
+${domainsNav}
+${footerHtml}`;
+}
+
+function domainPage(course, domain, questions, file) {
+  const label = domainLabel(domain);
+  return head(
+    `Free ${esc(label)} Practice Questions — ${esc(course.name)}`,
+    `${questions.length} free ${esc(label)} practice questions with explanations for the ${esc(course.name)} exam.`,
+    file) + `
+<header><h1><a href="index.html">TechNuggets Academy</a></h1>
+<p class="sub">Free ${esc(course.name)} practice — ${questions.length} questions on <strong>${esc(label)}</strong>, with explanations. No sign-up.
+<a href="${course.page}.html" style="color:var(--acc)">Full ${questions.length >= N_QUESTIONS ? '' : '12-question '}mixed test →</a></p></header>
+${questionsHtml(questions)}
+<div class="score" id="score"></div>
+<div class="gaps" id="gaps"${course.coupon ? ` data-coupon="${course.coupon.code}"` : ''}></div>
+${ctaBlock(course)}
+${footerHtml}`;
 }
 
 function indexPage(cards) {
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Free AI Certification Practice Tests — AWS, ISACA, IAPP, CompTIA, Databricks, NVIDIA</title>
-<meta name="description" content="Free practice questions with explanations for the top AI certifications: AWS AIF-C01, SCS-C03, AIP-C01, IAPP AIGP, ISACA AAIR, CompTIA SecAI+, Databricks GenAI Engineer, NVIDIA NCA-GENL.">
-<style>${CSS}</style></head><body><div class="wrap">
+  return head(
+    'Free AI Certification Practice Tests — AWS, ISACA, IAPP, CompTIA, Databricks, NVIDIA',
+    'Free practice questions with explanations for the top AI certifications: AWS AIF-C01, SCS-C03, AIP-C01, IAPP AIGP, ISACA AAIR, CompTIA SecAI+, Databricks GenAI Engineer, NVIDIA NCA-GENL.',
+    '') + `
 <header><h1>TechNuggets Academy</h1>
 <p class="sub">Free practice tests for the AI certifications employers actually ask for — real exam-style questions with explanations, no sign-up.</p></header>
 ${cards}
@@ -169,18 +267,47 @@ ${cards}
 // ---------- build ----------
 fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(OUT, { recursive: true });
+fs.writeFileSync(path.join(OUT, 'style.css'), CSS.trim() + '\n');
+fs.writeFileSync(path.join(OUT, 'quiz.js'), QUIZ_JS.trim() + '\n');
 
 const cards = [];
+const sitemapPaths = [''];
 for (const c of COURSES) {
   const stateFile = path.join(ROOT, 'generated', c.slug, 'state.json');
   if (!fs.existsSync(stateFile)) { console.log(`skip ${c.slug}: no state`); continue; }
   const state = JSON.parse(fs.readFileSync(stateFile, 'utf8'));
   const qs = pickQuestions(state);
   if (qs.length < 8) { console.log(`skip ${c.slug}: only ${qs.length} usable questions`); continue; }
-  fs.writeFileSync(path.join(OUT, `${c.page}.html`), certPage(c, qs));
-  cards.push(`<div class="card"><h2>${esc(c.name)}<span class="badge ${c.live ? 'live' : 'soon'}">${c.live ? 'Course live' : 'Course in review'}</span></h2>
+
+  // per-domain long-tail pages (live certs only, drawn from t2 so they don't duplicate the main page)
+  const domainPages = [];
+  if (c.live) {
+    const t2 = poolByDomain(state, 't2');
+    for (const d of Object.keys(t2)) {
+      if (t2[d].length < N_DOMAIN_QUESTIONS) continue;
+      const file = `${c.page}-${slugify(d)}.html`;
+      const dq = t2[d].slice(0, N_DOMAIN_QUESTIONS);
+      fs.writeFileSync(path.join(OUT, file), domainPage(c, d, dq, file));
+      domainPages.push({ file, label: domainLabel(d) });
+      sitemapPaths.push(file);
+      console.log(`  ✅ ${file} (${dq.length} questions)`);
+    }
+  }
+
+  fs.writeFileSync(path.join(OUT, `${c.page}.html`), certPage(c, qs, domainPages));
+  sitemapPaths.push(`${c.page}.html`);
+  const deal = c.coupon ? `<span class="badge deal">${c.coupon.price} coupon</span>` : '';
+  cards.push(`<div class="card"><h2>${esc(c.name)}<span class="badge ${c.live ? 'live' : 'soon'}">${c.live ? 'Course live' : 'Course in review'}</span>${deal}</h2>
   <p>${esc(c.tagline)}</p><a class="go" href="${c.page}.html">Take the free ${qs.length}-question practice test →</a></div>`);
-  console.log(`✅ ${c.page}.html (${qs.length} questions)`);
+  console.log(`✅ ${c.page}.html (${qs.length} questions, ${domainPages.length} domain pages)`);
 }
 fs.writeFileSync(path.join(OUT, 'index.html'), indexPage(cards.join('\n')));
-console.log(`✅ index.html (${cards.length} certs)\n→ ${OUT}`);
+
+// sitemap + robots
+fs.writeFileSync(path.join(OUT, 'sitemap.xml'),
+  `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
+  sitemapPaths.map(p => `  <url><loc>${SITE_URL}/${p}</loc><changefreq>weekly</changefreq><priority>${p === '' ? '1.0' : p.includes('-') && !COURSES.some(c => p === c.page + '.html') ? '0.7' : '0.9'}</priority></url>`).join('\n') +
+  `\n</urlset>\n`);
+fs.writeFileSync(path.join(OUT, 'robots.txt'), `User-agent: *\nAllow: /\nSitemap: ${SITE_URL}/sitemap.xml\n`);
+
+console.log(`✅ index.html (${cards.length} certs) + sitemap.xml + robots.txt\n→ ${OUT}`);
