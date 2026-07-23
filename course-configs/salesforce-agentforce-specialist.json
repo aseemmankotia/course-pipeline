@@ -1,0 +1,24 @@
+{
+  "slug": "salesforce-agentforce-specialist",
+  "topic": "Salesforce Certified Agentforce Specialist certification exam preparation",
+  "cert_name": "Salesforce Certified Agentforce Specialist",
+  "exam_code": "Agentforce Specialist",
+  "exam_vendor": "Salesforce",
+  "exam_cost_usd": 200,
+  "exam_format": "60 multiple-choice/multiple-select questions, 105 minutes, passing score 73%, $200 first attempt / $100 retake, online proctored or test center. No prerequisites. Certification maintained annually via a free Trailhead maintenance module.",
+  "question_types": "multiple choice (single answer, exactly 4 options) with a minority of multiple-select scenarios",
+  "audience": "Salesforce admins, consultants and developers who configure, deploy and manage Agentforce AI agents. Assumes working familiarity with Salesforce Lightning Experience but no coding or AI/ML background. Hands-on Agentforce experience is the single biggest predictor of passing.",
+  "difficulty": "Intermediate",
+  "chapters_target": 10,
+  "narration_mode": "tts",
+  "author": "Aseem Mankotia",
+  "brand": "TechNuggets Academy",
+  "domains": [
+    { "name": "AI Agents", "weight": "35%", "notes": "The heart of the exam. The four Agentforce building blocks: agents, topics, actions, and the Atlas reasoning engine that selects topics/actions at runtime. Configuring standard and custom topics and agent actions per agent type; managing deterministic behavior with filters and variables; Agent User security concept and how it applies to Employee, Service and Sales agents; choosing the right agent type for a scenario; connecting agents to channels (digital experience sites, email, Slack)." },
+    { "name": "Prompt Engineering", "weight": "20%", "notes": "Prompt Builder end to end: when it is the appropriate tool, user roles needed to manage vs execute prompt templates, template types including field generation and flex, the create-activate-execute lifecycle, grounding techniques (record fields, related lists, Data Cloud), and prompt-writing best practices: clear/specific instructions, grounding in Salesforce data, output format/tone constraints, guardrails, role assignment, reusability, iterate-and-test, one task per prompt." },
+    { "name": "Data Cloud for Agentforce", "weight": "20%", "notes": "Agentforce Data Library types (Knowledge articles vs uploaded files) and considerations; improving responses with unstructured data via chunking and indexing; Data Cloud retrievers (individual vs ensemble) and how retrievers feed vector-database context into prompts; choosing search type per scenario: keyword (exact match, structured data), vector (semantic, unstructured), hybrid (both)." },
+    { "name": "Development Lifecycle", "weight": "20%", "notes": "Agentforce Testing Center: batch-testing agent responses for accuracy, reliability and compliance before go-live; deployment considerations moving an agent from sandbox to production (metadata, permissions, data integrity, minimizing disruption); post-deployment monitoring and adoption management: usage tracking, feedback loops, continuous improvement." },
+    { "name": "Multi-Agent Interoperability", "weight": "5%", "notes": "Small but new in the 2026 exam refresh: purpose and use cases of Model Context Protocol (MCP) for securely sharing context with external models/tools inside Salesforce's trust boundary; agent-to-agent protocol for agents collaborating (e.g. Sales Agent handing off to Service Agent); when to use the Agent API to connect custom or external applications." }
+  ],
+  "extra_guidance": "Weights above ARE the official Salesforce exam-guide weights - state them confidently. This is a CONFIGURATION exam, not a coding exam: every scenario should be solved with declarative Salesforce tools (Agent Builder, Prompt Builder, Data Libraries, Testing Center), never Apex-first. Lean hard on scenario-based questions in Salesforce's house style: three plausible answers where one is fictional, one works but violates best practice, and one is the best-practice answer - teach students to spot that pattern. Always use current product names: Agentforce (not Einstein Copilot - renamed), Atlas reasoning engine, Einstein Trust Layer (zero-data-retention, toxicity detection, data masking - cover inside AI Agents/security context). Distinguish Employee vs Service vs Sales agent types crisply since scenario questions hinge on it. Labs: design a Service Agent topic+action set for a scenario, write a grounded Prompt Builder template, choose retriever + search type for given data shapes, plan a sandbox-to-production deployment checklist, and a Testing Center evaluation plan. Note the cert renews annually via a free maintenance module. Final chapter must be a full 60-question exam simulation walkthrough with 105-minute time-management strategy and the 73% pass bar."
+}
