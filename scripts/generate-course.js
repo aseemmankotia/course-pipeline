@@ -370,7 +370,11 @@ async function genTests() {
   // never overflow the output token limit.
   const perDomain = [];
   for (const d of CFG.domains) {
-    const weightNum = parseInt(String(d.weight).replace(/[^0-9]/g, ''), 10) || 20; // tolerate "~13%" etc.
+    // Parse "~13%", "38%", AND ranges like "40-45%" (midpoint). The old
+    // digit-strip turned "40-45%" into 4045 → a 1,800-question test plan and a
+    // runaway token burn (2026-07-25). Cap at 100 as a final guard.
+    const nums = (String(d.weight).match(/\d+(\.\d+)?/g) || []).map(Number);
+    const weightNum = Math.min(100, nums.length ? nums.reduce((a, b) => a + b, 0) / nums.length : 20);
     const total = Math.max(3, Math.round(45 * weightNum / 100));
     let remaining = total, part = 1;
     while (remaining > 0) {
