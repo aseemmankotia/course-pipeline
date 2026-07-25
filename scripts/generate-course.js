@@ -524,6 +524,9 @@ ${cur.course_subtitle}
 ## Description
 ${cur.course_description}
 
+AI content disclosure: This course was produced with the assistance of artificial intelligence tools. Lecture narration is AI-voice generated, and lecture scripts, slides, and practice questions were drafted with AI assistance, then reviewed and curated by the instructor for technical accuracy and alignment with the official ${CFG.exam_code} exam guide.
+<!-- REQUIRED by Udemy review: the AI disclosure paragraph above must be pasted into the course description. Course images must contain NO TEXT (Udemy rejects them; logo-only is the sole exception). -->
+
 ## What you'll learn
 ${(cur.skills_learned || []).map(s => `- ${s}`).join('\n')}
 
