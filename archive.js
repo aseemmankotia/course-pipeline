@@ -215,6 +215,10 @@ async function createArchive(courseData) {
   };
 
   function add(content, name) {
+    if (content == null) return; // skip missing materials rather than crashing
+    if (typeof content !== 'string' && !Buffer.isBuffer(content)) {
+      content = JSON.stringify(content, null, 2); // some courses store materials as parsed JSON
+    }
     archive.append(content, { name: `${archiveName}/${name}` });
     totalFiles++;
   }
