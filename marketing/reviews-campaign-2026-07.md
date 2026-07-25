@@ -164,3 +164,37 @@ Both drafts completed and submitted (Udemy review ~2 business days):
   per-option + overall explanations included, bulk-uploaded to Udemy (upload REPLACES the
   question bank) and published on both tests before go-live.
 Once live: add both to the weekly FREEREVIEW10 rotation + r/salesforce, r/ClaudeAI, r/LLMDevs value-first posts (rules pre-checked for r/AWSCertifications pattern; check these subs' rules before first post).
+
+---
+
+## Run log — 2026-07-25 (scheduled task, run 2)
+
+**Coupons:** FREEREVIEW10 (created 07-24, expire 07/29 ~9 PM PDT) verified active
+via spot-check on AIF-C01, Databricks, NCA-GENL — all Enabled, all **0/10 redeemed**.
+No regeneration needed (created <24h ago). Links in the LIVE section above remain
+current. ⚠️ Zero redemptions across checks because the links have never been
+distributed — announcements/posts still await Aseem's approval; without it the
+coupons will expire 07/29 unused, same as this batch.
+
+**Course status (/instructor/courses/):** all 8 campaign courses LIVE.
+- Salesforce Agentforce (7271281): Submitted for review — not live.
+- Claude CCDV-F (7271283): In review, submitted 07/25 — not live.
+- 🚨 NEW: "AI Unlocked: Artificial Intelligence & Machine Learning" now shows
+  **BANNED** (outside campaign scope, but Aseem should investigate — bans can
+  carry account-level policy strikes).
+- "Advanced IoT Architecture" shows UNPUBLISHED (1.00 rating).
+
+**Educational announcements:** NOT sent — approval from Aseem still outstanding
+(required before first send; he was not present for this run). Drafts remain ready;
+0/4 monthly budget used on all 8 courses.
+
+**Social posts:** NOT posted — same outstanding approval. Timing note:
+r/AWSCertifications allows promo **Mondays only** → next window Mon 07/27; current
+coupons still valid then (expire 07/29). If Aseem approves by Monday, post same day.
+r/comptia and r/dataengineering remain no-post (rules ban promos/giveaways).
+
+**Decisions needed from Aseem:**
+1. Approve educational announcements (8 courses, template above)?
+2. Approve LinkedIn post + r/AWSCertifications Monday post?
+3. Investigate BANNED status on "AI Unlocked".
+4. Add AZ-900, NCA-AIIO, AI-901 to campaign scope?
