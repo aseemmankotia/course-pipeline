@@ -384,7 +384,17 @@ async function genTests() {
       const key = `t${testNum}:${pd.domain}${pd.part ? `:part${pd.part}` : ''}`;
       if (state.tests[key]) { console.log(`   ↷ ${key} done, skipping`); continue; }
       const system = `${MASTER}\n\nYou are generating PRACTICE TEST questions. Respond with ONLY a valid JSON array.`;
+      // Anchor every batch to the actual certification. Without this, obscure
+      // exam codes + generically named domains (e.g. CCDV-F "Applications and
+      // Integration") made the model pattern-match to OTHER vendors' cert
+      // questions — the July 2026 CCDV-F test bank shipped with AWS/GCP/Azure
+      // questions this way.
+      const domainCfg = CFG.domains.find(dd => dd.name === pd.domain) || {};
       const user = `Generate ${pd.count} exam-quality ${CFG.exam_code} practice-test questions for domain "${pd.domain}" (practice test #${testNum}${testNum === 2 ? ' — make these HARDER and fully distinct from a typical first test' : ''}${pd.part ? `, question set ${pd.part} — cover different sub-topics than other sets for this domain` : ''}).
+CERT: ${CFG.cert_name} (${CFG.exam_code}) by ${CFG.exam_vendor}
+COURSE TOPIC: ${CFG.topic}
+DOMAIN SCOPE: ${domainCfg.notes || pd.domain}
+STAY ON-CERT: every question must test ${CFG.exam_vendor} ${CFG.cert_name} material as scoped above. Do NOT write questions about other vendors' platforms or certifications unless the domain scope explicitly covers them.
 Follow the QUESTION STANDARDS distribution and SCENARIO QUESTION FORMAT.
 Respond ONLY with a JSON array:
 [{"question":"...","options":["...","...","...","..."],"correct_index":<0-3>,"domain":"${pd.domain}","why_correct":"...","why_others_wrong":["...","...","..."],"commonly_missed":true|false}]
