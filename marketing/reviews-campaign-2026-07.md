@@ -159,9 +159,8 @@ findings:
 Both drafts completed and submitted (Udemy review ~2 business days):
 - Salesforce Agentforce Specialist (7271281): 10 lectures / 2h51m attached, 2×46-question practice tests, $199.99.
 - Claude CCDV-F (7271283): 11 lectures / 3h12m attached, $54.99.
-  ⚠️ OPEN ITEM: CCDV-F practice tests contain off-cert (AWS/GCP/Azure) questions from a
-  generation bug (fixed in scripts/generate-course.js). Aseem to run:
-  `node scripts/generate-course.js --config=course-configs/anthropic-claude-developer-foundations.json`
-  (regenerates only the 16 cleared batches) → then balance-answers + make-practice-test-csvs.py →
-  replace questions in both Udemy practice tests BEFORE course goes live.
+  ✅ RESOLVED 2026-07-25: practice tests rebuilt (regen with fixed prompt + 3 hand-written
+  replacements for surviving off-cert questions), answer positions balanced 13/13/12/12,
+  per-option + overall explanations included, bulk-uploaded to Udemy (upload REPLACES the
+  question bank) and published on both tests before go-live.
 Once live: add both to the weekly FREEREVIEW10 rotation + r/salesforce, r/ClaudeAI, r/LLMDevs value-first posts (rules pre-checked for r/AWSCertifications pattern; check these subs' rules before first post).
