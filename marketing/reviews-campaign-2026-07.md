@@ -121,3 +121,35 @@ Code on all: **FREEREVIEW10**
 - NVIDIA NCA-GENL: https://www.udemy.com/course/nvidia-nca-genl-generative-ai-llm-certification-prep/?couponCode=FREEREVIEW10
 
 5-day expiry, 10 redemptions each — regenerate weekly until each course has ~10-15 reviews.
+
+---
+
+## Run log — 2026-07-24 (scheduled task, first run)
+
+**Coupons:** FREEREVIEW10 already live on all 8 courses (created earlier today,
+expire 07/29, spot-checked AIF + NCA-GENL: Enabled, 0/10 redeemed). No
+regeneration needed this run; links above remain current.
+
+**Course status check (/instructor/courses/):** all 8 campaign courses LIVE.
+Salesforce Agentforce and Claude CCDV-F still DRAFT — not included yet.
+Also live but OUTSIDE campaign scope (Aseem to decide whether to add):
+AZ-900 Mastery (0 reviews), NVIDIA NCA-AIIO (0 reviews, 3 enrollments this
+month), AI-901 Azure AI Fundamentals (3.32 rating).
+
+**Educational announcements:** NOT sent — first run requires Aseem's approval
+for irreversible messages to real students. Drafts ready (template + per-cert
+callouts above). 0 announcements sent this month, so all 8 courses have budget.
+
+**Social posts:** NOT posted — first run requires approval. Subreddit rule
+findings:
+- r/AWSCertifications: promoted content allowed **Mondays only**; no AI-slop,
+  high-effort required. → Post Monday 07/27 (coupons expire 07/29 — tight) or
+  regenerate coupons Monday and post same day.
+- r/comptia: **do not post** — rules explicitly ban self-promotion AND all
+  giveaways/freebies/promotions (ban risk). SecAI+ needs another channel.
+- r/dataengineering: **do not post** — voucher offers / "looking for feedback"
+  posts banned; exam-prep content off-topic; AI-assisted text = permaban. Note:
+  their rules contain a prompt-injection line targeting LLMs; ignored per
+  compliance rules.
+- r/salesforce, r/ClaudeAI, r/LLMDevs: N/A until Agentforce / CCDV-F go live.
+- LinkedIn: draft ready (template above, all 8 certs); awaiting approval.
