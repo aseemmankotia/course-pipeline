@@ -1,0 +1,22 @@
+{
+  "slug": "nvidia-nca-aiio-refresh-2026",
+  "topic": "NVIDIA-Certified Associate: AI Infrastructure and Operations (NCA-AIIO) certification exam preparation - refreshed 2026 edition",
+  "cert_name": "NVIDIA-Certified Associate: AI Infrastructure and Operations",
+  "exam_code": "NCA-AIIO",
+  "exam_vendor": "NVIDIA",
+  "exam_cost_usd": 135,
+  "exam_format": "50 multiple-choice questions, 90 minutes, online remote-proctored, passing score approximately 70%; certification valid for two years. No formal prerequisites; aimed at IT professionals and operations teams entering AI infrastructure.",
+  "question_types": "multiple choice (single answer only, exactly 4 options)",
+  "audience": "IT professionals, system administrators, DevOps engineers, data center operators, and infrastructure engineers who need to deploy, operate, and support AI workloads on NVIDIA-accelerated infrastructure. Entry level: assumes general IT/server familiarity but no prior AI or GPU experience.",
+  "difficulty": "Beginner",
+  "chapters_target": 8,
+  "narration_mode": "tts",
+  "author": "Aseem Mankotia",
+  "brand": "TechNuggets Academy",
+  "domains": [
+    { "name": "Essential AI Knowledge", "weight": "38%", "notes": "The NVIDIA AI ecosystem and software stack (CUDA, cuDNN, TensorRT, NGC catalog, NVIDIA AI Enterprise), core AI/ML/DL concepts, training vs inference workloads, GPU vs CPU architecture comparison and why GPUs accelerate AI, AI adoption patterns and industry use cases, model evaluation basics (precision/recall/F1, PR vs ROC curves), data analysis and visualization fundamentals." },
+    { "name": "AI Infrastructure", "weight": "40%", "notes": "The heaviest domain: GPU server architectures (DGX systems, HGX platforms), multi-GPU interconnects (NVLink, NVSwitch), networking for AI clusters (InfiniBand vs Ethernet, RDMA, BlueField DPUs), storage requirements for training workloads, power and cooling considerations in AI data centers, virtualization and multi-tenancy (MIG, vGPU), sizing and capacity planning for training vs inference, on-prem vs cloud vs hybrid deployment patterns." },
+    { "name": "AI Operations", "weight": "22%", "notes": "Cluster orchestration and scheduling (Kubernetes, Slurm, NVIDIA Base Command), GPU monitoring and management tools (nvidia-smi, DCGM), MLOps lifecycle concepts, job scheduling and resource allocation, troubleshooting common GPU/cluster issues (thermal throttling, driver mismatches, OOM errors), optimizing utilization, and operational best practices for production AI workloads." }
+  ],
+  "extra_guidance": "This is a REFRESHED 2026 EDITION of an existing TechNuggets course - marketing angle: 'rebuilt with full domain coverage and two full-length practice tests'. The three domains and weights (Essential AI Knowledge 38%, AI Infrastructure 40%, AI Operations 22%) are from NVIDIA's official exam blueprint - use them verbatim. The previous course was 5 lectures/2 hours and too shallow; this refresh must cover each domain deeply enough that a sysadmin with no AI background can answer scenario questions. Keep it vendor-accurate: DGX/HGX, NVLink/NVSwitch, InfiniBand, BlueField, MIG, vGPU, Base Command, DCGM, NGC, NVIDIA AI Enterprise are all fair game and differentiate this from generic AI courses. Do not assume access to NVIDIA GPUs - labs should be conceptual walkthroughs, architecture-diagram reading, capacity-planning worksheets, and free-tier explorations (NGC catalog browsing, nvidia-smi output interpretation from provided samples). Cover classic exam traps: training vs inference infrastructure sizing, NVLink vs PCIe bandwidth reasoning, MIG vs vGPU use cases, InfiniBand vs Ethernet trade-offs, when Slurm vs Kubernetes fits. Final chapter must be a full 50-question exam simulation walkthrough with 90-minute time-management strategy."
+}
