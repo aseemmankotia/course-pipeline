@@ -72,6 +72,19 @@ const COURSES = [
     title: 'NVIDIA NCA-GENL: the entry GenAI cert nobody talks about #Shorts',
     tags: 'nvidia,nca-genl,generative ai,llm,certification',
     udemy: 'https://www.udemy.com/course/nvidia-nca-genl-generative-ai-llm-certification-prep/?referralCode=8B242DD8B0A1E0E31860', live: true },
+  // 2026 refreshes of the three older live courses (URLs verified via Udemy API 2026-07-26).
+  { slug: 'az-900-azure-fundamentals-refresh-2026', short: 'AZ-900 Azure Fundamentals (2026 refresh)',
+    title: 'AZ-900 changed in January 2026 — what the exam covers now #Shorts',
+    tags: 'azure,az-900,microsoft,cloud,certification,exam prep',
+    udemy: 'https://www.udemy.com/course/azure-fundamentals-mastery-az-900-certification-journey/', live: true },
+  { slug: 'nvidia-nca-aiio-refresh-2026', short: 'NVIDIA NCA-AIIO (2026 refresh)',
+    title: 'NVIDIA NCA-AIIO: the AI infrastructure cert explained #Shorts',
+    tags: 'nvidia,nca-aiio,ai infrastructure,ai operations,certification',
+    udemy: 'https://www.udemy.com/course/mastering-nvidia-ai-infrastructure-operations-nca-aiio/', live: true },
+  { slug: 'ai-901-azure-ai-fundamentals-refresh-2026', short: 'AI-901 Azure AI Fundamentals (2026 refresh)',
+    title: 'AI-901 replaced AI-900 — the new Azure AI fundamentals cert #Shorts',
+    tags: 'azure,ai-901,ai fundamentals,microsoft foundry,certification',
+    udemy: 'https://www.udemy.com/course/ai-901-azure-ai-fundamentals-your-gateway-to-microsoft-ai/', live: true },
 ];
 
 // EU AI Act urgency short — pre-written script, rides on the AIGP course data.
