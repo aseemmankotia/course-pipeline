@@ -21,6 +21,9 @@
 
 - Never navigate directly to `udemy.com/course/create/1` — kills the instructor session.
   Always go through `/instructor/courses/`.
+- Never navigate to `udemy.com/instructor/user/edit-videos/` — it redirects through
+  `/user/logout/` and LOGS THE SESSION OUT (learned 2026-07-26). To check uploaded
+  videos, use the course's curriculum page → "Add from library" instead.
 - Practice-test **Bulk upload REPLACES the entire question bank** (it does not append).
   CSVs come from `python3 scripts/make-practice-test-csvs.py` (repo-relative paths).
 - Free "Open" coupons: 5-day expiry, 10 redemptions, monthly budget per course —
