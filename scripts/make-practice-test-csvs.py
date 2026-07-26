@@ -5,6 +5,9 @@ COURSES = {
   'anthropic-claude-developer-foundations': 'ccdvf',
   'comptia-secai-plus-cy0-001': 'secai',
   'aws-genai-developer-aip-c01': 'aip',
+  'ai-901-azure-ai-fundamentals-refresh-2026': 'ai901',
+  'az-900-azure-fundamentals-refresh-2026': 'az900',
+  'nvidia-nca-aiio-refresh-2026': 'aiio',
 }
 # Paths are repo-relative (derived from this script's location) so the script
 # runs on any machine — a previous session had hardcoded its own sandbox mount.
