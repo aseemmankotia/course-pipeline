@@ -198,3 +198,17 @@ r/comptia and r/dataengineering remain no-post (rules ban promos/giveaways).
 2. Approve LinkedIn post + r/AWSCertifications Monday post?
 3. Investigate BANNED status on "AI Unlocked".
 4. Add AZ-900, NCA-AIIO, AI-901 to campaign scope?
+
+## Update — 2026-07-26: AZ-900 + NCA-AIIO refreshes LIVE on Udemy
+
+- AZ-900 (7202905): retitled "AZ-900 Azure Fundamentals 2026: Complete Exam Preparation".
+  4 domain sections, 9 new lectures (3h04m), 2×44Q practice tests (65 min / 70%),
+  refreshed description + AI disclosure + text-free image. Old 5 lectures deleted.
+- NCA-AIIO (7156661): 4 domain sections, 8 new lectures (2h43m), 2×45Q practice tests,
+  new subtitle (removed "Pass the..." phrasing), refreshed description + disclosure +
+  text-free image. Old 5 lectures deleted.
+- Note: lecture order within NCA-AIIO's first two sections is slightly non-canonical
+  (fundamentals-first); optional manual drag to fix.
+- AI-901 refresh still pending video render on Aseem's machine (content is QA-passed).
+- Next: add both refreshed courses to the weekly FREEREVIEW10 rotation + "refreshed"
+  educational announcement (announcement still awaiting first-run approval).
