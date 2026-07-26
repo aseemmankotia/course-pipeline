@@ -227,3 +227,10 @@ r/comptia and r/dataengineering remain no-post (rules ban promos/giveaways).
 - Portfolio state: AZ-900, NCA-AIIO, AI-901 all refreshed and live. Agentforce + CCDV-F
   still in Udemy review. Coupon/announcement rotation for refreshed courses still
   awaiting Aseem's first-run approval.
+
+## Update — 2026-07-26 (evening): refresh promo Shorts on YouTube
+
+- YouTube token re-authorized by Aseem (was expired/revoked).
+- 3 refresh Shorts uploaded public at 17:36 UTC: AZ-900, NCA-AIIO, AI-901 —
+  each linking to its verified Udemy landing page. Older 8 course Shorts
+  untouched (upload markers).
