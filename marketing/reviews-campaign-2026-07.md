@@ -254,3 +254,14 @@ r/comptia and r/dataengineering remain no-post (rules ban promos/giveaways).
 **Note:** educational announcements disallow Udemy links, so coupons are NOT in the
 announcements — distribute via LinkedIn/Reddit posts (still awaiting separate approval)
 or direct shares. Coupons expire 07/31; regenerate weekly per playbook.
+
+## Update — 2026-07-26 (Sunday ~11 AM): LinkedIn post live
+
+- Aseem approved social distribution and asked to shift the window to Sunday morning.
+- LinkedIn: posted from Aseem's profile ("Post successful"). Leads with the three 2026
+  rebuilds (AZ-900 / AI-901 / NCA-AIIO), FREEREVIEW10 honest-review framing, mentions
+  the code works on the other 8 live courses, comment/DM CTA, cert hashtags.
+- r/AWSCertifications: NOT shifted to Sunday — sub rules allow promoted content
+  Mondays only (ban risk). Post goes out Monday 07/27; the AWS-course coupons
+  (created 07/24) remain valid through 07/29, refreshed-course coupons through 07/31.
+- r/comptia and r/dataengineering remain no-post per sub rules.
