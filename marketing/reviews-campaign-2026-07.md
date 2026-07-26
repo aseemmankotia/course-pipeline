@@ -234,3 +234,23 @@ r/comptia and r/dataengineering remain no-post (rules ban promos/giveaways).
 - 3 refresh Shorts uploaded public at 17:36 UTC: AZ-900, NCA-AIIO, AI-901 —
   each linking to its verified Udemy landing page. Older 8 course Shorts
   untouched (upload markers).
+
+## Run — 2026-07-26 (evening): refreshed courses join the campaign (Aseem-approved)
+
+**FREEREVIEW10 coupons created (Free: Open, 10 seats, expire 07/31 ~10:45 AM PDT):**
+- AZ-900: https://www.udemy.com/course/azure-fundamentals-mastery-az-900-certification-journey/?couponCode=FREEREVIEW10
+- NCA-AIIO: https://www.udemy.com/course/mastering-nvidia-ai-infrastructure-operations-nca-aiio/?couponCode=FREEREVIEW10
+- AI-901: https://www.udemy.com/course/ai-901-azure-ai-fundamentals-your-gateway-to-microsoft-ai/?couponCode=FREEREVIEW10
+
+**Educational announcements sent (1 of 4 monthly budget used per course):**
+- All 3 refreshed courses, submitted ~11:00 AM PDT (Udemy review pending before delivery).
+- Format: refresh news + what's included (teaching value) → 3-point readiness checklist
+  → soft honest-review footer. No Udemy links (not permitted in educational
+  announcements), no coupon mention, no positive-rating incentive. AI-901 version also
+  acknowledges the A/V-sync fix.
+- First-run approval satisfied: Aseem explicitly approved announcements + coupon
+  rotation for the refreshed courses this session.
+
+**Note:** educational announcements disallow Udemy links, so coupons are NOT in the
+announcements — distribute via LinkedIn/Reddit posts (still awaiting separate approval)
+or direct shares. Coupons expire 07/31; regenerate weekly per playbook.
