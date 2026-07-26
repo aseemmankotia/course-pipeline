@@ -212,3 +212,18 @@ r/comptia and r/dataengineering remain no-post (rules ban promos/giveaways).
 - AI-901 refresh still pending video render on Aseem's machine (content is QA-passed).
 - Next: add both refreshed courses to the weekly FREEREVIEW10 rotation + "refreshed"
   educational announcement (announcement still awaiting first-run approval).
+
+## Update — 2026-07-26 (later): AI-901 refresh LIVE — all 3 refreshes complete
+
+- AI-901 (7150221): full swap done. 3 domain sections (Identify AI Concepts 40-45% /
+  Implement with Microsoft Foundry 55-60% / Exam Simulation), 9 new lectures (2h36m),
+  2×45Q practice tests (65 min / 70% / randomized) bulk-uploaded + published, all 9 old
+  lectures + old Introduction section deleted, subtitle de-promised ("Pass the..." →
+  "Exam-focused preparation..."), new description with AI disclosure, text-free image.
+- Replied (updated existing response) to Saif Ur Rahman's 1★ A/V-sync review noting the
+  full 2026 re-record + invitation to honest re-review.
+- Promo videos: all 3 refresh promos + Shorts rendered locally (promo-all.js slug fix);
+  YouTube upload NOT run — awaiting Aseem's explicit go (public posts).
+- Portfolio state: AZ-900, NCA-AIIO, AI-901 all refreshed and live. Agentforce + CCDV-F
+  still in Udemy review. Coupon/announcement rotation for refreshed courses still
+  awaiting Aseem's first-run approval.
