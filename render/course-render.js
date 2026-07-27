@@ -259,6 +259,18 @@ async function main() {
 // ── Step 1: Split script into sections ───────────────────────────────────────
 
 async function splitChapterScript(script, input) {
+  let lastErr;
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try { return await splitChapterScriptOnce(script, input); }
+    catch (e) {
+      lastErr = e;
+      log(`   ⚠ slide-split attempt ${attempt} failed: ${String(e.message).split('\n')[0]}${attempt < 2 ? ' — retrying with a fresh AI call' : ''}`);
+    }
+  }
+  throw lastErr;
+}
+
+async function splitChapterScriptOnce(script, input) {
   const sectionsText = await callAI({
     systemPrompt: `You are a course slide designer. Split a chapter video script into slides for a professional online learning platform.
 
@@ -364,14 +376,59 @@ Return JSON array of slides:
     action:    'slide_splitting',
   });
 
+  return parseSectionsResponse(sectionsText);
+}
+
+// Parse the AI's slide-split reply, repairing the failure modes we've seen in the
+// wild (raw newlines/tabs inside string literals, trailing commas, truncated tails)
+// instead of dying on the first bad character. 2026-07-27: ch renders were failing
+// stochastically with "Bad control character in string literal".
+function parseSectionsResponse(sectionsText) {
   const clean = sectionsText.replace(/```json|```/g, '').trim();
   const match = clean.match(/\[[\s\S]*\]/);
   if (!match) throw new Error(`No JSON array in split response:\n${sectionsText.substring(0, 200)}`);
+  const raw = match[0];
   try {
-    return JSON.parse(match[0]);
-  } catch (e) {
-    throw new Error(`Failed to parse sections: ${e.message}\n${sectionsText.substring(0, 200)}`);
+    return JSON.parse(raw);
+  } catch (e) { /* fall through to repair */ }
+
+  // Repair pass 1: escape raw control characters that appear INSIDE string
+  // literals (the model sometimes emits literal newlines in mermaid_code/code).
+  let out = '', inStr = false, esc = false;
+  for (const ch of raw) {
+    if (esc) { out += ch; esc = false; continue; }
+    if (ch === '\\') { out += ch; esc = inStr; continue; }
+    if (ch === '"') { inStr = !inStr; out += ch; continue; }
+    if (inStr && ch === '\n') { out += '\\n'; continue; }
+    if (inStr && ch === '\r') { continue; }
+    if (inStr && ch === '\t') { out += '\\t'; continue; }
+    if (inStr && ch.charCodeAt(0) < 0x20) { continue; }
+    out += ch;
   }
+  // Repair pass 2: trailing commas before ] or }
+  out = out.replace(/,\s*([\]}])/g, '$1');
+  try {
+    return JSON.parse(out);
+  } catch (e) { /* fall through to salvage */ }
+
+  // Repair pass 3: salvage complete top-level objects from a truncated/mangled
+  // array — parse object-by-object, keep the ones that are valid JSON.
+  const objs = [];
+  let depth = 0, start = -1; inStr = false; esc = false;
+  for (let i = 0; i < out.length; i++) {
+    const ch = out[i];
+    if (esc) { esc = false; continue; }
+    if (ch === '\\') { esc = inStr; continue; }
+    if (ch === '"') { inStr = !inStr; continue; }
+    if (inStr) continue;
+    if (ch === '{') { if (depth === 0) start = i; depth++; }
+    if (ch === '}') { depth--; if (depth === 0 && start >= 0) {
+      try { objs.push(JSON.parse(out.slice(start, i + 1))); } catch (_) { /* skip bad slide */ }
+      start = -1;
+    } }
+  }
+  if (objs.length >= 6) return objs; // enough slides to render a chapter
+  throw new Error(`Failed to parse sections after repair (salvaged only ${objs.length} slides):\n${sectionsText.substring(0, 200)}`);
 }
 
 // ── Steps 2 & 3: Generate + screenshot slides ─────────────────────────────────
