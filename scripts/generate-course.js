@@ -526,10 +526,12 @@ ${cur.course_title}
 ${cur.course_subtitle}
 
 ## Description
+This course contains the use of artificial intelligence.
+
 ${cur.course_description}
 
 AI content disclosure: This course was produced with the assistance of artificial intelligence tools. Lecture narration is AI-voice generated, and lecture scripts, slides, and practice questions were drafted with AI assistance, then reviewed and curated by the instructor for technical accuracy and alignment with the official ${CFG.exam_code} exam guide.
-<!-- REQUIRED by Udemy review: the AI disclosure paragraph above must be pasted into the course description. Course images must contain NO TEXT (Udemy rejects them; logo-only is the sole exception). -->
+<!-- REQUIRED by Udemy review (CCDV-F rejection 2026-07-27): the FIRST line of the description must be the verbatim Help Center sentence "This course contains the use of artificial intelligence." — the detailed paragraph alone is NOT sufficient. Course images must contain NO TEXT (logo-only is the sole exception). -->
 
 ## What you'll learn
 ${(cur.skills_learned || []).map(s => `- ${s}`).join('\n')}

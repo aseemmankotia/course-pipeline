@@ -2,11 +2,15 @@
 
 ## Udemy publishing checklist (learned from review rejections — ALWAYS apply)
 
-1. **AI content disclosure is mandatory.** Every course description on Udemy must
-   disclose AI usage (AI narration, AI-assisted scripts/slides/practice questions,
-   instructor-reviewed). Standard paragraph is auto-appended to each course's
-   `generated/<slug>/udemy-listing.md` — paste it with the rest of the description.
-   Source: Udemy review rejection of Agentforce Specialist, 2026-07-25.
+1. **AI content disclosure is mandatory AND format-strict.** The FIRST line of every
+   course description must be the verbatim Help Center sentence:
+   "This course contains the use of artificial intelligence."
+   A custom disclosure paragraph elsewhere is NOT sufficient (CCDV-F was bounced for
+   exactly this on 2026-07-27 even though it had our detailed paragraph at the end).
+   generate-course.js now emits the verbatim line first + detailed paragraph after;
+   both go into the Udemy description. Keep the detailed paragraph too.
+   Sources: Agentforce rejection 2026-07-25; CCDV-F rejection 2026-07-27;
+   https://support.udemy.com/hc/en-us/articles/33490280024087
 2. **Course images must contain NO text.** Udemy rejects images with text (logo-only
    is the sole exception). Use text-free abstract cards — generator pattern lives in
    the session log; finished examples: `exports/course-images/*-notext.png` (750×422).
