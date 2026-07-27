@@ -189,9 +189,27 @@ async function main() {
   const ffprobe = findBinary('ffprobe');
 
   // ── Step 1: Split script into slide sections ─────────────────────────────
+  // The split is an AI call, so cache its result next to the slides: re-runs
+  // (crash retries, credit outages, promo re-renders) must not re-buy the same
+  // answer. Cache is keyed implicitly by the slide-cache clearing above — a
+  // course/chapter change wipes the chapter dir, taking the cache with it.
   log('\n🤖 Step 1 — Splitting chapter script into slide sections…');
-  const sections = await splitChapterScript(script, input);
-  log(`   ✓ ${sections.length} slides planned`);
+  const sectionsCache = path.join(PATHS.chapterDir, 'sections-cache.json');
+  let sections = null;
+  if (fs.existsSync(sectionsCache)) {
+    try {
+      const cached = JSON.parse(fs.readFileSync(sectionsCache, 'utf8'));
+      if (cached.scriptLength === script.length && Array.isArray(cached.sections) && cached.sections.length) {
+        sections = cached.sections;
+        log(`   ✓ ${sections.length} slides loaded from cache (no AI call)`);
+      }
+    } catch (_) { /* stale cache — re-split */ }
+  }
+  if (!sections) {
+    sections = await splitChapterScript(script, input);
+    fs.writeFileSync(sectionsCache, JSON.stringify({ scriptLength: script.length, sections }, null, 2));
+    log(`   ✓ ${sections.length} slides planned`);
+  }
 
   // Prepend chapter title slide + append summary + quiz slides
   const titleSection = {
