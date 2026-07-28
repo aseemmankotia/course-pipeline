@@ -10,6 +10,8 @@ COURSES = {
   'nvidia-nca-aiio-refresh-2026': 'aiio',
   'microsoft-ai-103-azure-ai-apps-agents-2026': 'ai103',
   'nvidia-ncp-aio-ai-operations-2026': 'ncpaio',
+  'google-cloud-generative-ai-leader-2026': 'gcpgenai',
+  'microsoft-ai-300-mlops-genaiops-2026': 'ai300',
 }
 # Paths are repo-relative (derived from this script's location) so the script
 # runs on any machine — a previous session had hardcoded its own sandbox mount.
