@@ -20,6 +20,19 @@
 4. Practice-test generation must stay anchored to the cert (fixed in
    `scripts/generate-course.js` after CCDV-F shipped AWS/GCP/Azure questions) — after
    any regen, scan the bank for other-vendor terms before upload.
+5. **Manually-built shells bypass the generator's compliance — check them by hand.**
+   When a course description is PATCHed via the instructor API and the image uploaded
+   through the UI (instead of using generate-course.js's `udemy-listing.md` + the
+   `*-notext.png` card), rules 1-3 are NOT applied automatically. AI-103 (7273707) and
+   NCP-AIO (7273711) were both bounced "Needs fixes" on 2026-07-28 for exactly this:
+   description missing the verbatim disclosure top-line (rules 1), course image
+   contained text (rule 2), and NCP-AIO's copy promised "pass ... on your first attempt"
+   (rule 3). Fixed on resubmit by prepending the disclosure, softening "Pass the ..." →
+   "Prepare for the ...", and re-uploading the text-free card. Before ANY submit of a
+   hand-built shell: (a) description starts with the verbatim line, (b) detailed
+   disclosure paragraph present, (c) no pass/guarantee/first-attempt language in title
+   or description, (d) uploaded image is the `-notext.png` version. Note: "Audio Quality"
+   (AI/TTS narration) shows only as a *recommended* improvement, not a blocker.
 
 ## Udemy mechanics worth remembering
 
