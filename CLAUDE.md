@@ -15,8 +15,12 @@
    is the sole exception). Use text-free abstract cards — generator pattern lives in
    the session log; finished examples: `exports/course-images/*-notext.png` (750×422).
    Same rejection, 2026-07-25.
-3. Never promise outcomes in landing copy ("pass", "first attempt", "guaranteed") —
-   Udemy compliance; use "prepare for / exam-focused" framing.
+3. Never promise outcomes ("pass", "first attempt", "guaranteed") — Udemy compliance;
+   use "prepare for / exam-focused" framing. IMPORTANT: the scan must cover BOTH the
+   description AND the **Intended Learners / goals** section (learning objectives,
+   requirements, who-this-is-for) — NCP-AIO was bounced a SECOND time on 2026-07-29
+   because "Pass ... on your first attempt" survived in the first *learning objective*
+   even after the description was fixed. Check every goals field, not just the description.
 4. Practice-test generation must stay anchored to the cert (fixed in
    `scripts/generate-course.js` after CCDV-F shipped AWS/GCP/Azure questions) — after
    any regen, scan the bank for other-vendor terms before upload.
