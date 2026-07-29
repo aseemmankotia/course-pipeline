@@ -47,6 +47,31 @@
   regenerate weekly (reviews campaign playbook: `marketing/reviews-campaign-2026-07.md`).
 - Review turnaround ~2 business days; courses are editable while "Submitted for review".
 
+## Rendering & video pipeline (run ON the Mac — needs ffmpeg + display; the
+   sandbox cannot render)
+
+For `narration_mode: "tts"` courses the render needs a per-chapter narration
+track (`heygen-chapter-NN.mp4`, a still + TTS voice). That file is produced by
+the TTS step, NOT by the renderer — skipping it makes `render:all` fail every
+chapter with "no input file / heygen-chapter-NN.* not found" (0/N rendered;
+learned 2026-07-28 on the Google GenAI Leader render). The CORRECT per-course
+sequence is stage → **tts-generate** → render, one course at a time:
+
+```
+rm -rf render/chapters                                   # avoid cross-course clobber
+node scripts/stage-course.js  --slug=<slug>              # copies course-render-input-N.json to root
+node scripts/tts-generate.js  --slug=<slug>              # ← REQUIRED: makes heygen-chapter-NN.mp4 (edge-tts)
+npm run render:all                                       # → render/chapters/chapter-NN/chapter-NN-final.mp4
+```
+
+- One-time: `pip3 install edge-tts` (free narration engine). `--engine=elevenlabs`
+  is the paid alternative.
+- tts-generate keeps an ownership manifest and quarantines heygen-chapter files
+  from other courses, so stale narration can't silently leak between courses —
+  but still `rm -rf render/chapters` between courses for clean slides.
+- Upload the resulting `chapter-NN-final.mp4` files to Udemy via the course's
+  Bulk Uploader, THEN build/attach the curriculum from the library.
+
 ## Compliance (reviews campaign)
 
 - Never fake accounts/reviews; never incentivize *positive* ratings — only invite
