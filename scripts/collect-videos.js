@@ -1,0 +1,55 @@
+#!/usr/bin/env node
+/**
+ * collect-videos.js — preserve rendered chapter videos into a per-course folder.
+ *
+ * The renderer writes finals to render/chapters/chapter-NN/chapter-NN-final.mp4,
+ * which is a SHARED directory wiped by `rm -rf render/chapters` between courses.
+ * Run this immediately AFTER `npm run render:all` and BEFORE rendering the next
+ * course, so each course's videos are saved (and named by chapter title) under
+ * exports/<slug>/videos/ — the folder the Udemy Bulk Uploader pulls from.
+ *
+ * Usage:
+ *   node scripts/collect-videos.js --slug=<slug>
+ *   node scripts/collect-videos.js --slug=<slug> --move   # move instead of copy
+ *
+ * Naming: exports/<slug>/videos/chapter-NN-<slugified-title>.mp4
+ */
+const fs = require('fs');
+const path = require('path');
+
+const ROOT = path.join(__dirname, '..');
+const args = Object.fromEntries(process.argv.slice(2).map(a => {
+  const m = a.match(/^--([^=]+)(?:=(.*))?$/); return m ? [m[1], m[2] ?? true] : [a, true];
+}));
+if (!args.slug) { console.error('Usage: node scripts/collect-videos.js --slug=<slug> [--move]'); process.exit(1); }
+
+const CHAPTERS_DIR = path.join(ROOT, 'render', 'chapters');
+if (!fs.existsSync(CHAPTERS_DIR)) { console.error(`❌ ${CHAPTERS_DIR} does not exist — nothing to collect (did the render run?).`); process.exit(1); }
+
+// chapter titles for nice filenames (best-effort)
+const slugify = s => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
+let titles = {};
+for (const p of [path.join(ROOT, 'generated', args.slug, 'course-data-export.json'), path.join(ROOT, 'course-data-export.json')]) {
+  try { const j = JSON.parse(fs.readFileSync(p, 'utf8')); (j.chapters || []).forEach(c => { titles[c.number] = c.title; }); if (Object.keys(titles).length) break; } catch {}
+}
+
+const OUT = path.join(ROOT, 'exports', args.slug, 'videos');
+fs.mkdirSync(OUT, { recursive: true });
+
+const chapterDirs = fs.readdirSync(CHAPTERS_DIR).filter(d => /^chapter-\d+$/.test(d)).sort();
+let copied = 0, missing = [];
+for (const d of chapterDirs) {
+  const num = parseInt(d.match(/\d+/)[0], 10);
+  const src = path.join(CHAPTERS_DIR, d, `chapter-${String(num).padStart(2, '0')}-final.mp4`);
+  if (!fs.existsSync(src)) { missing.push(num); continue; }
+  const title = titles[num] ? '-' + slugify(titles[num]) : '';
+  const dst = path.join(OUT, `chapter-${String(num).padStart(2, '0')}${title}.mp4`);
+  fs.copyFileSync(src, dst);
+  if (args.move) fs.rmSync(src, { force: true });
+  console.log(`  ${args.move ? 'moved' : 'copied'}  ${path.basename(dst)}  (${(fs.statSync(dst).size / 1e6).toFixed(1)} MB)`);
+  copied++;
+}
+
+console.log(`\n${copied ? '✅' : '⚠️'} ${copied} video(s) → ${path.relative(ROOT, OUT)}`);
+if (missing.length) console.log(`   missing finals for chapter(s): ${missing.join(', ')} — re-render those.`);
+if (copied) console.log(`\nNow upload exports/${args.slug}/videos/*.mp4 to Udemy (Bulk Uploader), THEN it's safe to \`rm -rf render/chapters\` for the next course.`);

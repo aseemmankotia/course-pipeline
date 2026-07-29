@@ -62,11 +62,21 @@ learned 2026-07-28 on the Google GenAI Leader render). The CORRECT per-course
 sequence is stage → **tts-generate** → render, one course at a time:
 
 ```
-rm -rf render/chapters                                   # avoid cross-course clobber
-node scripts/stage-course.js  --slug=<slug>              # copies course-render-input-N.json to root
-node scripts/tts-generate.js  --slug=<slug>              # ← REQUIRED: makes heygen-chapter-NN.mp4 (edge-tts)
+node scripts/stage-course.js    --slug=<slug>            # copies course-render-input-N.json to root
+node scripts/tts-generate.js    --slug=<slug>            # ← REQUIRED: makes heygen-chapter-NN.mp4 (edge-tts)
 npm run render:all                                       # → render/chapters/chapter-NN/chapter-NN-final.mp4
+node scripts/collect-videos.js  --slug=<slug>            # ← REQUIRED: saves finals to exports/<slug>/videos/
+rm -rf render/chapters                                   # ONLY after collect+upload — this dir is wiped between courses
 ```
+
+CRITICAL ORDERING (learned 2026-07-29): the renderer writes finals ONLY to the
+shared `render/chapters/` dir; it does NOT create `exports/<slug>/` folders. If you
+`rm -rf render/chapters` before collecting/uploading, the rendered videos are LOST
+(this happened to the Google GenAI Leader render — 8/8 rendered, then wiped by the
+between-courses `rm -rf` before upload; had to re-render). ALWAYS run collect-videos
+(or upload) before clearing. Re-rendering is fast if the `heygen-chapter-NN.mp4`
+narration tracks still exist in the project root (tts-generate skips existing ones).
+Upload to Udemy from `exports/<slug>/videos/*.mp4`.
 
 - One-time: `pip3 install edge-tts` (free narration engine). `--engine=elevenlabs`
   is the paid alternative.

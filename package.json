@@ -47,7 +47,8 @@
     "archive": "node archive.js",
     "archive:list": "node -e \"const fs=require('fs');if(!fs.existsSync('exports')){console.log('(no exports/ directory)');process.exit(0);}for(const f of fs.readdirSync('exports')){const s=fs.statSync(require('path').join('exports',f));console.log((s.size/1024/1024).toFixed(1).padStart(8)+' MB  '+f);}\"",
     "promo:all": "node scripts/promo-all.js",
-    "promo:all:upload": "node scripts/promo-all.js --upload"
+    "promo:all:upload": "node scripts/promo-all.js --upload",
+    "collect": "node scripts/collect-videos.js"
   },
   "repository": {
     "type": "git",
