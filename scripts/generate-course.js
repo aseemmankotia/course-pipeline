@@ -226,13 +226,17 @@ function parseJSON(text) {
 async function generateJSON(system, user, maxTokens, label) {
   let lastErr;
   for (let attempt = 1; attempt <= 3; attempt++) {
+    // Escalate the token budget on each retry — a top-level object (e.g. the
+    // curriculum) that overruns max_tokens gets truncated and CANNOT be salvaged,
+    // so identical retries at the same cap would just truncate the same way.
+    const mt = Math.min(60000, Math.round(maxTokens * [1, 1.4, 1.75][attempt - 1]));
     const extra = attempt === 1 ? '' :
-      '\n\nCRITICAL: Your previous response was not valid JSON. Respond with ONLY strictly valid JSON — escape all double quotes inside strings, no trailing commas, no commentary.';
-    const text = await callClaude(system, user + extra, maxTokens, `${label}${attempt > 1 ? ` (retry ${attempt - 1})` : ''}`);
+      '\n\nCRITICAL: Your previous response was not valid JSON — most likely it was cut off. Respond with ONLY strictly valid JSON: keep prose fields concise, escape all double quotes inside strings, no trailing commas, no commentary, and make sure the JSON is COMPLETE and closed.';
+    const text = await callClaude(system, user + extra, mt, `${label}${attempt > 1 ? ` (retry ${attempt - 1}, ${mt} tok)` : ''}`);
     try { return parseJSON(text); }
     catch (e) {
       lastErr = e;
-      console.log(`   ⚠️ ${label}: response was not valid JSON — regenerating (${attempt}/3)`);
+      console.log(`   ⚠️ ${label}: response was not valid JSON (likely truncated at ${mt} tok) — regenerating with more room (${attempt}/3)`);
     }
   }
   throw lastErr;
@@ -294,7 +298,7 @@ Create exactly ${CFG.chapters_target} chapters. Order chapters by exam-domain or
   ]
 }
 Each chapter needs exactly 2 quiz_questions.${DOMAIN_RULE}`;
-  const cur = await generateJSON(system, user, 16000, 'curriculum');
+  const cur = await generateJSON(system, user, 32000, 'curriculum');
   if (!cur.chapters || cur.chapters.length < CFG.chapters_target - 1) throw new Error('Curriculum missing chapters');
   state.curriculum = cur;
   save();
