@@ -6,7 +6,9 @@ policies and both produce reviews that actually help conversion (planted
 5-stars read as fake and can *lower* buyer trust).
 
 Portfolio: AIF-C01, AIGP, AIP-C01, CompTIA SecAI+, AWS SCS-C03, ISACA AAIR,
-Databricks GenAI Engineer, NVIDIA NCA-GENL.
+Databricks GenAI Engineer, NVIDIA NCA-GENL, Salesforce Agentforce Specialist,
+Claude Certified Developer (CCDV-F). (Agentforce → r/salesforce, r/AgentforceAI;
+CCDV-F → r/ClaudeAI, r/LLMDevs — both now live, added 2026-07-29.)
 
 ---
 
