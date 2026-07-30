@@ -163,13 +163,36 @@ function quarantineLegacyMedia() {
       run('re-assemble after heal', process.execPath, ['scripts/generate-course.js', `--config=${course.config}`, '--stage=assemble'], { allowFail: true });
     }
 
-    // 3. qa
+    // 3. QA — HARD gate with a self-heal loop. If QA blocks, run the deeper heal
+    // (expand short chapters, condense over-long ones + dedupe questions, re-balance),
+    // re-assemble and re-check, up to twice, before giving up. The deep fixes call
+    // the model, so they run ONLY when QA actually blocks — no cost on clean runs.
     if (!SKIP.has('qa')) {
-      const ok = run('qa audit', process.execPath, ['scripts/qa-course.js', `--slug=${course.slug}`], { allowFail: true });
+      const deepHeal = (n) => {
+        run(`expand short chapters (heal ${n})`, process.execPath, ['scripts/expand-short-chapter.js', `--slug=${course.slug}`], { allowFail: true });
+        run(`condense long / dedupe (heal ${n})`, process.execPath, ['scripts/fix-qa-warnings.js', `--slug=${course.slug}`], { allowFail: true });
+        run(`re-balance answers (heal ${n})`, process.execPath, ['scripts/balance-answers.js', `--slug=${course.slug}`], { allowFail: true });
+        run(`re-assemble (heal ${n})`, process.execPath, ['scripts/generate-course.js', `--config=${course.config}`, '--stage=assemble'], { allowFail: true });
+      };
+      let ok = run('qa audit', process.execPath, ['scripts/qa-course.js', `--slug=${course.slug}`], { allowFail: true });
+      for (let n = 1; !ok && n <= 2; n++) {
+        console.log(`\n🩹 QA blocking — self-heal pass ${n}/2 …`);
+        deepHeal(n);
+        ok = run(`qa audit (re-check ${n})`, process.execPath, ['scripts/qa-course.js', `--slug=${course.slug}`], { allowFail: true });
+      }
       if (!ok) {
-        console.error('❌ QA found blocking issues — see generated/' + course.slug + '/qa-report.md');
+        console.error('❌ QA still blocking after self-heal — see generated/' + course.slug + '/qa-report.md');
         process.exit(1);
       }
+    }
+
+    // 3.5 QA-passed artifacts: text-free card + practice-test CSVs, then a HARD
+    // compliance gate (verbatim disclosure top-line, no promise language in the
+    // description OR goals, text-free card) — the exact rules that bounce courses.
+    if (!SKIP.has('artifacts')) {
+      run('course card (text-free)', 'python3', ['scripts/make-card.py', `--slug=${course.slug}`], { allowFail: true });
+      run('practice-test CSVs', 'python3', ['scripts/make-practice-test-csvs.py', `--slug=${course.slug}`], { allowFail: true });
+      run('compliance gate', process.execPath, ['scripts/compliance-check.js', `--slug=${course.slug}`]); // hard: stops the run on any violation
     }
 
     // 4. narration (voice) — TTS by default (free), HeyGen avatar if configured.
@@ -195,6 +218,15 @@ function quarantineLegacyMedia() {
         run('heygen avatar videos', process.execPath, ['scripts/heygen-generate.js', `--slug=${course.slug}`]);
       } else {
         run('tts narration (free)', process.execPath, ['scripts/tts-generate.js', `--slug=${course.slug}`]);
+        // TTS completeness: edge-tts occasionally drops a chapter, which then
+        // silently vanishes from the render (this bit AI-300 ch 4/9/10/11).
+        // Assert all N narration tracks exist; retry the gaps once (tts-generate
+        // skips the ones already made) before the render stage runs.
+        const nHeygen = () => fs.readdirSync(ROOT).filter(f => /^heygen-chapter-\d+\.mp4$/.test(f)).length;
+        if (nHeygen() < cfgChapters) {
+          console.log(`\n🔁 TTS produced ${nHeygen()}/${cfgChapters} narration tracks — retrying the missing ones …`);
+          run('tts narration retry', process.execPath, ['scripts/tts-generate.js', `--slug=${course.slug}`], { allowFail: true });
+        }
       }
     }
 
@@ -294,8 +326,19 @@ function quarantineLegacyMedia() {
         }
       }
     }
+
+    // 9. shell-spec — the single artifact that drives the one-pass Udemy build
+    // (Udemy has no public authoring API, so shell creation stays a browser step).
+    if (!SKIP.has('artifacts')) {
+      run('shell-spec (drives the Udemy build)', process.execPath, ['scripts/make-shell-spec.js', `--slug=${course.slug}`], { allowFail: true });
+    }
   }
 
-  console.log(`\n\n🎉 Autopilot complete. Upload-ready packages in exports/<slug>/`);
-  console.log('   Next: Udemy upload (browser step) + npm run shorts:upload for each Short.');
+  console.log(`\n\n🎉 Autopilot complete. Each course package in exports/<slug>/ now has:`);
+  console.log('   videos/ · heygen-src/ · <slug>-card-notext.png · practice-test CSVs · welcome-promo(-short).mp4 · shell-spec.json · qa-report.md');
+  console.log('\n   PHASE B (once the shell is submitted & the course goes LIVE):');
+  console.log('     1) Build the Udemy shell from exports/<slug>/shell-spec.json  (browser pass)');
+  console.log('     2) node scripts/register-course.js --slug=<slug> --udemy=<liveUrl>   # site + promo + reviews');
+  console.log('     3) node scripts/build-practice-site.js --all   # then deploy');
+  console.log('     4) node scripts/promo-all.js --slug=<slug> && node scripts/promo-all.js --upload   # YouTube Short');
 })();

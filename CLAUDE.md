@@ -86,6 +86,42 @@ Upload to Udemy from `exports/<slug>/videos/*.mp4`.
 - Upload the resulting `chapter-NN-final.mp4` files to Udemy via the course's
   Bulk Uploader, THEN build/attach the curriculum from the library.
 
+## End-to-end build — `npm run autopilot` (one command, self-healing)
+
+`scripts/autopilot.js` runs the whole content pipeline for each config, checkpointed
+(re-runs skip finished work). Enhanced 2026-07-30 to close the gaps that caused
+this session's misses:
+
+```
+npm run autopilot -- --only=<slug>          # one course, end to end
+npm run autopilot                            # every config in course-configs/
+npm run autopilot -- --only=<slug> --skip=render   # e.g. skip a heavy stage
+```
+
+Per course it does: generate → deterministic heal (domain tags + answer balance)
+→ **QA HARD gate with a self-heal loop** (if QA blocks, it runs expand-short-chapter
++ fix-qa-warnings + re-balance + re-assemble and re-checks, up to 2×, before failing)
+→ **text-free card** (`make-card.py`) → **practice-test CSVs** (`make-practice-test-csvs.py --slug`,
+slug-named) → **compliance HARD gate** (`compliance-check.js`: verbatim disclosure
+top-line + no promise language in description OR goals + text-free card) → TTS
+narration **with a completeness retry** (asserts N/N `heygen-chapter-NN.mp4`, retries
+gaps — fixes the AI-300 ch 4/9/10/11 drop) → stage → render → **salvage each final
+into `exports/<slug>/videos/` before any cleanup** (never lose videos to `rm -rf`) →
+promo + 9:16 Short → **`shell-spec.json`**. Result: `exports/<slug>/` with videos/,
+card, CSVs, promo, shell-spec, qa-report — a compliant, upload-ready package.
+
+**Phase B — after the course is submitted & goes LIVE** (needs the live URL, so it
+can't run headless during content build):
+1. Build the Udemy shell from `exports/<slug>/shell-spec.json` (browser pass — Udemy
+   has no authoring API; drive it via Claude-in-Chrome, then bulk-upload the CSVs and
+   attach videos, run the compliance checklist, submit).
+2. `node scripts/register-course.js --slug=<slug> --udemy=<liveUrl>` — adds the course
+   to the practice-site, promo, and reviews-campaign registries (idempotent). This is
+   the step that was missed for Agentforce/CCDV-F.
+3. `node scripts/build-practice-site.js --all` → deploy to aseemmankotia.github.io.
+4. `node scripts/promo-all.js --slug=<slug> && node scripts/promo-all.js --upload` —
+   render (if needed) + upload the YouTube Short.
+
 ## Compliance (reviews campaign)
 
 - Never fake accounts/reviews; never incentivize *positive* ratings — only invite
