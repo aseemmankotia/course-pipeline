@@ -18,7 +18,13 @@ import os, sys, json, math, random, glob
 try:
     from PIL import Image, ImageDraw
 except ImportError:
-    sys.exit("Pillow missing — run: pip install Pillow --break-system-packages")
+    import subprocess
+    print("Pillow missing — installing it once…")
+    subprocess.run([sys.executable, "-m", "pip", "install", "Pillow", "--break-system-packages", "--quiet"], check=False)
+    try:
+        from PIL import Image, ImageDraw
+    except ImportError:
+        sys.exit("Pillow install failed — run: pip3 install Pillow --break-system-packages")
 
 ROOT = os.path.join(os.path.dirname(__file__), "..")
 args = {}

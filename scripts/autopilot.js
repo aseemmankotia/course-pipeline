@@ -169,6 +169,7 @@ function quarantineLegacyMedia() {
     // the model, so they run ONLY when QA actually blocks — no cost on clean runs.
     if (!SKIP.has('qa')) {
       const deepHeal = (n) => {
+        run(`fix multi-select questions (heal ${n})`, process.execPath, ['scripts/fix-multiselect.js', `--slug=${course.slug}`], { allowFail: true });
         run(`expand short chapters (heal ${n})`, process.execPath, ['scripts/expand-short-chapter.js', `--slug=${course.slug}`], { allowFail: true });
         run(`condense long / dedupe (heal ${n})`, process.execPath, ['scripts/fix-qa-warnings.js', `--slug=${course.slug}`], { allowFail: true });
         run(`re-balance answers (heal ${n})`, process.execPath, ['scripts/balance-answers.js', `--slug=${course.slug}`], { allowFail: true });
