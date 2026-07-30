@@ -85,6 +85,15 @@ const COURSES = [
     title: 'AI-901 replaced AI-900 — the new Azure AI fundamentals cert #Shorts',
     tags: 'azure,ai-901,ai fundamentals,microsoft foundry,certification',
     udemy: 'https://www.udemy.com/course/ai-901-azure-ai-fundamentals-your-gateway-to-microsoft-ai/', live: true },
+  // Week-5 launches — live on Udemy but were missing promo Shorts (added 2026-07-29).
+  { slug: 'salesforce-agentforce-specialist', short: 'Salesforce Agentforce Specialist',
+    title: 'Salesforce Agentforce Specialist: the new AI-agent cert #Shorts',
+    tags: 'salesforce,agentforce,ai agents,certification,exam prep',
+    udemy: 'https://www.udemy.com/course/salesforce-agentforce-specialist-exam-focused-preparation/', live: true },
+  { slug: 'anthropic-claude-developer-foundations', short: 'Claude Certified Developer (CCDV-F)',
+    title: 'Claude Certified Developer (CCDV-F): Anthropic’s new dev cert #Shorts',
+    tags: 'claude,anthropic,ccdv-f,ai developer,certification',
+    udemy: 'https://www.udemy.com/course/claude-certified-developer-ccdv-f-complete-exam-prep/', live: true },
 ];
 
 // EU AI Act urgency short — pre-written script, rides on the AIGP course data.
