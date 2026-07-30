@@ -31,7 +31,7 @@ if (!args.slug) { console.error('Usage: node scripts/fix-qa-warnings.js --slug=<
 
 require('dotenv').config({ path: path.join(ROOT, '.env') });
 const API_KEY = process.env.ANTHROPIC_API_KEY;
-const MODEL = process.env.COURSE_GEN_MODEL || 'claude-sonnet-4-5';
+const MODEL = process.env.COURSE_GEN_MODEL || 'claude-sonnet-5';
 if (!API_KEY && !args['dry-run']) { console.error('ANTHROPIC_API_KEY missing in .env'); process.exit(1); }
 
 const WORD_CAP = 4200;

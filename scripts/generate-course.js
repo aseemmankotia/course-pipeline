@@ -42,7 +42,7 @@ const ENV = loadEnv();
 const API_KEY = process.env.ANTHROPIC_API_KEY || ENV.ANTHROPIC_API_KEY;
 if (!API_KEY) { console.error('❌ ANTHROPIC_API_KEY not found in .env'); process.exit(1); }
 
-const MODEL = process.env.COURSE_GEN_MODEL || 'claude-sonnet-4-5';
+const MODEL = process.env.COURSE_GEN_MODEL || 'claude-sonnet-5';
 
 // ---------- args ----------
 const args = Object.fromEntries(process.argv.slice(2).map(a => {
