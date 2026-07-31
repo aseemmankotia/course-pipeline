@@ -38,6 +38,34 @@ const WORD_CAP = 4200;
 const WORD_TARGET = 3900;          // aim under the cap, not at it
 const MULTISELECT = /\bselect\s+(two|three|four|2|3|4)\b|\bchoose\s+(two|three|four|2|3|4)\b|\(select\b|\(choose\b/i;
 
+// Filler/throat-clearing phrases QA blocks on. Kept in sync with qa-course.js.
+// These are removed DETERMINISTICALLY (no model call) so the self-heal loop can
+// always clear them — otherwise a single "welcome back" hard-fails the whole run.
+const FLUFF = [
+  'welcome back', 'great question', 'without further ado', 'dive right in',
+  'in this section we will', 'hope that makes sense', 'hey everyone',
+  'hi everyone', 'hello everyone', "let's take a moment", 'as i mentioned earlier',
+  'moving on to our next topic', 'in today’s video', "in today's video",
+];
+function stripFluff(text) {
+  let out = String(text || '');
+  for (const f of FLUFF) {
+    const esc = f.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    // remove the phrase plus any immediately trailing punctuation/space
+    out = out.replace(new RegExp('\\s*' + esc + '\\s*[,.!:;]?\\s*', 'gi'), ' ');
+  }
+  return out.replace(/[ \t]{2,}/g, ' ').replace(/ +([,.!?;:])/g, '$1').replace(/(-)\s{2,}/g, '$1 ');
+}
+function findFluff() {
+  const out = [];
+  for (const ch of (state.curriculum && state.curriculum.chapters) || []) {
+    const t = String((state.scripts && state.scripts[ch.number]) || '').toLowerCase();
+    const hits = FLUFF.filter(f => t.includes(f));
+    if (hits.length) out.push({ number: ch.number, title: ch.title, hits });
+  }
+  return out;
+}
+
 const DIR = path.join(ROOT, 'generated', args.slug);
 const STATE_FILE = path.join(DIR, 'state.json');
 if (!fs.existsSync(STATE_FILE)) { console.error(`No state.json for slug "${args.slug}"`); process.exit(1); }
@@ -198,14 +226,17 @@ ${original}`;
 (async () => {
   const dupes = wants('dupes') ? findDuplicates() : [];
   const longs = wants('scripts') ? findLongScripts() : [];
+  const fluffs = wants('fluff') ? findFluff() : [];
 
   console.log(`\n🔍 ${args.slug}`);
   console.log(`   duplicate practice-test questions: ${dupes.length}`);
   dupes.forEach(d => console.log(`     • ${d.key} #${d.idx + 1} (duplicates ${d.first})`));
   console.log(`   over-length scripts (>${WORD_CAP} words): ${longs.length}`);
   longs.forEach(l => console.log(`     • ch${l.number} — ${l.words} words — ${l.title}`));
+  console.log(`   scripts with fluff phrases: ${fluffs.length}`);
+  fluffs.forEach(f => console.log(`     • ch${f.number} — ${f.hits.join(', ')}`));
 
-  if (!dupes.length && !longs.length) { console.log('\n✅ no warnings to fix\n'); process.exit(0); }
+  if (!dupes.length && !longs.length && !fluffs.length) { console.log('\n✅ no warnings to fix\n'); process.exit(0); }
   if (args['dry-run']) { console.log('\n(dry run — no changes written)\n'); process.exit(0); }
 
   const backup = path.join(DIR, `state.backup.${Date.now()}.json`);
@@ -233,6 +264,17 @@ ${original}`;
       rerender.push(l.number);
       console.log(`condensed to ${r.w}w (exam notes ${r.examBefore} → ${r.examAfter})`);
     } catch (e) { failed++; console.log(`FAILED (${e.message.slice(0, 70)})`); }
+  }
+
+  for (const f of fluffs) {
+    const before = state.scripts[f.number];
+    const after = stripFluff(before);
+    if (after !== before) {
+      state.scripts[f.number] = after;
+      fs.writeFileSync(STATE_FILE, JSON.stringify(state, null, 2));
+      if (!rerender.includes(f.number)) rerender.push(f.number);
+      console.log(`   ✂ ch${f.number} fluff removed (${f.hits.join(', ')})`);
+    } else { failed++; console.log(`   ⚠ ch${f.number} fluff not removable cleanly (${f.hits.join(', ')})`); }
   }
 
   console.log(`\n${failed ? '⚠️ ' : '✅ '}done${failed ? ` — ${failed} failed, re-run to retry` : ''}`);
