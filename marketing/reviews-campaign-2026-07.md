@@ -12,6 +12,31 @@ CCDV-F → r/ClaudeAI, r/LLMDevs — both now live, added 2026-07-29.)
 
 ---
 
+## Step 0 — Onboard newly-live courses (run BEFORE the review levers)
+
+Each weekly run, first check `/instructor/courses/` for any course that has newly
+flipped to **Live** and isn't yet in the funnel, and wire it up. All three scripts
+are idempotent (they no-op if already done), so re-running every week is safe.
+
+Watch list (submitted → onboard the moment they go Live):
+- AWS SAA-C04 — id 7279877 — slug `aws-solutions-architect-associate-saa-c04`
+- CompTIA Security+ SY0-701 — id 7279885 — slug `comptia-security-plus-sy0-701`
+- AWS ML Engineer (MLA-C01) — slug `aws-machine-learning-engineer-associate-mla-c01`
+- Google Cloud Professional ML Engineer — slug `google-cloud-professional-ml-engineer-2026`
+
+For each newly-live course (grab its live course URL from the landing/Promotions page):
+
+```
+node scripts/register-course.js --slug=<slug> --udemy=<liveCourseUrl>   # site + promo + reviews registries
+node scripts/build-practice-site.js --all                              # then deploy site/ to aseemmankotia.github.io (GitHub connector push_files, owner aseemmankotia — NOT git push)
+node scripts/promo-all.js --slug=<slug> && node scripts/promo-all.js --upload   # upload the 9:16 YouTube Short from exports/<slug>/
+```
+
+The promo Short is already rendered by autopilot into `exports/<slug>/welcome-promo-short.mp4`;
+this step just publishes it (needs the live Udemy URL in the description). If the YouTube
+upload fails on auth, run `node youtube-auth.js` once (youtube.force-ssl scope) then retry.
+After onboarding, add the course to the coupon/announcement/post levers below.
+
 ## Lever 1 — Educational announcement to existing students (send now)
 
 Udemy allows 4 educational announcements/month per course. These reach students
