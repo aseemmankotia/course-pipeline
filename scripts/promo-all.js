@@ -89,11 +89,11 @@ const COURSES = [
   { slug: 'salesforce-agentforce-specialist', short: 'Salesforce Agentforce Specialist',
     title: 'Salesforce Agentforce Specialist: the new AI-agent cert #Shorts',
     tags: 'salesforce,agentforce,ai agents,certification,exam prep',
-    udemy: 'https://www.udemy.com/course/salesforce-agentforce-specialist-exam-focused-preparation/', live: true },
+    udemy: 'https://www.udemy.com/course/salesforce-agentforce-specialist-exam-focused-preparation/?referralCode=932FEB83A87411DC2DE8', live: true },
   { slug: 'anthropic-claude-developer-foundations', short: 'Claude Certified Developer (CCDV-F)',
     title: 'Claude Certified Developer (CCDV-F): Anthropic’s new dev cert #Shorts',
     tags: 'claude,anthropic,ccdv-f,ai developer,certification',
-    udemy: 'https://www.udemy.com/course/claude-certified-developer-ccdv-f-complete-exam-prep/', live: true },
+    udemy: 'https://www.udemy.com/course/claude-certified-developer-ccdv-f-complete-exam-prep/?referralCode=8AFA75B665B80C410125', live: true },
 ];
 
 // EU AI Act urgency short — pre-written script, rides on the AIGP course data.

@@ -73,14 +73,18 @@ const COURSES = [
     udemy: 'https://www.udemy.com/course/nvidia-nca-genl-generative-ai-llm-certification-prep/?referralCode=8B242DD8B0A1E0E31860', live: true,
     coupon: { code: 'FREETEST33', price: '$17.99', list: '$54.99', expires: 'August 23',
       url: 'https://www.udemy.com/course/nvidia-nca-genl-generative-ai-llm-certification-prep/?couponCode=FREETEST33' } },
-  // Week-5 launches — live on Udemy, added to the funnel 2026-07-29. No FREETEST33
-  // coupon yet (created in the next monthly refresh); site renders a standard CTA until then.
+  // Week-5 launches — live on Udemy, added to the funnel 2026-07-29. FREETEST33
+  // coupons + referral links added 2026-08-01 (weekly marketing check).
   { slug: 'salesforce-agentforce-specialist', name: 'Salesforce Agentforce Specialist',
     tagline: 'Agentforce agents, Prompt Builder and Data Cloud grounding', page: 'salesforce-agentforce',
-    udemy: 'https://www.udemy.com/course/salesforce-agentforce-specialist-exam-focused-preparation/', live: true },
+    udemy: 'https://www.udemy.com/course/salesforce-agentforce-specialist-exam-focused-preparation/?referralCode=932FEB83A87411DC2DE8', live: true,
+    coupon: { code: 'FREETEST33', price: '$34.99', list: '$199.99', expires: 'September 1',
+      url: 'https://www.udemy.com/course/salesforce-agentforce-specialist-exam-focused-preparation/?couponCode=FREETEST33' } },
   { slug: 'anthropic-claude-developer-foundations', name: 'Claude Certified Developer (CCDV-F)',
     tagline: 'Building, deploying and evaluating apps with Claude', page: 'claude-ccdv-f',
-    udemy: 'https://www.udemy.com/course/claude-certified-developer-ccdv-f-complete-exam-prep/', live: true },
+    udemy: 'https://www.udemy.com/course/claude-certified-developer-ccdv-f-complete-exam-prep/?referralCode=8AFA75B665B80C410125', live: true,
+    coupon: { code: 'FREETEST33', price: '$17.99', list: '$54.99', expires: 'September 1',
+      url: 'https://www.udemy.com/course/claude-certified-developer-ccdv-f-complete-exam-prep/?couponCode=FREETEST33' } },
 ];
 
 const N_QUESTIONS = 12;
