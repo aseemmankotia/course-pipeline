@@ -292,3 +292,37 @@ or direct shares. Coupons expire 07/31; regenerate weekly per playbook.
   Mondays only (ban risk). Post goes out Monday 07/27; the AWS-course coupons
   (created 07/24) remain valid through 07/29, refreshed-course coupons through 07/31.
 - r/comptia and r/dataengineering remain no-post per sub rules.
+
+---
+
+## Run log — 2026-08-01 (scheduled task) — ⛔ BLOCKED: Udemy instructor session logged out
+
+**Blocker:** /instructor/courses/ redirected to the passwordless login page
+("We'll email aseem.mankotia@gmail.com a code"). Only one connected Chrome
+browser; re-auth needs Aseem's email code, and entering credentials is off-limits
+for the agent anyway. NOTHING requiring the instructor session could run.
+
+**What was attempted / found without login:**
+- Public landing-page probe of the watch list:
+  - `aws-solutions-architect-associate-saa-c04` → 404 (not live at that slug).
+  - `comptia-security-plus-sy0-701` → slug is TAKEN by a different instructor's
+    course (Syed Parvez, practice-test course). If/when Aseem's SY0-701 goes
+    live, Udemy will assign it a modified slug — update registries with the
+    actual live URL, don't assume the planned slug.
+  - MLA-C01 / GCP PMLE slugs not probed (public probes proved non-authoritative).
+- Live-status of watch-list courses therefore UNKNOWN this week; Step 0
+  onboarding deferred to next run.
+
+**Not done this run (all require instructor login):**
+- Coupon refresh: previous FREEREVIEW10 batches expired 07/29 (8 courses) and
+  07/31 (3 refreshed courses). NO live free coupons exist right now.
+- Educational announcements: none sent. August budget is fresh (4/course).
+- LinkedIn/Reddit posts: skipped — no valid coupon links to post. (Reddit timing
+  note: r/AWSCertifications is Mondays-only anyway; next window Mon 08/03.)
+
+**Action needed from Aseem:** log back into udemy.com in Chrome (instructor
+account). Likely cause of the logout is a navigation to a known session-killing
+URL (see CLAUDE.md: /instructor/user/edit-videos/ or /course/create/1). Once
+logged in, re-run the weekly task — everything is idempotent and the whole
+backlog (Step 0 check, coupons, August announcements, Monday Reddit window)
+can catch up in one run.
