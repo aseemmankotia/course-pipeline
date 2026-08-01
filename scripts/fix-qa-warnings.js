@@ -86,7 +86,11 @@ async function callClaude(system, user, maxTokens, label) {
         body: JSON.stringify({ model: MODEL, max_tokens: maxTokens, system, messages: [{ role: 'user', content: user }] }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}: ${(await res.text()).slice(0, 200)}`);
-      return (await res.json()).content[0].text;
+      const j = await res.json();
+      // Join all text blocks — Sonnet 5 may emit a leading non-text (reasoning) block.
+      const text = (j.content || []).map(b => (b && typeof b.text === 'string') ? b.text : '').join('');
+      if (!text.trim()) throw new Error(`empty/non-text response (stop_reason=${j.stop_reason})`);
+      return text;
     } catch (e) {
       const retriable = /fetch failed|ECONNRESET|ETIMEDOUT|EAI_AGAIN|ENOTFOUND|socket|network|HTTP 5|HTTP 429/i.test(e.message);
       if (attempt === 6 || !retriable) throw e;
