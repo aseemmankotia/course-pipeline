@@ -9,6 +9,8 @@ Portfolio: AIF-C01, AIGP, AIP-C01, CompTIA SecAI+, AWS SCS-C03, ISACA AAIR,
 Databricks GenAI Engineer, NVIDIA NCA-GENL, Salesforce Agentforce Specialist,
 Claude Certified Developer (CCDV-F). (Agentforce → r/salesforce, r/AgentforceAI;
 CCDV-F → r/ClaudeAI, r/LLMDevs — both now live, added 2026-07-29.)
+Week-6 go-lives added 2026-08-02: CompTIA Security+ SY0-701, AWS SAA-C04,
+Microsoft AI-300, Google Cloud GenAI Leader, NVIDIA NCP-AIO, Microsoft AI-103.
 
 ---
 
