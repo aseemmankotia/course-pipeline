@@ -47,3 +47,20 @@ targeting. Never auto-published; never any payment-detail entry.
 - No ad was published and no spend can occur: Meta items are "In draft" behind "Review and publish";
   the Google campaign exists only as a Draft with no ad; TikTok untouched.
 - Rotation state: marketing/ads-rotation.json (NCA-ADS consumed for this cycle).
+
+---
+
+## Update — 2026-08-08 (destination change, per Aseem)
+
+**Policy change:** all ads now drive traffic to **https://aseemmankotia.github.io/** (practice site), NOT the Udemy course URL, with the link highlighted in the copy. Scheduled task updated for future runs; existing drafts updated as follows:
+
+- **Meta "NCA-ADS Card Image Ad" (draft):** Website URL changed Udemy → https://aseemmankotia.github.io/ ; Display link set to `aseemmankotia.github.io`. Saved as draft, NOT published. Prior blockers unchanged (connect FB Page, upload `-notext.png` image, paste primary text).
+  Revised primary text for Aseem to paste (link on its own line):
+  > GPU-accelerated data science is its own exam. NCA-ADS covers RAPIDS, cuDF, cuML and the NVIDIA
+  > accelerated stack — and this exam-focused course walks every domain: 12 video chapters plus two
+  > full-length practice tests with per-option explanations. Start preparing today.
+  >
+  > ➜ Free practice questions & course: https://aseemmankotia.github.io/
+- **Meta "New Traffic Campaign with recommended settings" (draft):** auto-created stub found in the account (not from our log); its ad set has already ENDED so it's uneditable and can't run. Left untouched — Aseem may discard it from Review and publish.
+- **Google Ads draft 10208186673:** no ad attached yet → no final URL exists to change. When adding the video ad, set Final URL to https://aseemmankotia.github.io/ (display path: aseemmankotia.github.io).
+- **TikTok:** no draft exists (was skipped — logged out).
