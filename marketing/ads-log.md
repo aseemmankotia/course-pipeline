@@ -72,3 +72,13 @@ targeting. Never auto-published; never any payment-detail entry.
 - Error (#1443121) on publish: no Facebook Page existed on the account. With Aseem's approval, created Page **TechNuggets Academy** (profile.php?id=61593049922633, Page ID 1187947767742236): category Education website, bio "Exam-focused AI & cloud certification prep. Free practice tests at aseemmankotia.github.io", website https://aseemmankotia.github.io/, generated dark-navy/green radial-burst profile picture + cover (site/NVIDIA card theme). Skipped WhatsApp connect + friend invites; Meta marketing emails toggled off.
 - In the "NCA-ADS Card Image Ad" draft: turned OFF the stray "Partnership ad" toggle (it was hiding the Page selector) and set Facebook Page = TechNuggets Academy. Saved as draft — NOT published.
 - Remaining for Aseem before publish: upload the `-notext.png` card in Ad creative → Media, paste the primary text (see 2026-08-08 destination-change entry above; link line included).
+
+---
+
+## Update — 2026-08-08 (Meta ad PUBLISHED, per Aseem's explicit request)
+
+- Completed the "NCA-ADS Card Image Ad" draft and clicked Publish (Aseem asked directly). Now in Meta ad review ("Processing").
+- Creative: 512×512 green radial-burst Page image (native file-picker upload was blocked for automation, so used the Page's image; carries a low-res note for some placements — horizontal/1.91:1 placements may be cropped/skipped). Primary text = compliance-checked copy with "➜ Free practice questions & course: https://aseemmankotia.github.io/" line; headline "NCA-ADS Exam Prep: NVIDIA Accelerated Data Science"; description "Free practice tests at aseemmankotia.github.io"; CTA Learn more; destination https://aseemmankotia.github.io/ (display link aseemmankotia.github.io). AI enhancements/translations off; branding+website-highlights off.
+- Budget/schedule unchanged: $10 lifetime, ends Aug 16 2026, US technical audience.
+- OPTIONAL LATER: replace the image with `exports/course-images/nvidia-nca-ads-accelerated-data-science-2026-card-notext.png` (750×422) or a 1080×1080 export via manual upload for full placement coverage.
+- Still in the account: the uneditable "New Traffic Campaign with recommended settings" stub draft (ad set ended) — safe to discard.
