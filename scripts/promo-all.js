@@ -127,7 +127,13 @@ const SPECIALS = [
     scriptFile: 'marketing/eu-ai-act-short-script.txt', short: 'EU AI Act deadline (AIGP)',
     title: '11 days until the EU AI Act deadline. Most companies aren\'t ready. #Shorts',
     tags: 'eu ai act,ai governance,aigp,compliance,august 2',
-    udemy: 'https://www.udemy.com/course/iapp-aigp-certification-eu-ai-act/?referralCode=0B6A80F71D9FCB827C55', live: true },  { slug: 'nvidia-nca-ads-accelerated-data-science-2026', short: "NVIDIA-Certified Associate: Accelerated ",
+    udemy: 'https://www.udemy.com/course/iapp-aigp-certification-eu-ai-act/?referralCode=0B6A80F71D9FCB827C55', live: true },
+];
+
+// moved out of SPECIALS (register-course.js had appended them to the wrong
+// array, breaking --slug lookup; fixed 2026-08-08)
+COURSES.push(
+  { slug: 'nvidia-nca-ads-accelerated-data-science-2026', short: "NVIDIA-Certified Associate: Accelerated ",
     title: "NVIDIA-Certified Associate: Accelerated Data Science: exam-prep in 60 seconds #Shorts",
     tags: "nvidia,nca-ads,certification,exam prep",
     udemy: 'https://www.udemy.com/course/nca-ads-nvidia-accelerated-data-science-exam-prep/?referralCode=9B6E2B7FF4CF980A7994', live: true },
@@ -159,8 +165,7 @@ const SPECIALS = [
     title: "Google Cloud Professional Machine Learning Engineer: exam-prep in 60 seconds #Shorts",
     tags: "google cloud,professional ml engineer,certification,exam prep",
     udemy: 'https://www.udemy.com/course/google-cloud-professional-ml-engineer-exam-prep/?referralCode=3A86432A198744ED2F33', live: true },
-
-];
+);
 
 function run(cmd, cmdArgs, label) {
   console.log(`\n▶ ${label}`);

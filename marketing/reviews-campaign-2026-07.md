@@ -10,7 +10,7 @@ Databricks GenAI Engineer, NVIDIA NCA-GENL, Salesforce Agentforce Specialist,
 Claude Certified Developer (CCDV-F). (Agentforce → r/salesforce, r/AgentforceAI;
 CCDV-F → r/ClaudeAI, r/LLMDevs — both now live, added 2026-07-29.)
 Week-6 go-lives added 2026-08-02: CompTIA Security+ SY0-701, AWS SAA-C04,
-Microsoft AI-300, Google Cloud GenAI Leader, NVIDIA NCP-AIO, Microsoft AI-103.
+Microsoft AI-300, Google Cloud GenAI Leader, NVIDIA NCP-AIO, Microsoft AI-103, AWS Certified Solutions Architect - Associate (added 2026-08-02), NVIDIA-Certified Associate: Accelerated Data Science (added 2026-08-07), NVIDIA-Certified Professional: OpenUSD Development (added 2026-08-07), AIPMM Certified Digital Product Manager (added 2026-08-07), AIPMM Certified Product Manager (added 2026-08-07), NVIDIA-Certified Professional: Agentic AI (added 2026-08-07), NVIDIA-Certified Professional: Generative AI and LLMs (added 2026-08-07), AWS Certified Machine Learning Engineer - Associate (added 2026-08-07), Google Cloud Professional Machine Learning Engineer (added 2026-08-07).
 
 ---
 
@@ -328,3 +328,168 @@ URL (see CLAUDE.md: /instructor/user/edit-videos/ or /course/create/1). Once
 logged in, re-run the weekly task — everything is idempotent and the whole
 backlog (Step 0 check, coupons, August announcements, Monday Reddit window)
 can catch up in one run.
+
+---
+
+## Run log — 2026-08-02 (Aseem re-logged in; full catch-up run)
+
+**Step 0 / course status (/instructor/courses/):**
+- 🎉 NEWLY LIVE: CompTIA Security+ SY0-701 (7279885) and AWS SAA-C04 (7279877).
+  NOTE: planned slugs were taken/changed — ACTUAL live URLs:
+  - SY0-701 → https://www.udemy.com/course/comptia-security-sy0-701-exam-focused-prep/
+  - SAA-C04 → https://www.udemy.com/course/aws-saa-c04-exam-prep-solutions-architect-associate/
+- Still DRAFT: NCP-AAI, NCP-GENL, AWS MLA-C01, Google Cloud PMLE, InfoSec M&A.
+- AI Unlocked still BANNED; Advanced IoT still UNPUBLISHED (1.00★).
+- register-course.js run for both newly-live slugs (reviews registry updated);
+  practice site rebuilt with 16 certs incl. sy0-701.html + saa-c04.html.
+- Observed on promotions pages: Aseem's own coupons FREETEST33 ($17.99/$34.99,
+  expire ~08/22-09/02) active on many courses; AIGP also has AIGP_FREE_JUL26
+  free coupon (4/100 redeemed, expires 08/21).
+
+**Coupons created this run (Free: Open, 10 seats, start 08/02 ~7:45 AM PDT,
+expire 08/07):** — old FREEREVIEW10 codes can't be reused (Udemy blocks
+duplicate codes per course even after expiry) → repeat courses use FREEREVIEW10B.
+⚠️ AIF's expired FREEREVIEW10 finished 1/10 redeemed — links were barely
+distributed last cycle; distribution is the bottleneck, not coupon supply.
+
+FREEREVIEW10 (first-time coupon courses):
+- SY0-701: https://www.udemy.com/course/comptia-security-sy0-701-exam-focused-prep/?couponCode=FREEREVIEW10
+- SAA-C04: https://www.udemy.com/course/aws-saa-c04-exam-prep-solutions-architect-associate/?couponCode=FREEREVIEW10
+- Agentforce: https://www.udemy.com/course/salesforce-agentforce-specialist-exam-focused-preparation/?couponCode=FREEREVIEW10
+- CCDV-F: https://www.udemy.com/course/claude-certified-developer-ccdv-f-complete-exam-prep/?couponCode=FREEREVIEW10
+- Google GenAI Leader: https://www.udemy.com/course/google-cloud-generative-ai-leader-exam-prep-2026/?couponCode=FREEREVIEW10
+- AI-300: https://www.udemy.com/course/ai-300-mlops-genaiops-engineer-exam-preparation/?couponCode=FREEREVIEW10
+- AI-103: https://www.udemy.com/course/ai-103-azure-ai-apps-agents-developer-certification/?couponCode=FREEREVIEW10
+- NCP-AIO: https://www.udemy.com/course/ncp-aio-nvidia-ai-operations-professional-certification/?couponCode=FREEREVIEW10
+
+FREEREVIEW10B (courses that had FREEREVIEW10 before):
+- AIF-C01: https://www.udemy.com/course/aws-ai-practitioner-aif-c01-first-attempt-certification/?couponCode=FREEREVIEW10B
+- AIGP: https://www.udemy.com/course/iapp-aigp-certification-eu-ai-act/?couponCode=FREEREVIEW10B
+- AIP-C01: https://www.udemy.com/course/aws-certified-genai-developer-aip-c01/?couponCode=FREEREVIEW10B
+- SecAI+: https://www.udemy.com/course/comptia-secai-cy0-001-certification-fast-track/?couponCode=FREEREVIEW10B
+- SCS-C03: https://www.udemy.com/course/aws-certified-security-specialty-scs-c03-exam-prep/?couponCode=FREEREVIEW10B
+- AAIR: https://www.udemy.com/course/isaca-aair-advanced-ai-risk-certification-prep/?couponCode=FREEREVIEW10B
+- Databricks: https://www.udemy.com/course/databricks-genai-engineer-associate-exam-prep/?couponCode=FREEREVIEW10B
+- NCA-GENL: https://www.udemy.com/course/nvidia-nca-genl-generative-ai-llm-certification-prep/?couponCode=FREEREVIEW10B
+- AZ-900: https://www.udemy.com/course/azure-fundamentals-mastery-az-900-certification-journey/?couponCode=FREEREVIEW10B
+- NCA-AIIO: https://www.udemy.com/course/mastering-nvidia-ai-infrastructure-operations-nca-aiio/?couponCode=FREEREVIEW10B
+- AI-901: https://www.udemy.com/course/ai-901-azure-ai-fundamentals-your-gateway-to-microsoft-ai/?couponCode=FREEREVIEW10B
+
+(19/19 created successfully; monthly budgets had 2-3 left everywhere.)
+
+**Onboarding (Step 0) results for SY0-701 + SAA-C04:**
+- register-course.js: done for both (reviews registry now includes them).
+- Practice site: rebuilt (16 certs). Deployed to aseemmankotia.github.io via
+  GitHub API: index.html, sitemap.xml, sy0-701.html, saa-c04.html (commits
+  cd537b1, c26f88d). ⚠️ REMAINING 37 files still to deploy (8 sy0/saa per-domain
+  pages + 29 week-5 pages for AI-300/GenAI Leader/NCP-AIO/AI-103/Agentforce/
+  CCDV-F domain pages — the deployed site had been stale since ~07/25). Until
+  pushed, some index/sitemap links 404. Fastest fix: from the Mac,
+  `cd ~/course-pipeline && node scripts/build-practice-site.js --all` then push
+  site/ to the aseemmankotia.github.io repo (or ask Claude to push the rest in
+  a fresh session — the local site/ dir is already correct and current).
+- Promo Shorts: exports/<slug>/welcome-promo-short.mp4 exist for both, but
+  promo-all.js needs api.anthropic.com + YouTube network access → must run ON
+  the Mac: `node scripts/promo-all.js --slug=<slug> && node scripts/promo-all.js --upload`
+  (also note promo-all printed SAA-C04's URL as the AIF referral link — check
+  registry URL before upload).
+
+**Educational announcements (August):** SENT 2026-08-02 via the new bulk
+composer — ONE educational announcement ("Your exam-week readiness checklist -
+and a small favor") to ALL 19 live courses at once (readiness checklist +
+soft honest-review footer, no links, no coupon mention). Uses 1 of 4 August
+budget per course. Udemy shows "under review — will be sent once approved."
+Note: bulk send means no per-cert domain callout this week; resume
+personalized sends next runs if desired.
+
+**Social:**
+- LinkedIn: posted 2026-08-02 from Aseem's profile — two new courses
+  (SY0-701 + SAA-C04) with FREEREVIEW10 links, honest-review framing,
+  "comment/DM for other certs" CTA, hashtags. Aseem approved publishing
+  this session.
+- Reddit: NOT posted today (Sunday 08/02). r/AWSCertifications allows promo
+  Mondays only → window Mon 08/03 (coupons valid through 08/07; AWS-relevant:
+  SAA-C04, AIF, AIP, SCS). r/comptia + r/dataengineering remain no-post per
+  rules. r/salesforce, r/ClaudeAI, r/LLMDevs rules still unchecked — check
+  before first post.
+
+**Follow-ups needed:**
+1. (Mac) Push remaining 37 practice-site files to aseemmankotia.github.io.
+2. (Mac) promo-all.js upload for the two new courses' YouTube Shorts.
+3. Monday 08/03: r/AWSCertifications value-first post with SAA-C04/AIF/AIP/SCS
+   FREEREVIEW10(B) links; check r/salesforce + r/ClaudeAI + r/LLMDevs rules.
+4. Watch list still pending: MLA-C01, GCP PMLE, NCP-AAI, NCP-GENL (all draft).
+
+---
+
+## Run log — 2026-08-08 (scheduled task)
+
+**Step 0 / course status (/instructor/courses/):**
+- The 8 courses that went Live 08/07 were already registered by the 08-07
+  weekly marketing check (register-course.js). IDs confirmed this run:
+  NCA-ADS 7284909, NCP-OUSD 7284889, AIPMM CDPM 7283479, AIPMM CPM 7283433,
+  NCP-AAI 7282241, NCP-GENL 7282045, AWS MLA-C01 7280793, GCP PMLE 7280555.
+- Practice site VERIFIED fully deployed: all 141 local site/ files match the
+  aseemmankotia.github.io repo blob SHAs (the 37-file backlog from 08-02 was
+  cleared by the 08-07 run). No push needed.
+- 🐛 FIXED: register-course.js had appended the 8 new courses to promo-all.js's
+  SPECIALS array instead of COURSES — `--slug=<new>` failed "Unknown slug".
+  Entries moved into COURSES (via COURSES.push after SPECIALS). Committed.
+- ⏳ Promo Shorts for the 8 new courses: NOT rendered/uploaded — promo-script
+  generation needs api.anthropic.com (unreachable from the sandbox); run ON the
+  Mac: `node scripts/promo-all.js --slug=<slug>` per new course, then
+  `node scripts/promo-all.js --upload`. Upload markers show only 14 Shorts ever
+  uploaded — SY0-701, SAA-C04, AI-300, GenAI Leader, NCP-AIO, AI-103 have
+  rendered Shorts awaiting upload too.
+- New DRAFTS on the watch list for next runs: AWS DEA-C01 (7290003) and
+  Google Cloud ACE (7289999). InfoSec M&A still draft; AI Unlocked still BANNED.
+
+**Coupons:** ⚠️ NEW UDEMY LIMIT DISCOVERED: the coupon system now allows only
+ONE Free: Open coupon per course per month ("You've already used your free open
+coupon this month" — verified on SY0-701 and Agentforce). The 08/02 batch
+consumed August's allowance for all 19 pre-existing courses → weekly Free:Open
+regeneration is dead; it's now a MONTHLY cadence per course. Playbook updated
+mentally; September 1 = next regeneration window for the 19.
+- Created FREEREVIEW10 (Free: Open, 10 seats, expire 08/13 ~6:15 PM PDT) on the
+  8 newly-live courses:
+  - NCA-ADS: https://www.udemy.com/course/nca-ads-nvidia-accelerated-data-science-exam-prep/?couponCode=FREEREVIEW10
+  - NCP-OUSD: https://www.udemy.com/course/ncp-ousd-nvidia-openusd-development-certification-prep/?couponCode=FREEREVIEW10
+  - AIPMM CDPM: https://www.udemy.com/course/aipmm-cdpm-exam-prep-digital-product-management/?couponCode=FREEREVIEW10
+  - AIPMM CPM: https://www.udemy.com/course/aipmm-cpm-certified-product-manager-exam-prep/?couponCode=FREEREVIEW10
+  - NCP-AAI: https://www.udemy.com/course/nvidia-ncp-aai-agentic-ai-certification-prep/?couponCode=FREEREVIEW10
+  - NCP-GENL: https://www.udemy.com/course/ncp-genl-nvidia-generative-ai-llms-cert-prep/?couponCode=FREEREVIEW10
+  - MLA-C01: https://www.udemy.com/course/aws-certified-ml-engineer-associate-mla-c01-prep/?couponCode=FREEREVIEW10
+  - GCP PMLE: https://www.udemy.com/course/google-cloud-professional-ml-engineer-exam-prep/?couponCode=FREEREVIEW10
+- 19 other live courses SKIPPED (August Free:Open budget exhausted). Note:
+  Free: Targeted (100 redemptions / 31 days) is still available on them —
+  Aseem's call whether to use it.
+- ⚠️ SY0-701's 08/02 FREEREVIEW10 expired 08/07 at 0/10 redeemed — distribution
+  remains the bottleneck, not coupon supply.
+
+**Educational announcements:** ONE bulk educational announcement sent to the 8
+newly-live courses only ("Your exam-week readiness checklist - and a small
+favor" — checklist + soft honest-review footer, no links). Their first-ever
+announcement; 1 of 4 August budget used. Udemy shows "under review". The 19
+older courses were deliberately skipped — they received the same checklist on
+08/02 and a weekly repeat risks unsubscribe/spam fatigue.
+
+**Social:**
+- LinkedIn: POSTED from Aseem's profile ("Post successful") — 8 new courses
+  with FREEREVIEW10 links, honest-review framing, comment/DM CTA for the other
+  19 courses, cert hashtags. (Posting pattern approved by Aseem 07/26 + 08/02.)
+- Reddit: NOT posted. No Reddit post has ever been made for this campaign, and
+  first-post approval from Aseem is still outstanding; r/AWSCertifications is
+  also Mondays-only (next window Mon 08/10 — MLA-C01's coupon is valid through
+  08/13 if Aseem approves by then).
+
+**Decisions needed from Aseem:**
+1. Approve a Monday 08/10 r/AWSCertifications value-first post (MLA-C01 link
+   live through 08/13)? And/or approve the broader Reddit plan (check
+   r/googlecloud, r/ProductManagement rules first).
+2. Use Free: Targeted (100 seats, 31 days) on the 19 courses whose Free:Open
+   budget is spent, or wait for September 1?
+3. (Mac) Render+upload promo Shorts for the 8 new courses; also upload the 6
+   week-6 Shorts already rendered.
+4. Adjust campaign cadence: Free:Open coupons are now 1/course/month — suggest
+   regenerating on the 1st of each month and timing announcements/posts to that
+   window so seats don't expire undistributed.
