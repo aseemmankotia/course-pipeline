@@ -64,3 +64,11 @@ targeting. Never auto-published; never any payment-detail entry.
 - **Meta "New Traffic Campaign with recommended settings" (draft):** auto-created stub found in the account (not from our log); its ad set has already ENDED so it's uneditable and can't run. Left untouched — Aseem may discard it from Review and publish.
 - **Google Ads draft 10208186673:** no ad attached yet → no final URL exists to change. When adding the video ad, set Final URL to https://aseemmankotia.github.io/ (display path: aseemmankotia.github.io).
 - **TikTok:** no draft exists (was skipped — logged out).
+
+---
+
+## Update — 2026-08-08 (Facebook Page created; ad identity fixed)
+
+- Error (#1443121) on publish: no Facebook Page existed on the account. With Aseem's approval, created Page **TechNuggets Academy** (profile.php?id=61593049922633, Page ID 1187947767742236): category Education website, bio "Exam-focused AI & cloud certification prep. Free practice tests at aseemmankotia.github.io", website https://aseemmankotia.github.io/, generated dark-navy/green radial-burst profile picture + cover (site/NVIDIA card theme). Skipped WhatsApp connect + friend invites; Meta marketing emails toggled off.
+- In the "NCA-ADS Card Image Ad" draft: turned OFF the stray "Partnership ad" toggle (it was hiding the Page selector) and set Facebook Page = TechNuggets Academy. Saved as draft — NOT published.
+- Remaining for Aseem before publish: upload the `-notext.png` card in Ad creative → Media, paste the primary text (see 2026-08-08 destination-change entry above; link line included).
