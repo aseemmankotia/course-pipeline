@@ -10,7 +10,7 @@ Databricks GenAI Engineer, NVIDIA NCA-GENL, Salesforce Agentforce Specialist,
 Claude Certified Developer (CCDV-F). (Agentforce → r/salesforce, r/AgentforceAI;
 CCDV-F → r/ClaudeAI, r/LLMDevs — both now live, added 2026-07-29.)
 Week-6 go-lives added 2026-08-02: CompTIA Security+ SY0-701, AWS SAA-C04,
-Microsoft AI-300, Google Cloud GenAI Leader, NVIDIA NCP-AIO, Microsoft AI-103, AWS Certified Solutions Architect - Associate (added 2026-08-02), NVIDIA-Certified Associate: Accelerated Data Science (added 2026-08-07), NVIDIA-Certified Professional: OpenUSD Development (added 2026-08-07), AIPMM Certified Digital Product Manager (added 2026-08-07), AIPMM Certified Product Manager (added 2026-08-07), NVIDIA-Certified Professional: Agentic AI (added 2026-08-07), NVIDIA-Certified Professional: Generative AI and LLMs (added 2026-08-07), AWS Certified Machine Learning Engineer - Associate (added 2026-08-07), Google Cloud Professional Machine Learning Engineer (added 2026-08-07).
+Microsoft AI-300, Google Cloud GenAI Leader, NVIDIA NCP-AIO, Microsoft AI-103, AWS Certified Solutions Architect - Associate (added 2026-08-02), NVIDIA-Certified Associate: Accelerated Data Science (added 2026-08-07), NVIDIA-Certified Professional: OpenUSD Development (added 2026-08-07), AIPMM Certified Digital Product Manager (added 2026-08-07), AIPMM Certified Product Manager (added 2026-08-07), NVIDIA-Certified Professional: Agentic AI (added 2026-08-07), NVIDIA-Certified Professional: Generative AI and LLMs (added 2026-08-07), AWS Certified Machine Learning Engineer - Associate (added 2026-08-07), Google Cloud Professional Machine Learning Engineer (added 2026-08-07), NVIDIA-Certified Professional: AI Infrastructure (added 2026-08-09), NVIDIA-Certified Professional: Accelerated Data Science (added 2026-08-09), NVIDIA-Certified Associate: Generative AI Multimodal (added 2026-08-09).
 
 ---
 
@@ -483,9 +483,13 @@ older courses were deliberately skipped — they received the same checklist on
   08/13 if Aseem approves by then).
 
 **Decisions needed from Aseem:**
-1. Approve a Monday 08/10 r/AWSCertifications value-first post (MLA-C01 link
-   live through 08/13)? And/or approve the broader Reddit plan (check
-   r/googlecloud, r/ProductManagement rules first).
+1. ✅ APPROVED + DONE 2026-08-10: first-ever Reddit post published to
+   r/AWSCertifications under the Monday-promo rule (rules re-verified in
+   sidebar first): value-first MLA-C01 text post (domain weights + pacing
+   advice) with the FREEREVIEW10 link, honest-review framing, from u/That-Ad8566.
+   Live at https://redd.it/1vkknut — monitor comments for MLA-C01 questions.
+   Broader Reddit plan (r/googlecloud, r/ProductManagement etc.) still needs
+   rules checks before any post.
 2. Use Free: Targeted (100 seats, 31 days) on the 19 courses whose Free:Open
    budget is spent, or wait for September 1?
 3. (Mac) Render+upload promo Shorts for the 8 new courses; also upload the 6
