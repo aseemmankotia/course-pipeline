@@ -48,12 +48,24 @@ function chk(cond, msg, blocking = true) { if (!cond) (blocking ? issues : warns
 // ---------- curriculum ----------
 chk(!!cur, 'Curriculum missing');
 if (cur) {
-  // Udemy compliance: no outcome promises in public-facing copy
-  const BANNED = [/first[- ]attempt/i, /guarantee/i, /\bpass\b(?![a-z])/i, /you will pass/i];
+  // Udemy compliance: no outcome promises in public-facing copy.
+  const BANNED = [/first[- ]attempt/i, /\bpass\b(?![a-z])/i, /you will pass/i];
+  // "guarantee" is flagged ONLY when NOT negated — a disclaimer such as
+  // "this does not guarantee a passing score" is compliant and must not block;
+  // a promise such as "we guarantee you pass" must. Mirrors compliance-check.js.
+  const NEGATED_BEFORE = /(?:\b(?:no|not|never|without|cannot|can\s?not|nor|isn|aren|doesn|don|won|wouldn|couldn|shouldn)\b|n['’]t)\W+(?:\w+\W+){0,3}$/i;
+  const unnegatedGuarantee = (val) => {
+    const re = /\bguarantee\w*\b/ig; let g;
+    while ((g = re.exec(val || ''))) {
+      if (!NEGATED_BEFORE.test((val || '').slice(Math.max(0, g.index - 40), g.index))) return true;
+    }
+    return false;
+  };
   for (const [field, val] of [['title', cur.course_title], ['subtitle', cur.course_subtitle], ['description', cur.course_description]]) {
     for (const re of BANNED) {
       if (re.test(val || '')) issues.push(`${field}: overpromising language matching ${re} (Udemy rejects outcome promises)`);
     }
+    if (unnegatedGuarantee(val)) issues.push(`${field}: overpromising language matching /guarantee/i (Udemy rejects outcome promises)`);
   }
   // Domain names must match the config's official exam blueprint. The model
   // sometimes recalls a RETIRED version of the exam (e.g. SCS-C02 domain names

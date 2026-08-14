@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node --check components/publish.js)",
+      "Bash(node --check app.js)",
+      "Bash(node --input-type=module --check)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(grep -rn \"Save video as\\\\|Save.*as.*mp4\\\\|heygen-chapter-\\\\${\" /Users/macbookpro/course-pipeline/components/)",
+      "Bash(node --check render/course-render.js)",
+      "Bash(node --check render/course-render-all.js)",
+      "Bash(npm test *)",
+      "Bash(node scripts/pre-deploy-check.js)",
+      "Bash(npm run *)",
+      "Bash(node -c /Users/macbookpro/course-pipeline/render/course-render.js)",
+      "Bash(node -c /Users/macbookpro/course-pipeline/render/course-render-all.js)",
+      "Bash(node -c /Users/macbookpro/course-pipeline/render/promo-render.js)",
+      "Bash(node -c /Users/macbookpro/course-pipeline/archive.js)",
+      "Bash(node -c /Users/macbookpro/course-pipeline/youtube-auth.js)",
+      "Bash(node *)",
+      "Bash(git status *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(git remote *)",
+      "Bash(ollama --version)",
+      "Bash(brew install *)",
+      "Bash(OLLAMA_FLASH_ATTENTION=\"1\" OLLAMA_KV_CACHE_TYPE=\"q8_0\" ollama serve)",
+      "Bash(ollama list *)",
+      "mcp__visualize__read_me",
+      "mcp__visualize__show_widget"
+    ]
+  }
+}

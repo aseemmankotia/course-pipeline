@@ -1,0 +1,49 @@
+{
+  "_comment": "DNS records for the marketing domain, applied via Porkbun API by scripts/setup-dns.js. The domain itself comes from MARKETING_DOMAIN in .env (e.g. technuggets.academy). 'name' is the host relative to the domain (\"\" = root/apex, \"_dmarc\" = _dmarc.<domain>). Any record whose content still contains REPLACE_ is SKIPPED with a warning until you paste the real value from your email provider's domain-authentication page.",
+
+  "email": [
+    {
+      "name": "_dmarc",
+      "type": "TXT",
+      "content": "v=DMARC1; p=none; rua=mailto:dmarc@REPLACE_DOMAIN; fo=1; adkim=r; aspf=r",
+      "ttl": 600,
+      "note": "DMARC in monitoring mode (p=none). After a week of clean reports, tighten to p=quarantine then p=reject. REPLACE_DOMAIN is auto-filled with MARKETING_DOMAIN at apply time."
+    },
+    {
+      "name": "",
+      "type": "TXT",
+      "content": "v=spf1 include:spf.brevo.com mx ~all",
+      "ttl": 600,
+      "note": "SPF for Brevo. If you use Resend instead, replace with the exact SPF value Resend shows (typically 'v=spf1 include:amazonses.com ~all'). There must be exactly ONE SPF TXT record at the apex."
+    },
+    {
+      "name": "brevo._domainkey",
+      "type": "TXT",
+      "content": "REPLACE_WITH_DKIM_VALUE_FROM_PROVIDER",
+      "ttl": 600,
+      "note": "DKIM. Get this from your provider's 'authenticate your domain' page: Brevo shows a 'brevo._domainkey' (or 'mail._domainkey') TXT value; Resend shows 'resend._domainkey'. If your provider uses a different selector, rename this record's 'name' to match. Paste the exact value."
+    },
+    {
+      "name": "",
+      "type": "MX",
+      "content": "REPLACE_ONLY_IF_PROVIDER_REQUIRES_MX",
+      "prio": 10,
+      "ttl": 600,
+      "note": "OPTIONAL. Most senders do NOT need an MX to send. Only add if your provider explicitly asks for one AND you are not already receiving mail on this domain. Leave as REPLACE_ to skip."
+    }
+  ],
+
+  "site": [
+    {
+      "name": "", "type": "A", "content": "185.199.108.153", "ttl": 600,
+      "note": "GitHub Pages apex IPs (all four). Only apply with --site if you want the domain to serve the practice site."
+    },
+    { "name": "", "type": "A", "content": "185.199.109.153", "ttl": 600 },
+    { "name": "", "type": "A", "content": "185.199.110.153", "ttl": 600 },
+    { "name": "", "type": "A", "content": "185.199.111.153", "ttl": 600 },
+    {
+      "name": "www", "type": "CNAME", "content": "aseemmankotia.github.io", "ttl": 600,
+      "note": "www -> your GitHub Pages site. After DNS applies, set this domain as the custom domain in the GitHub Pages repo settings (adds a CNAME file) and enable Enforce HTTPS."
+    }
+  ]
+}

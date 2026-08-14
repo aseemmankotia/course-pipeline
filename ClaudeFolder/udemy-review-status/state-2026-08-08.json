@@ -1,0 +1,22 @@
+{
+  "run_date": "2026-08-08",
+  "total_courses": 32,
+  "by_status": {
+    "Live": [7150221, 7284909, 7284889, 7283479, 7283433, 7282241, 7282045, 7280793, 7280555, 7279885, 7279877, 7277667, 7277647, 7273711, 7273707, 7271283, 7271281, 7268317, 7267627, 7264743, 7156661, 7202905, 7259429, 7259919, 7262413, 7263267, 7265593],
+    "Submitted for review": [],
+    "Needs fixes": [],
+    "Draft": [7289999, 7290003, 7214909],
+    "Unpublished": [7148503],
+    "Banned": [7159077]
+  },
+  "draft_titles": {
+    "7289999": "Google Cloud ACE: Associate Cloud Engineer Exam Prep (new build, first seen 2026-08-08)",
+    "7290003": "AWS Certified Data Engineer Associate DEA-C01 Prep (new build, first seen 2026-08-08)",
+    "7214909": "Mastering Information Security (old draft)"
+  },
+  "changes_since_2026-08-04": {
+    "newly_live": [7280555, 7280793, 7282045, 7282241, 7283433, 7283479, 7284889, 7284909],
+    "new_drafts": [7289999, 7290003]
+  },
+  "note": "Live count in by_status derived from prior snapshot + newly-live; 27 Live total confirmed via API."
+}

@@ -1,0 +1,7 @@
+Most people fail the AI-901 exam because they memorize theory but can't match AI workloads to real business scenarios or apply Responsible AI principles when it counts. Microsoft wants practical knowledge, not definitions.
+
+This course trains you exactly how the exam tests you. You'll identify which of six AI workloads fits specific business problems by spotting trigger keywords. You'll apply Responsible AI principles to scenarios, knowing fairness addresses bias while transparency explains decisions. You'll deploy generative models in Microsoft Foundry, understanding when to use system prompts versus user prompts and choosing between LLMs and SLMs.
+
+Nine focused chapters. Exam-level scenario practice. Microsoft Foundry hands-on deployment. No filler content, just what appears on test day. Built specifically for AI-901 success.
+
+Enroll now and pass your certification on the first attempt.

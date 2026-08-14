@@ -1,0 +1,7 @@
+The EU AI Act is now law. Companies deploying AI systems face massive fines for non-compliance. Are you ready to navigate the most complex AI regulation in history?
+
+This course prepares you for the IAPP AIGP certification. You'll master classifying AI systems under the four EU AI Act risk tiers. You'll build governance programs using NIST AI RMF and ISO 42001. You'll conduct conformity assessments and create the exact documentation regulators demand.
+
+Ten focused chapters aligned to the latest IAPP Body of Knowledge. Real scenarios testing bias types, privacy-enhancing technologies, and human oversight models. You'll know which framework applies when, because exam questions demand precision, not theory.
+
+Enroll now and become the AI governance expert your organization desperately needs.

@@ -1,0 +1,45 @@
+{
+  "slug": "nvidia-ncp-aii-ai-infrastructure-professional-2026",
+  "topic": "NVIDIA-Certified Professional: AI Infrastructure (NCP-AII) exam preparation - deploying, configuring, validating, troubleshooting, and optimizing enterprise NVIDIA AI infrastructure including DGX systems, BlueField DPUs, DOCA, Base Command Manager, and GPU cluster networking",
+  "cert_name": "NVIDIA-Certified Professional: AI Infrastructure",
+  "exam_code": "NCP-AII",
+  "exam_vendor": "NVIDIA",
+  "exam_cost_usd": 400,
+  "exam_format": "Approximately 70 multiple-choice questions, 120 minutes, taken online with remote proctoring. NVIDIA does NOT publish an official passing score or official per-domain percentage weightings for NCP-AII, so the domain weights in this course are editorial estimates that reflect the emphasis of NVIDIA's published exam topic list, not NVIDIA's official figures. The certification is valid for two years. Exam fee is approximately USD 400 and varies by region; present any fee as approximate and advise candidates to confirm current NVIDIA pricing.",
+  "question_types": "multiple choice (single answer and multiple response) and scenario-based questions about installing, configuring, validating, troubleshooting, and optimizing NVIDIA AI data-center infrastructure",
+  "audience": "Data-center engineers, systems and infrastructure administrators, DevOps/MLOps engineers, and solutions architects who deploy and operate NVIDIA GPU infrastructure for AI workloads. Hands-on experience with Linux, servers, networking, and containers/Kubernetes is recommended. The advanced infrastructure tier that builds on the NVIDIA NCA-AIIO (AI Infrastructure and Operations Associate) and NCP-AIO (AI Operations Professional) courses already in this catalog.",
+  "difficulty": "Advanced",
+  "course_price": "$199.99",
+  "chapters_target": 12,
+  "narration_mode": "tts",
+  "author": "Aseem Mankotia",
+  "brand": "TechNuggets Academy",
+  "domains": [
+    {
+      "name": "System and Server Bring-up",
+      "weight": "~22%",
+      "notes": "Installing and configuring NVIDIA compute hardware: DGX systems (H100/H200) and NVIDIA-Certified servers, firmware and BIOS validation, GPU and NVLink/NVSwitch verification, driver and CUDA stack installation, component compatibility across nodes, and initial power-on/health checks. Choosing the correct bring-up and validation steps for a described new-deployment scenario."
+    },
+    {
+      "name": "Server and Network Installation and Configuration",
+      "weight": "~22%",
+      "notes": "Standing up the compute-plus-fabric environment: rack, cable, and configure servers and the network fabric; InfiniBand and Ethernet/RoCE basics for AI clusters; BlueField DPUs and DOCA at a deployment level; storage connectivity; and OS/container runtime configuration. Selecting the correct hardware, cabling, and network configuration for a described cluster requirement."
+    },
+    {
+      "name": "Physical Layer Management",
+      "weight": "~18%",
+      "notes": "The physical fabric and data-center integration: cabling standards and transceivers, InfiniBand/Ethernet topology (fat-tree, rail-optimized), power and cooling considerations, link validation and signal integrity, and physical-layer monitoring. Identifying the correct physical-layer design or fix for a described connectivity or scale requirement."
+    },
+    {
+      "name": "Cluster Management and Orchestration",
+      "weight": "~20%",
+      "notes": "Operating the cluster at scale: Base Command Manager (BCM) for provisioning and cluster management, Kubernetes orchestration for AI workloads (GPU Operator, scheduling, resource allocation), job schedulers (Slurm awareness), multi-tenancy, and training-vs-inference resource planning and scalability. Choosing the correct orchestration and resource-allocation approach for a described workload mix."
+    },
+    {
+      "name": "Troubleshooting and Optimization",
+      "weight": "~18%",
+      "notes": "Keeping the infrastructure healthy and fast: diagnosing GPU, NVLink, network, and node failures; validating and benchmarking cluster performance; thermal/power and utilization monitoring; firmware/driver issue isolation; and performance tuning for AI workloads across compute and fabric. Selecting the correct diagnostic or optimization action for a described production infrastructure problem."
+    }
+  ],
+  "extra_guidance": "NVIDIA-Certified Professional: AI Infrastructure (NCP-AII) is the advanced, data-center-focused tier that completes the NVIDIA infrastructure ladder alongside the NCA-AIIO (Associate) and NCP-AIO (AI Operations Professional) courses already in this catalog. It is HARDWARE- and DATA-CENTER-centric: DGX bring-up, server and network install, physical-layer/fabric management, cluster orchestration, and troubleshooting/optimization. CRITICAL accuracy note: NVIDIA does NOT publish official per-domain percentage weightings or a fixed passing score for NCP-AII, so present the domain NAMES from NVIDIA's published exam topics (System and Server Bring-up; Install and Configure Servers and Networks; Physical Layer Management; Troubleshoot and Optimize Systems and Networks; plus cluster management/orchestration) but mark the weights as editorial estimates (leading '~'), never as NVIDIA's official figures - state this where weights appear. This is a deployment-and-operations exam: the real skill is choosing the correct install, validation, configuration, orchestration, or troubleshooting step for a described infrastructure scenario, so practice questions MUST be scenario-based ('correct next step / BEST configuration / MOST likely cause') and MUST use exact NVIDIA infrastructure terminology (DGX H100/H200, NVLink, NVSwitch, InfiniBand, RoCE, Spectrum-X, BlueField DPU, DOCA, Base Command Manager, GPU Operator, Kubernetes, Slurm, NGC). Cover the recurring decisions: InfiniBand vs Ethernet/RoCE; BCM vs manual provisioning; Kubernetes vs Slurm scheduling; training vs inference resource allocation; rail-optimized vs standard fat-tree topology; firmware/driver compatibility validation. Anchor everything to real NVIDIA hardware behavior and published guidance (DGX user guides, BCM, DOCA); do NOT invent specs or limits. Labs are READ-AND-UNDERSTAND infrastructure walkthroughs (validate a DGX bring-up checklist, configure a GPU cluster network, provision nodes with BCM, deploy the GPU Operator on Kubernetes, diagnose an NVLink/fabric fault), NOT hands-on hardware tasks - make this framing explicit since most learners will not have DGX hardware. Frame the credential honestly as 'exam-focused preparation' - never promise a pass or use the word 'guarantee' in any form (Udemy compliance). Final chapter must be a full exam simulation with a time-management strategy for the ~70-question, 120-minute format. Present the exam fee as approximate (~USD 400, the higher infrastructure-tier price) and note the certification is valid two years; advise verifying current NVIDIA pricing. Scan the practice bank for stray other-vendor terms (AWS/Azure/GCP) before upload per the pipeline compliance rules."
+}

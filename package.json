@@ -48,7 +48,25 @@
     "archive:list": "node -e \"const fs=require('fs');if(!fs.existsSync('exports')){console.log('(no exports/ directory)');process.exit(0);}for(const f of fs.readdirSync('exports')){const s=fs.statSync(require('path').join('exports',f));console.log((s.size/1024/1024).toFixed(1).padStart(8)+' MB  '+f);}\"",
     "promo:all": "node scripts/promo-all.js",
     "promo:all:upload": "node scripts/promo-all.js --upload",
-    "collect": "node scripts/collect-videos.js"
+    "collect": "node scripts/collect-videos.js",
+    "remediate": "node scripts/remediate.js",
+    "remediate:list": "node scripts/remediate.js --list",
+    "remediate:status": "node scripts/remediate.js --status",
+    "parallel": "node scripts/pipeline-parallel.js",
+    "parallel:remediate": "node scripts/pipeline-parallel.js --mode=remediate",
+    "parallel:published": "node scripts/pipeline-parallel.js --mode=remediate --published --jobs=3",
+    "parallel:generate": "node scripts/pipeline-parallel.js --mode=generate",
+    "subscribers": "node scripts/subscribers.js",
+    "subscribe:server": "node marketing/email/server.js",
+    "campaign:build": "node scripts/build-campaign.js",
+    "campaign:send": "node scripts/send-campaign.js",
+    "campaign:send:live": "node scripts/send-campaign.js --live",
+    "whatsapp:send": "node scripts/send-whatsapp.js",
+    "marketing:digest": "node scripts/build-campaign.js && node scripts/send-campaign.js",
+    "dns:plan": "node scripts/setup-dns.js",
+    "dns:apply": "node scripts/setup-dns.js --apply",
+    "dns:list": "node scripts/setup-dns.js --list",
+    "dns:clean-parking": "node scripts/setup-dns.js --clean-parking"
   },
   "repository": {
     "type": "git",
@@ -59,6 +77,7 @@
     "axios": "^1.14.0",
     "dotenv": "^17.4.2",
     "node-fetch": "^2.7.0",
+    "nodemailer": "^9.0.5",
     "puppeteer": "^24.42.0"
   }
 }

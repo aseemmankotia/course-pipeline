@@ -56,10 +56,13 @@ const TOPIC = { 'amazon web services': 'Amazon AWS', aws: 'Amazon AWS', microsof
 const vlow = (cfg.exam_vendor || '').toLowerCase();
 const topic = Object.entries(TOPIC).find(([k]) => vlow.includes(k))?.[1] || (cfg.exam_code || 'IT Certification');
 
-// --- price tier hint from exam difficulty/cost ---
+// --- price tier hint from exam difficulty/cost (config can override) ---
+// `course_price` in the config wins (e.g. a premium tier for an expensive,
+// high-value cert); otherwise fall back to the difficulty/cost heuristic.
 const cost = cfg.exam_cost_usd || 0;
-const priceTier = /expert|advanced/i.test(cfg.difficulty || '') ? '$129.99'
-  : cost >= 300 ? '$109.99' : cost >= 150 ? '$109.99' : '$99.99';
+const priceTier = cfg.course_price
+  || (/expert|advanced/i.test(cfg.difficulty || '') ? '$129.99'
+  : cost >= 300 ? '$109.99' : cost >= 150 ? '$109.99' : '$99.99');
 
 // --- chapter titles from the Course structure block ---
 const chapters = bullets(section('Course structure').replace(/^\d+\.\s*/gm, '- '))

@@ -1,0 +1,24 @@
+{
+  "run_date": "2026-08-04",
+  "total_courses": 30,
+  "by_status": {
+    "Live": [7150221, 7279885, 7279877, 7277667, 7277647, 7273711, 7273707, 7271283, 7271281, 7268317, 7267627, 7264743, 7156661, 7202905, 7259429, 7259919, 7262413, 7263267, 7265593],
+    "Submitted for review": [],
+    "Needs fixes": [],
+    "Draft": [7280555, 7280793, 7282045, 7282241, 7283433, 7283479, 7284889, 7284909, 7214909],
+    "Unpublished": [7148503],
+    "Banned": [7159077]
+  },
+  "draft_titles": {
+    "7280555": "Google Cloud Professional ML Engineer Exam Prep",
+    "7280793": "AWS Certified ML Engineer Associate MLA-C01 Prep",
+    "7282045": "NCP-GENL: NVIDIA Generative AI & LLMs Cert Prep",
+    "7282241": "NVIDIA NCP-AAI: Agentic AI Certification Prep",
+    "7283433": "AIPMM CPM: Certified Product Manager Exam Prep",
+    "7283479": "AIPMM CDPM Exam Prep: Digital Product Management",
+    "7284889": "NCP-OUSD: NVIDIA OpenUSD Development Certification Prep",
+    "7284909": "NCA-ADS: NVIDIA Accelerated Data Science Prep",
+    "7214909": "Mastering Information Security (old draft)"
+  },
+  "note": "Baseline run — no prior snapshot existed. Compare tomorrow's statuses against by_status to detect newly-live / newly-bounced courses."
+}

@@ -1,0 +1,7 @@
+The AWS ML Engineer exam fails most people on one thing: knowing which service to pick under pressure. You will not survive on guesses.
+
+This course fixes that. You will learn to match storage and streaming services to real throughput and latency requirements. You will master feature engineering across Data Wrangler, Processing, and Feature Store. You will detect bias and class imbalance using SageMaker Clarify and resampling techniques, exactly like the real exam demands.
+
+Twelve focused chapters, zero filler, built around the actual MLA-C01 blueprint. You get the reasoning behind every AWS choice — Bedrock versus JumpStart versus custom training, spot training versus cost control, tuning versus overfitting. This isn't theory. It's decision-making practice for the exam room.
+
+Stop guessing between AWS services. Enroll now, pass MLA-C01 with confidence, and prove you're a real ML engineer.

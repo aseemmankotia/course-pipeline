@@ -1,0 +1,7 @@
+NVIDIA AI infrastructure jobs are exploding, but most IT pros can't explain the difference between CUDA and TensorRT. That gap costs you six-figure opportunities. This course fixes that fast.
+
+You'll master the NVIDIA AI software stack from CUDA through NGC containers. You'll design GPU clusters using DGX systems, NVSwitch fabric, and InfiniBand networking. And you'll size real infrastructure for training versus inference workloads including power and cooling calculations.
+
+This isn't theory. Every lesson targets actual NCA-AIIO exam scenarios. Eight focused chapters. Beginner-friendly but certification-ready. You'll memorize the stack layering, interconnect speeds, and virtualization options that separate passing scores from failing ones.
+
+Ready to get NVIDIA certified? Enroll now and land that AI infrastructure role.

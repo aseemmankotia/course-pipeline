@@ -28,6 +28,7 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 
 const ROOT = path.join(__dirname, '..');
+const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 function loadEnv() {
   const p = path.join(ROOT, '.env');
@@ -52,6 +53,12 @@ if (!args.slug && !args['text-file']) {
 
 const ENGINE = args.engine || ENV.TTS_ENGINE || 'edge';
 const VOICE = ENV.TTS_VOICE || 'en-US-AndrewMultilingualNeural';
+// Stall/timeout guards for the free edge-tts endpoint (overridable via .env):
+//   EDGE_STALL_S — abort a chapter if no audio arrives for this long (a throttle
+//                  stall). EDGE_CAP_S — hard per-chapter cap. Either raises a
+//                  retryable error so the retry/backoff loop re-attempts.
+const EDGE_STALL_S = parseInt(ENV.EDGE_STALL_S || '45', 10);
+const EDGE_CAP_S = parseInt(ENV.EDGE_CAP_S || '300', 10);
 
 const HEYGEN_DIR = args.slug ? path.join(ROOT, 'generated', args.slug, 'heygen') : null;
 if (HEYGEN_DIR && !fs.existsSync(HEYGEN_DIR)) { console.error(`❌ ${HEYGEN_DIR} not found — generate the course first.`); process.exit(1); }
@@ -91,17 +98,54 @@ function findBinary(name) {
 const ffmpeg = findBinary('ffmpeg');
 
 // ---------- engines ----------
-function ttsEdge(textFile, outMp3) {
-  // Use the edge-tts python module (pip3 install edge-tts)
+function ttsEdge(textFile, outMp3, outJson) {
+  // Use the edge-tts python module (pip3 install edge-tts). We STREAM instead of
+  // save() so we can capture WordBoundary events — an exact spoken timestamp for
+  // every word — and write them to outJson. course-render.js uses that sidecar
+  // to flip each slide the instant the narrator reaches it (audio-aligned
+  // timing), which is what fixes the "audio doesn't match the slides" drift.
   const py = `
-import asyncio, sys, edge_tts
-async def main():
+import asyncio, sys, json, edge_tts
+STALL = ${EDGE_STALL_S}   # abort if no audio for this many seconds (stall)
+CAP   = ${EDGE_CAP_S}     # hard cap on one chapter's synthesis
+async def synth():
     text = open(sys.argv[1], encoding='utf-8').read()
-    tts = edge_tts.Communicate(text, voice='${VOICE}', rate='+4%')
-    await tts.save(sys.argv[2])
+    out_mp3 = sys.argv[2]
+    out_json = sys.argv[3] if len(sys.argv) > 3 and sys.argv[3] else None
+    # edge-tts >= 7.x added a keyword-only \`boundary\` that DEFAULTS to
+    # "SentenceBoundary" — so word-level events are NOT sent unless we ask for
+    # them explicitly. Without this the stream yields zero WordBoundary chunks and
+    # the timing sidecar comes out empty (the bug that made every chapter fall back
+    # to proportional timing). Request WordBoundary + short receive_timeout so a
+    # stalled connection RAISES (retryable) instead of hanging forever. Fall back
+    # for older versions (< 7.x) that don't accept these kwargs.
+    try:
+        tts = edge_tts.Communicate(text, voice='${VOICE}', rate='+4%', boundary='WordBoundary', connect_timeout=15, receive_timeout=STALL)
+    except TypeError:
+        tts = edge_tts.Communicate(text, voice='${VOICE}', rate='+4%')
+    words = []
+    with open(out_mp3, 'wb') as f:
+        async for chunk in tts.stream():
+            t = chunk.get('type')
+            if t == 'audio':
+                f.write(chunk['data'])
+            elif t in ('WordBoundary', 'SentenceBoundary'):
+                words.append({'text': chunk.get('text', ''),
+                              'offset': chunk.get('offset', 0),
+                              'duration': chunk.get('duration', 0)})
+    if out_json:
+        json.dump(words, open(out_json, 'w', encoding='utf-8'))
+    sys.stderr.write('    word-timings captured: %d\\n' % len(words))
+async def main():
+    await asyncio.wait_for(synth(), timeout=CAP)
 asyncio.run(main())
 `;
-  const r = spawnSync('python3', ['-c', py, textFile, outMp3], { stdio: ['ignore', 'inherit', 'pipe'], encoding: 'utf8' });
+  const r = spawnSync('python3', ['-c', py, textFile, outMp3, outJson || ''],
+    { stdio: ['ignore', 'inherit', 'pipe'], encoding: 'utf8', timeout: (EDGE_CAP_S + 30) * 1000, killSignal: 'SIGKILL' });
+  // A hang → spawnSync kills the child: surface it as a THROW so the caller's
+  // retry/backoff re-attempts (a stall is exactly what edge-tts throttling causes).
+  if (r.error && r.error.code === 'ETIMEDOUT') throw new Error(`edge-tts hung > ${EDGE_CAP_S}s (stalled connection / throttling) — killed`);
+  if (r.signal) throw new Error(`edge-tts killed (${r.signal}) — likely a stall/timeout`);
   if (r.status !== 0) {
     if ((r.stderr || '').includes('No module named')) {
       throw new Error("edge-tts not installed. Run:  pip3 install edge-tts");
@@ -187,17 +231,49 @@ function wrapAudio(mp3, outMp4) {
     const n = parseInt(f.match(/\d+/)[0]);
     const nn = String(n).padStart(2, '0');
     const outMp4 = path.join(ROOT, `heygen-chapter-${nn}.mp4`);
-    if (ensureOwned(outMp4, args.slug) === 'ours') { console.log(`↷ ch${n}: heygen-chapter-${nn}.mp4 (ours), skipping`); continue; }
+    // Per-word timing sidecar that drives audio-aligned slide timing in the
+    // renderer. Only the edge engine produces it (ElevenLabs gives no word
+    // boundaries), so only edge requires it before a chapter counts as "done".
+    const wordsJson = path.join(ROOT, `heygen-chapter-${nn}.words.json`);
+    const owned = ensureOwned(outMp4, args.slug) === 'ours';
+    const sidecarOK = ENGINE !== 'edge' || (fs.existsSync(wordsJson) && fs.statSync(wordsJson).size > 2);
+    if (owned && sidecarOK) { console.log(`↷ ch${n}: heygen-chapter-${nn}.mp4 (ours), skipping`); continue; }
+    if (owned && !sidecarOK) console.log(`↻ ch${n}: audio exists but no word-timings sidecar — regenerating for audio-aligned slides`);
 
     const textFile = path.join(HEYGEN_DIR, f);
     const words = fs.readFileSync(textFile, 'utf8').split(/\s+/).length;
     console.log(`▶ ch${n}: ${words} words → speech…`);
     const mp3 = path.join(TEMP, `ch-${nn}.mp3`);
 
-    if (ENGINE === 'elevenlabs') await ttsElevenLabs(textFile, mp3);
-    else ttsEdge(textFile, mp3);
+    // Retry with backoff. Microsoft's free edge-tts endpoint THROTTLES sustained
+    // use (a full remediation pass is 100+ chapters back-to-back), returning
+    // connection errors that used to abort the whole course. Retrying with a
+    // pause lets the throttle window reset. The empty-sidecar guard also forces a
+    // retry if edge-tts streamed audio but zero word boundaries.
+    const MAX_TRIES = 4;
+    let lastErr = null;
+    for (let attempt = 1; attempt <= MAX_TRIES; attempt++) {
+      try {
+        if (ENGINE === 'elevenlabs') await ttsElevenLabs(textFile, mp3);
+        else ttsEdge(textFile, mp3, wordsJson);
+        if (ENGINE === 'edge' && (!fs.existsSync(wordsJson) || fs.statSync(wordsJson).size <= 2)) {
+          throw new Error('edge-tts produced an empty word-timings sidecar (no WordBoundary events)');
+        }
+        lastErr = null; break;
+      } catch (e) {
+        lastErr = e;
+        if (attempt < MAX_TRIES) {
+          const backoff = [0, 8, 25, 60][attempt] || 60;
+          console.log(`   ⚠ ch${n} attempt ${attempt}/${MAX_TRIES} failed: ${String(e.message).split('\n')[0].slice(0, 140)}`);
+          console.log(`     retrying in ${backoff}s (likely edge-tts throttling)…`);
+          await sleep(backoff * 1000);
+        }
+      }
+    }
+    if (lastErr) throw new Error(`ch${n}: TTS failed after ${MAX_TRIES} attempts — ${lastErr.message}`);
 
     wrapAudio(mp3, outMp4);
+    await sleep(500); // small courtesy gap between chapters to ease throttling
     manifest[path.basename(outMp4)] = { slug: args.slug, size: fs.statSync(outMp4).size, created: new Date().toISOString() };
     saveManifest();
     const mins = (fs.statSync(outMp4).size / 1e6).toFixed(1);

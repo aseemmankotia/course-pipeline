@@ -10,7 +10,7 @@ Databricks GenAI Engineer, NVIDIA NCA-GENL, Salesforce Agentforce Specialist,
 Claude Certified Developer (CCDV-F). (Agentforce → r/salesforce, r/AgentforceAI;
 CCDV-F → r/ClaudeAI, r/LLMDevs — both now live, added 2026-07-29.)
 Week-6 go-lives added 2026-08-02: CompTIA Security+ SY0-701, AWS SAA-C04,
-Microsoft AI-300, Google Cloud GenAI Leader, NVIDIA NCP-AIO, Microsoft AI-103, AWS Certified Solutions Architect - Associate (added 2026-08-02), NVIDIA-Certified Associate: Accelerated Data Science (added 2026-08-07), NVIDIA-Certified Professional: OpenUSD Development (added 2026-08-07), AIPMM Certified Digital Product Manager (added 2026-08-07), AIPMM Certified Product Manager (added 2026-08-07), NVIDIA-Certified Professional: Agentic AI (added 2026-08-07), NVIDIA-Certified Professional: Generative AI and LLMs (added 2026-08-07), AWS Certified Machine Learning Engineer - Associate (added 2026-08-07), Google Cloud Professional Machine Learning Engineer (added 2026-08-07), NVIDIA-Certified Professional: AI Infrastructure (added 2026-08-09), NVIDIA-Certified Professional: Accelerated Data Science (added 2026-08-09), NVIDIA-Certified Associate: Generative AI Multimodal (added 2026-08-09).
+Microsoft AI-300, Google Cloud GenAI Leader, NVIDIA NCP-AIO, Microsoft AI-103, AWS Certified Solutions Architect - Associate (added 2026-08-02), NVIDIA-Certified Associate: Accelerated Data Science (added 2026-08-07), NVIDIA-Certified Professional: OpenUSD Development (added 2026-08-07), AIPMM Certified Digital Product Manager (added 2026-08-07), AIPMM Certified Product Manager (added 2026-08-07), NVIDIA-Certified Professional: Agentic AI (added 2026-08-07), NVIDIA-Certified Professional: Generative AI and LLMs (added 2026-08-07), AWS Certified Machine Learning Engineer - Associate (added 2026-08-07), Google Cloud Professional Machine Learning Engineer (added 2026-08-07), NVIDIA-Certified Professional: AI Infrastructure (added 2026-08-09), NVIDIA-Certified Professional: Accelerated Data Science (added 2026-08-09), NVIDIA-Certified Associate: Generative AI Multimodal (added 2026-08-09), PMI Certified Professional in Managing AI (added 2026-08-14), GSDC Certified Forward Deployed Engineer (added 2026-08-14), AWS Certified Data Engineer - Associate (added 2026-08-14), Google Cloud Certified - Associate Cloud Engineer (added 2026-08-14).
 
 ---
 
@@ -497,3 +497,71 @@ older courses were deliberately skipped — they received the same checklist on
 4. Adjust campaign cadence: Free:Open coupons are now 1/course/month — suggest
    regenerating on the 1st of each month and timing announcements/posts to that
    window so seats don't expire undistributed.
+
+---
+
+## Run log — 2026-08-14 (scheduled task)
+
+**Step 0 / course status (/instructor/courses/):** instructor session healthy (no logout).
+NEWLY LIVE and onboarded this run (register-course.js → build-practice-site.js COURSES,
+promo-all.js COURSES, reviews registry; live URLs read from each Promotions page):
+- PMI-CPMAI (id 7294235) → https://www.udemy.com/course/pmi-cpmai-certification-exam-prep-masterclass/
+- GSDC CFDE (id 7294211) → https://www.udemy.com/course/gsdc-cfde-certification-forward-deployed-engineer-prep/
+- AWS DEA-C01 (id 7290003) → https://www.udemy.com/course/aws-certified-data-engineer-associate-dea-c01-prep/
+- Google Cloud ACE (id 7289999) → https://www.udemy.com/course/google-cloud-ace-associate-cloud-engineer-exam-prep/
+Already onboarded earlier (08/09), coupons added this run: NCA-GENM (7292669), NCP-AII (7292675),
+NCP-ADS professional (7292673). Still DRAFT/submitted: Google Cloud PDE (draft), AB-730 + AB-731
+(submitted for review) — onboard when they flip to Live.
+
+**Coupons created this run (FREEREVIEW10, Free: Open, 10 seats, 2026-08-14 → 2026-08-19):**
+- PMI-CPMAI:  https://www.udemy.com/course/pmi-cpmai-certification-exam-prep-masterclass/?couponCode=FREEREVIEW10
+- GSDC CFDE:  https://www.udemy.com/course/gsdc-cfde-certification-forward-deployed-engineer-prep/?couponCode=FREEREVIEW10
+- DEA-C01:    https://www.udemy.com/course/aws-certified-data-engineer-associate-dea-c01-prep/?couponCode=FREEREVIEW10
+- Google ACE: https://www.udemy.com/course/google-cloud-ace-associate-cloud-engineer-exam-prep/?couponCode=FREEREVIEW10
+- NCA-GENM:   https://www.udemy.com/course/nca-genm-nvidia-generative-ai-multimodal-exam-prep/?couponCode=FREEREVIEW10
+- NCP-AII:    https://www.udemy.com/course/ncp-aii-nvidia-ai-infrastructure-professional-prep/?couponCode=FREEREVIEW10
+- NCP-ADS:    https://www.udemy.com/course/ncp-ads-nvidia-accelerated-data-science-prep/?couponCode=FREEREVIEW10
+(7/7 created OK; Free: Open was still available on all 7 — the 4 new ones had never had one,
+and the 3 NVIDIA courses added 08/09 had unused Free:Open budget this month.)
+- SKIPPED (August Free:Open budget already spent — 1/course/month limit; next window Sept 1):
+  the ~24 older live courses that received Free:Open on 08/02 or 08/08.
+
+**Practice site (build-practice-site.js --all):** rebuilt to 31 certs / 186 files.
+- BUG FOUND + FIXED: register-course.js anchored its build-practice-site.js insert on the generic
+  `\n];`, and lastIndexOf now matches the newer VENDOR_ACCENT array's close (added ~08/13) instead
+  of COURSES — so the 4 new course objects were injected INTO VENDOR_ACCENT and never rendered
+  (index stuck at 27 certs, no pages). Fixed by (a) moving the 4 objects into COURSES, (b) adding a
+  `// __COURSES_END__` sentinel before the COURSES `];`, and (c) re-anchoring register-course.js's
+  practice-site patch on that sentinel so it can't recur. Both scripts pass `node --check`.
+- DEPLOYED to aseemmankotia.github.io via GitHub push_files (commit on main): index.html (now 31
+  certs incl. the 4 new courses), sitemap.xml (156 URLs), robots.txt. The 4 new courses now show on
+  the homepage + sitemap with working Udemy links.
+- ⏳ NOT yet deployed: the 23 per-course practice pages for the 4 new courses (4 main + 19 long-tail
+  domain pages). The sandbox mount blocks file deletion (build rmSync EPERM), so the site was built
+  in a temp root; pushing 23 JS-laden HTML files losslessly via inline push_files is impractical/
+  risky. FOLLOW-UP (Mac, fast): `cd ~/course-pipeline && node scripts/build-practice-site.js --all`
+  (bug is fixed now) then push site/ to aseemmankotia.github.io. Until then, the "Free 12-question
+  practice test" links for PMI-CPMAI/CFDE/DEA-C01/ACE 404 (their Udemy course links work).
+
+**Promo Shorts:** NOT rendered/uploaded for the 4 new courses — promo-all.js needs api.anthropic.com
++ YouTube, unreachable from the sandbox. FOLLOW-UP (Mac): `node scripts/promo-all.js --slug=<slug>`
+for each of the 4, then `node scripts/promo-all.js --upload`.
+
+**Educational announcements:** NONE sent. The 4 newly-live courses have ~0-2 enrollments each, so an
+announcement reaches almost no one (low value now); the ~24 older courses already got the checklist
+announcement on 08/02 or 08/08 and a weekly repeat risks unsubscribe/spam fatigue. Also, Aseem was
+not present this run to approve irreversible sends. Recommend sending a first educational
+announcement to the new courses once they build an enrolled base.
+
+**Social posts:** NONE posted — irreversible public posts need Aseem's approval and he was not
+present. Reddit r/AWSCertifications is Mondays-only (next window Mon 08/18; DEA-C01's FREEREVIEW10
+expires 08/19 — tight). The 7 FREEREVIEW10 links above are ready for a LinkedIn post +, on Monday,
+a value-first r/AWSCertifications post for DEA-C01 (AWS-relevant). Awaiting Aseem's go.
+
+**Decisions needed from Aseem:**
+1. (Mac) Deploy the 23 new-course practice pages: `node scripts/build-practice-site.js --all` + push
+   site/ to aseemmankotia.github.io. Also render+upload the 4 promo Shorts.
+2. Approve a LinkedIn post (7 FREEREVIEW10 links, honest-review framing) and a Monday
+   r/AWSCertifications post for DEA-C01? (Coupons expire 08/19.)
+3. Free:Open is 1/course/month — the ~24 older courses regenerate Sept 1. Use Free:Targeted
+   (100 seats/31 days) in the meantime, or wait?

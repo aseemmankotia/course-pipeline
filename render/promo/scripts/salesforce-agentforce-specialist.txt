@@ -1,0 +1,7 @@
+Salesforce just launched Agentforce, and certified specialists are in demand. But the exam is tough. Most people fail because they study theory without understanding how AI agents actually work in production environments.
+
+This course changes that. You'll configure Employee, Service, and Sales agents with custom topics and actions. You'll master Prompt Builder templates using Data Cloud grounding and field generation. You'll set up Data Libraries, manage chunking, and tune retrievers for accurate responses.
+
+Ten chapters of hands-on labs aligned directly to official exam domains. No filler lectures. You build real agents, write production-grade prompts, and troubleshoot permission issues exactly like the exam tests. Every lab mirrors actual certification scenarios.
+
+Pass your Agentforce Specialist exam with confidence. Enroll now and become certified fast.

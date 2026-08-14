@@ -1,0 +1,3 @@
+Most agentic AI projects fail for one reason: engineers default to complex multi-agent systems when a single agent would work. NVIDIA's Agentic AI cert exam tests whether you know the difference. This course gets you exam-ready, fast.
+
+You'll learn to match reasoning patterns like ReAct, plan-and-execute, and tree-of-thought to the actual probl
