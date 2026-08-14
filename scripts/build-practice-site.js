@@ -30,6 +30,10 @@ const path = require('path');
 const ROOT = path.join(__dirname, '..');
 const OUT = path.join(ROOT, 'site');
 const SITE_URL = 'https://aseemmankotia.github.io';
+// Where the static subscribe form POSTs (and where unsubscribe links resolve).
+// Point this at your running marketing/email/server.js (behind HTTPS). Set at build
+// time: SUBSCRIBE_ENDPOINT=https://your-host/subscribe node scripts/build-practice-site.js --all
+const SUBSCRIBE_ENDPOINT = process.env.SUBSCRIBE_ENDPOINT || 'https://REPLACE-WITH-YOUR-HOST/subscribe';
 
 // slug -> { file, name, tagline, udemy (referral if live, plain if in review), badge }
 const COURSES = [
@@ -156,6 +160,21 @@ const COURSES = [
     udemy: 'https://www.udemy.com/course/google-cloud-professional-ml-engineer-exam-prep/?referralCode=3A86432A198744ED2F33', live: true,
     coupon: { code: 'FREETEST33', price: '$34.99', list: '$129.99', expires: 'September 7',
       url: 'https://www.udemy.com/course/google-cloud-professional-ml-engineer-exam-prep/?couponCode=FREETEST33' } },
+  { slug: 'nvidia-ncp-aii-ai-infrastructure-professional-2026', name: "NVIDIA-Certified Professional: AI Infrastructure",
+    tagline: "System and Server Bring-up, Server and Network Installation and Configuration", page: 'ncp-aii',
+    udemy: 'https://www.udemy.com/course/ncp-aii-nvidia-ai-infrastructure-professional-prep/?referralCode=EEC8729A0880EB8DA3B9', live: true,
+    coupon: { code: 'FREETEST33', price: '$34.99', list: '$199.99', expires: 'September 9',
+      url: 'https://www.udemy.com/course/ncp-aii-nvidia-ai-infrastructure-professional-prep/?couponCode=FREETEST33' } },
+  { slug: 'nvidia-ncp-ads-accelerated-data-science-professional-2026', name: "NVIDIA-Certified Professional: Accelerated Data Science",
+    tagline: "GPU-Accelerated Data Science Fundamentals, Data Preparation and Manipulation with cuDF", page: 'ncp-ads',
+    udemy: 'https://www.udemy.com/course/ncp-ads-nvidia-accelerated-data-science-prep/?referralCode=DFA6E1D64C762E0C8F71', live: true,
+    coupon: { code: 'FREETEST33', price: '$34.99', list: '$129.99', expires: 'September 9',
+      url: 'https://www.udemy.com/course/ncp-ads-nvidia-accelerated-data-science-prep/?couponCode=FREETEST33' } },
+  { slug: 'nvidia-nca-genm-generative-ai-multimodal-2026', name: "NVIDIA-Certified Associate: Generative AI Multimodal",
+    tagline: "Core Machine Learning and AI Knowledge, Experimentation", page: 'nca-genm',
+    udemy: 'https://www.udemy.com/course/nca-genm-nvidia-generative-ai-multimodal-exam-prep/?referralCode=979950D891544A0B1645', live: true,
+    coupon: { code: 'FREETEST33', price: '$34.99', list: '$99.99', expires: 'September 9',
+      url: 'https://www.udemy.com/course/nca-genm-nvidia-generative-ai-multimodal-exam-prep/?couponCode=FREETEST33' } },
 
 ];
 
@@ -197,40 +216,118 @@ const esc = s => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').re
 const domainLabel = d => String(d || '').replace(/^Domain \d+:\s*/i, '').replace(/\s*\(\d+%?\)\s*$/,'').trim();
 const slugify = s => domainLabel(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
 
+// Per-vendor accent (playbook color system): calm/trust base + a distinct accent per
+// vendor so cards/pages feel on-brand and differ. Keyed on slug/name substrings.
+const VENDOR_ACCENT = [
+  [/\baws\b|amazon/i, '#FF9900'],
+  [/microsoft|azure|\bai-1\d\d|\bai-300|\bab-7|\bdp-\d|copilot/i, '#0078D4'],
+  [/google/i, '#4285F4'],
+  [/nvidia|\bnc[ap]-/i, '#76B900'],
+  [/comptia|secai|sy0-/i, '#C8202F'],
+  [/isaca|aair/i, '#5B21B6'],
+  [/iapp|aigp/i, '#0A66C2'],
+  [/databricks/i, '#FF3621'],
+  [/salesforce|agentforce/i, '#00A1E0'],
+  [/anthropic|claude|ccdv/i, '#D97757'],
+  [/aipmm|\bcpm\b|\bcdpm\b/i, '#F59E0B'],
+];
+function vendorAccent(course) {
+  const hay = `${course.slug} ${course.name} ${course.page}`;
+  for (const [re, hex] of VENDOR_ACCENT) if (re.test(hay)) return hex;
+  return '#0EA5E9';
+}
+
+// Load the matching course-configs/*.json for a slug (cached). Used to surface exam
+// facts (fee, format, difficulty, domains) in the hero + FAQ — data we already have.
+let _cfgCache = null;
+function configForSlug(slug) {
+  if (!_cfgCache) {
+    _cfgCache = {};
+    for (const f of fs.readdirSync(path.join(ROOT, 'course-configs')).filter(f => f.endsWith('.json'))) {
+      try { const c = JSON.parse(fs.readFileSync(path.join(ROOT, 'course-configs', f), 'utf8')); if (c.slug) _cfgCache[c.slug] = c; } catch {}
+    }
+  }
+  return _cfgCache[slug] || null;
+}
+
 const CSS = `
-:root{--bg:#0f172a;--card:#1e293b;--txt:#e2e8f0;--dim:#94a3b8;--acc:#38bdf8;--ok:#4ade80;--bad:#f87171;--btn:#0ea5e9}
+:root{--bg:#ffffff;--card:#f8fafc;--txt:#0f172a;--ink:#0f172a;--dim:#475569;--acc:#0ea5e9;--ok:#16a34a;
+ --bad:#dc2626;--cta:#f97316;--cta-h:#ea580c;--amber:#f59e0b;--line:#e2e8f0;--vendor:#0ea5e9}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--txt);line-height:1.6}
-.wrap{max-width:760px;margin:0 auto;padding:24px 16px 64px}
-header{padding:28px 0 8px}h1{font-size:1.5rem}h1 a{color:var(--txt);text-decoration:none}
-.sub{color:var(--dim);margin:4px 0 20px}
-.card{background:var(--card);border-radius:12px;padding:20px;margin:14px 0}
+.wrap{max-width:780px;margin:0 auto;padding:0 16px 64px}
+/* brand bar */
+.brandbar{display:flex;align-items:center;gap:10px;padding:16px 0 4px}
+.brandbar a{display:inline-flex;align-items:center;text-decoration:none}
+.brandbar img{height:34px;width:auto;display:block}
+h1{font-size:1.55rem;line-height:1.2}h1 a{color:var(--txt);text-decoration:none}
+.sub{color:var(--dim);margin:6px 0 18px}
+/* hero (dark navy, logo + facts + above-fold CTA) */
+.hero{background:linear-gradient(135deg,#0b1220,#111c33);border-radius:16px;padding:26px 24px;margin:14px 0 22px;color:#e2e8f0}
+.hero .chip{display:inline-block;font-size:.72rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
+ padding:4px 10px;border-radius:99px;background:var(--vendor);color:#fff;margin-bottom:12px}
+.hero h1{color:#fff;font-size:1.7rem}
+.hero .sub{color:#cbd5e1;margin:8px 0 16px}
+.hero .facts{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 4px}
+.hero .fact{font-size:.8rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);
+ border-radius:8px;padding:6px 11px;color:#e2e8f0}
+.hero .fact b{color:#fff}
+.cta-row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:18px}
+.urgency{font-size:.82rem;font-weight:700;color:#fdba74}
+/* buttons */
+.btn{display:inline-block;text-decoration:none;font-weight:700;font-size:.92rem;border-radius:10px;padding:13px 22px;
+ transition:background .15s,border-color .15s,transform .05s}
+.btn:active{transform:translateY(1px)}
+.btn.enroll{background:var(--cta);color:#fff;font-size:1.02rem;box-shadow:0 4px 16px rgba(249,115,22,.35)}
+.btn.enroll:hover{background:var(--cta-h)}
+.btn.course{background:var(--cta);color:#fff;box-shadow:0 3px 12px rgba(249,115,22,.3)}
+.btn.course:hover{background:var(--cta-h)}
+.btn.practice{background:transparent;color:var(--acc);border:1px solid var(--line)}
+.btn.practice:hover{border-color:var(--acc);background:#f1f5f9}
+.btn.ghost{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.25)}
+.btn.ghost:hover{background:rgba(255,255,255,.18)}
+/* trust band */
+.trust{display:flex;flex-wrap:wrap;gap:8px 20px;font-size:.82rem;color:var(--dim);margin:2px 0 22px;padding:12px 0;border-bottom:1px solid var(--line)}
+.trust span{display:inline-flex;align-items:center;gap:6px}
+.trust b{color:var(--ok)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:14px 0}
 .card h2{font-size:1.05rem;margin-bottom:4px}.card p{color:var(--dim);font-size:.92rem}
+.card .vchip{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:8px;vertical-align:middle;background:var(--vendor)}
 .card a.go{display:inline-block;margin-top:10px;color:var(--acc);text-decoration:none;font-weight:600}
+.card .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
 .q{margin-bottom:8px;font-weight:600}
-.opt{display:block;width:100%;text-align:left;background:#0f172a;border:1px solid #334155;color:var(--txt);
+.opt{display:block;width:100%;text-align:left;background:#f8fafc;border:1px solid #cbd5e1;color:var(--txt);
  border-radius:8px;padding:10px 12px;margin:6px 0;cursor:pointer;font-size:.95rem}
 .opt:hover{border-color:var(--acc)}
-.opt.correct{border-color:var(--ok);background:#052e16}
-.opt.wrong{border-color:var(--bad);background:#450a0a}
-.expl{display:none;background:#0f172a;border-left:3px solid var(--acc);padding:10px 12px;margin-top:8px;
+.opt.correct{border-color:var(--ok);background:#dcfce7}
+.opt.wrong{border-color:var(--bad);background:#fee2e2}
+.expl{display:none;background:#f1f5f9;border-left:3px solid var(--acc);padding:10px 12px;margin-top:8px;
  border-radius:0 8px 8px 0;font-size:.92rem;color:var(--dim)}
 .meta{font-size:.78rem;color:var(--dim);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em}
-.cta{background:linear-gradient(135deg,#0ea5e9,#6366f1);border-radius:12px;padding:22px;margin:26px 0;text-align:center}
-.cta a{display:inline-block;background:#fff;color:#0f172a;font-weight:700;text-decoration:none;
- padding:11px 22px;border-radius:8px;margin-top:10px}
-.cta p{color:#e0f2fe}
-.cta .strike{text-decoration:line-through;opacity:.7}
-.cta .code{background:rgba(255,255,255,.18);border:1px dashed #fff;border-radius:6px;padding:2px 8px;font-weight:700}
+.cta{background:linear-gradient(135deg,#0b1220,#1e293b);border-radius:14px;padding:24px;margin:26px 0;text-align:center;color:#e2e8f0}
+.cta strong{color:#fff;font-size:1.1rem}
+.cta a{display:inline-block;background:var(--cta);color:#fff;font-weight:700;text-decoration:none;
+ padding:13px 26px;border-radius:10px;margin-top:12px;box-shadow:0 4px 16px rgba(249,115,22,.35)}
+.cta a:hover{background:var(--cta-h)}
+.cta p{color:#cbd5e1}
+.cta .strike{text-decoration:line-through;opacity:.6}
+.cta .price{color:#86efac;font-weight:800}
+.cta .code{background:rgba(255,255,255,.14);border:1px dashed #fff;border-radius:6px;padding:2px 8px;font-weight:700;color:#fff}
 .score{font-size:1.1rem;font-weight:700;margin:18px 0 6px}
-.gaps{display:none;background:var(--card);border-radius:12px;padding:16px 20px;margin:10px 0;color:var(--dim);font-size:.95rem}
+.gaps{display:none;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:10px 0;color:var(--dim);font-size:.95rem}
 .gaps strong{color:var(--txt)}
+/* FAQ + exam facts */
+.faq{margin:30px 0}
+.faq h3{font-size:1.15rem;margin-bottom:10px}
+.faq details{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin:8px 0}
+.faq summary{font-weight:700;cursor:pointer;font-size:.95rem}
+.faq p{color:var(--dim);font-size:.92rem;margin-top:8px}
 .domains{margin:26px 0}.domains a{display:inline-block;margin:4px 8px 4px 0;color:var(--acc);text-decoration:none;font-size:.9rem}
-footer{color:var(--dim);font-size:.8rem;margin-top:44px;border-top:1px solid #1e293b;padding-top:16px}
+footer{color:var(--dim);font-size:.8rem;margin-top:44px;border-top:1px solid var(--line);padding-top:16px}
 footer a{color:var(--dim)}
 .badge{display:inline-block;font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:99px;margin-left:8px;vertical-align:middle}
-.badge.live{background:#052e16;color:var(--ok)}.badge.soon{background:#1e3a5f;color:var(--acc)}
-.badge.deal{background:#450a0a;color:#fca5a5}
+.badge.live{background:#dcfce7;color:#166534}.badge.soon{background:#e0f2fe;color:#075985}
+.badge.deal{background:#ffedd5;color:#9a3412}
 `;
 
 // shared quiz behavior: per-domain miss tracking + score-gated gap/coupon reveal
@@ -271,13 +368,27 @@ function finish(total){
   s.scrollIntoView({behavior:'smooth'});
 }`;
 
-function head(title, desc, canonicalPath) {
+function head(title, desc, canonicalPath, accent) {
+  const accentVar = accent ? `<style>:root{--vendor:${accent}}</style>` : '';
   return `<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${title}</title>
 <meta name="description" content="${desc}">
 <link rel="canonical" href="${SITE_URL}/${canonicalPath}">
-<link rel="stylesheet" href="style.css"></head><body><div class="wrap">`;
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta property="og:title" content="${title}">
+<meta property="og:description" content="${desc}">
+<meta property="og:type" content="website">
+<meta property="og:image" content="${SITE_URL}/icon-512.png">
+<meta name="theme-color" content="#0f172a">
+<link rel="stylesheet" href="style.css">${accentVar}</head><body><div class="wrap">`;
+}
+
+// Brand bar (logo → home) shown at the top of every page.
+function brandbar() {
+  return `<div class="brandbar"><a href="index.html"><img src="logo.png" alt="TechNuggets Academy" width="200" height="34"></a></div>`;
 }
 
 function ctaBlock(course) {
@@ -285,15 +396,15 @@ function ctaBlock(course) {
     const c = course.coupon;
     return `<div class="cta">
   <strong>Ready for the real thing?</strong>
-  <p>Full course: two full-length practice tests, video lessons for every exam domain, hands-on labs and detailed explanations.</p>
-  <p><span class="strike">${c.list}</span> <strong>${c.price}</strong> with code <span class="code">${c.code}</span> — valid through ${c.expires}.</p>
-  <a href="${c.url}" rel="sponsored">Get the full course for ${c.price} →</a>
+  <p>The full course: two full-length practice tests, video lessons for every exam domain, hands-on labs and detailed explanations.</p>
+  <p><span class="strike">${c.list}</span> <span class="price">${c.price}</span> with code <span class="code">${c.code}</span> — valid through ${c.expires}.</p>
+  <a href="${c.url}" rel="sponsored">Get my ${c.price} deal →</a>
 </div>`;
   }
   return `<div class="cta">
   <strong>Ready for the real thing?</strong>
   <p>The full course has ${course.live ? 'two full-length practice tests, ' : ''}video lessons for every exam domain, hands-on labs and detailed answer explanations.</p>
-  <a href="${course.udemy}" rel="sponsored">${course.live ? 'Get the full course on Udemy →' : 'See the full course on Udemy →'}</a>
+  <a href="${course.udemy}" rel="sponsored">${course.live ? 'Start my full course on Udemy →' : 'See the full course on Udemy →'}</a>
 </div>`;
 }
 
@@ -311,7 +422,61 @@ const footerHtml = `<footer>Questions © TechNuggets Academy (Aseem Mankotia). C
 Not affiliated with or endorsed by the certification vendor. <a href="index.html">All free practice tests</a></footer>
 </div><script src="quiz.js"></script></body></html>`;
 
+// exam-facts chips for the hero (from the course config we already have)
+function heroFacts(cfg) {
+  if (!cfg) return '';
+  const f = [];
+  if (cfg.exam_cost_usd) f.push(`<span class="fact">Exam fee <b>~$${cfg.exam_cost_usd}</b></span>`);
+  if (Array.isArray(cfg.domains) && cfg.domains.length) f.push(`<span class="fact"><b>${cfg.domains.length}</b> exam domains</span>`);
+  if (cfg.difficulty) f.push(`<span class="fact">Level <b>${esc(cfg.difficulty)}</b></span>`);
+  f.push(`<span class="fact"><b>2</b> timed practice tests in the course</span>`);
+  return f.length ? `<div class="facts">${f.join('')}</div>` : '';
+}
+
+// hero: logo + vendor chip + first-person price-in-label CTA above the fold + urgency
+function heroBlock(course, questions, cfg, accent) {
+  const chip = cfg && cfg.exam_code ? esc(cfg.exam_code) : (cfg && cfg.exam_vendor ? esc(cfg.exam_vendor) : 'Certification prep');
+  const courseUrl = (course.coupon && course.coupon.url) ? course.coupon.url : course.udemy;
+  const label = course.coupon ? `Get my ${course.coupon.price} deal →` : 'Start my full course on Udemy →';
+  const enroll = course.live
+    ? `<a class="btn enroll" href="${courseUrl}" rel="sponsored" target="_blank">${label}</a>`
+    : '';
+  const urgency = (course.live && course.coupon && course.coupon.expires)
+    ? `<span class="urgency">⏳ Deal ends ${course.coupon.expires}</span>` : '';
+  return `<div class="hero">
+  <span class="chip">${chip}</span>
+  <h1>Free ${esc(course.name)} Practice Test</h1>
+  <p class="sub">${questions.length} exam-style questions with full explanations — no sign-up. Score yourself, then close your gaps with the full course.</p>
+  ${heroFacts(cfg)}
+  <div class="cta-row">${enroll}<a class="btn ghost" href="#practice">Try the free test →</a>${urgency}</div>
+</div>`;
+}
+
+function faqBlock(course, cfg) {
+  if (!cfg) return '';
+  const items = [];
+  if (cfg.exam_cost_usd)
+    items.push([`How much does the ${cfg.exam_code || course.name} exam cost?`,
+      `The exam fee is approximately $${cfg.exam_cost_usd} and varies by region — confirm current pricing with the certification vendor before you book.`]);
+  if (Array.isArray(cfg.domains) && cfg.domains.length)
+    items.push([`What topics are on the exam?`,
+      `It covers ${cfg.domains.length} domains: ${cfg.domains.map(d => esc(domainLabel(d.name)) + (d.weight ? ` (${esc(d.weight)})` : '')).join(', ')}. The full course has a dedicated chapter, lab and practice-test coverage for each.`]);
+  items.push([`Is this practice test really free?`,
+    `Yes — all ${'questions'} on this page are free with explanations and no sign-up. The paid Udemy course adds two full-length timed exams, video lessons and hands-on labs.`]);
+  if (course.coupon)
+    items.push([`How do I get the discount?`,
+      `Use code ${course.coupon.code} at checkout for ${course.coupon.price} (list ${course.coupon.list}) through ${course.coupon.expires} — the enroll button applies it automatically.`]);
+  items.push([`Will this prepare me for the real exam?`,
+    `The questions mirror the real exam's style and are mapped to the official domains. This is exam-focused preparation — combine the free test with the full course's timed simulations to gauge your readiness.`]);
+  return `<section class="faq"><h3>${esc(cfg.exam_code || course.name)} exam — quick answers</h3>${
+    items.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${a}</p></details>`).join('')}</section>`;
+}
+
+const trustBand = `<div class="trust"><span>✅ <b>Free</b> practice — no sign-up</span><span>📝 Real exam-style questions</span><span>💡 Detailed explanations</span><span>💸 30-day money-back via Udemy</span></div>`;
+
 function certPage(course, questions, domainPages) {
+  const cfg = configForSlug(course.slug);
+  const accent = vendorAccent(course);
   const domainsNav = domainPages.length
     ? `<div class="domains"><span class="meta">More free practice by exam domain:</span><br>${
         domainPages.map(dp => `<a href="${dp.file}">${esc(dp.label)} →</a>`).join('')}</div>`
@@ -319,24 +484,29 @@ function certPage(course, questions, domainPages) {
   return head(
     `Free ${esc(course.name)} Practice Test — ${questions.length} Real Exam-Style Questions`,
     `Free ${esc(course.name)} practice questions with detailed explanations. Test yourself before the real exam.`,
-    `${course.page}.html`) + `
-<header><h1><a href="index.html">TechNuggets Academy</a></h1>
-<p class="sub">Free ${esc(course.name)} practice test — ${questions.length} exam-style questions with explanations. No sign-up.</p></header>
+    `${course.page}.html`, accent) +
+    brandbar() +
+    heroBlock(course, questions, cfg, accent) +
+    trustBand + `
+<div id="practice"></div>
 ${questionsHtml(questions)}
 <div class="score" id="score"></div>
 <div class="gaps" id="gaps"${course.coupon ? ` data-coupon="${course.coupon.code}"` : ''}></div>
 ${ctaBlock(course)}
+${faqBlock(course, cfg)}
 ${domainsNav}
 ${footerHtml}`;
 }
 
 function domainPage(course, domain, questions, file) {
   const label = domainLabel(domain);
+  const accent = vendorAccent(course);
   return head(
     `Free ${esc(label)} Practice Questions — ${esc(course.name)}`,
     `${questions.length} free ${esc(label)} practice questions with explanations for the ${esc(course.name)} exam.`,
-    file) + `
-<header><h1><a href="index.html">TechNuggets Academy</a></h1>
+    file, accent) +
+    brandbar() + `
+<header><h1>${esc(label)}</h1>
 <p class="sub">Free ${esc(course.name)} practice — ${questions.length} questions on <strong>${esc(label)}</strong>, with explanations. No sign-up.
 <a href="${course.page}.html" style="color:var(--acc)">Full ${questions.length >= N_QUESTIONS ? '' : '12-question '}mixed test →</a></p></header>
 ${questionsHtml(questions)}
@@ -350,17 +520,75 @@ function indexPage(cards) {
   return head(
     'Free AI Certification Practice Tests — AWS, ISACA, IAPP, CompTIA, Databricks, NVIDIA',
     'Free practice questions with explanations for the top AI certifications: AWS AIF-C01, SCS-C03, AIP-C01, IAPP AIGP, ISACA AAIR, CompTIA SecAI+, Databricks GenAI Engineer, NVIDIA NCA-GENL.',
-    '') + `
-<header><h1>TechNuggets Academy</h1>
-<p class="sub">Free practice tests for the AI certifications employers actually ask for — real exam-style questions with explanations, no sign-up.</p></header>
+    '') +
+    brandbar() + `
+<div class="hero">
+  <span class="chip">Free certification practice</span>
+  <h1>Pass-ready practice for the certs employers actually ask for</h1>
+  <p class="sub">Free, exam-style questions with detailed explanations across ${COURSES.filter(c=>c.live).length}+ AI &amp; cloud certifications — no sign-up. Score yourself, then close your gaps with a full course.</p>
+  <div class="cta-row"><a class="btn ghost" href="#courses">Browse the certs →</a></div>
+</div>
+<div class="trust"><span>✅ <b>Free</b> practice — no sign-up</span><span>📝 Real exam-style questions</span><span>💡 Detailed explanations</span><span>🔄 Fresh coupons every week</span></div>
+<div id="courses"></div>
 ${cards}
+<section id="subscribe" style="margin:28px 0;padding:24px;border:1px solid var(--line,#e2e8f0);border-radius:14px;background:var(--card,#f8fafc)">
+  <h2 style="margin:0 0 6px">Get new courses &amp; coupons — a short email every few days</h2>
+  <p style="margin:0 0 14px;color:var(--dim,#475569)">Opt in for a brief heads-up when we launch new certification prep or run a discount. No spam, and one-click unsubscribe anytime.</p>
+  <form id="subForm" style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start">
+    <input type="email" name="email" required placeholder="you@email.com" style="flex:1 1 220px;padding:10px 12px;border:1px solid var(--line,#e2e8f0);border-radius:8px;font-size:15px">
+    <input type="text" name="name" placeholder="First name (optional)" style="flex:1 1 160px;padding:10px 12px;border:1px solid var(--line,#e2e8f0);border-radius:8px;font-size:15px">
+    <button type="submit" style="padding:10px 20px;border:0;border-radius:8px;background:var(--btn,#0ea5e9);color:#fff;font-weight:600;font-size:15px;cursor:pointer">Subscribe</button>
+    <label style="flex:1 1 100%;font-size:13px;color:var(--dim,#475569);display:flex;gap:8px;align-items:flex-start">
+      <input type="checkbox" name="consent" required style="margin-top:3px">
+      <span>I agree to receive marketing emails from TechNuggets Academy and understand I can unsubscribe at any time.</span></label>
+  </form>
+  <p id="subMsg" role="status" style="margin:12px 0 0;font-size:14px;min-height:18px"></p>
+</section>
+<script>
+(function(){
+  var f=document.getElementById('subForm'), m=document.getElementById('subMsg');
+  if(!f) return;
+  f.addEventListener('submit', function(e){
+    e.preventDefault();
+    var email=f.email.value.trim(), name=f.name.value.trim();
+    if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)){ m.style.color='#dc2626'; m.textContent='Please enter a valid email.'; return; }
+    m.style.color='#475569'; m.textContent='Subscribing…';
+    fetch(${JSON.stringify(SUBSCRIBE_ENDPOINT)}, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email:email, name:name})})
+      .then(function(r){ return r.json().catch(function(){return {ok:r.ok};}); })
+      .then(function(d){ if(d && d.ok){ m.style.color='#16a34a'; m.textContent='You’re in! Watch your inbox for new courses and coupons.'; f.reset(); } else { throw new Error(); } })
+      .catch(function(){ m.style.color='#dc2626'; m.textContent='Something went wrong — please try again in a moment.'; });
+  });
+})();
+</script>
 <footer>© TechNuggets Academy (Aseem Mankotia). Course links may be referral links. Not affiliated with or endorsed by any certification vendor.</footer>
 </div></body></html>`;
 }
 
-// ---------- build ----------
+// ---------- build (runs only when executed directly; require() just exposes the registry) ----------
+if (require.main === module) {
 fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(OUT, { recursive: true });
+
+// copy TechNuggets brand assets into the site (logo header, favicon, social/OG image)
+(function copyBrand() {
+  const B = path.join(ROOT, 'brand');
+  const copies = [
+    ['favicon.ico', 'favicon.ico'],
+    ['png/apple-touch-icon-180.png', 'apple-touch-icon.png'],
+    ['png/technuggets-icon-192.png', 'icon-192.png'],
+    ['png/technuggets-icon-512.png', 'icon-512.png'],
+    ['png/technuggets-logo-horizontal-600.png', 'logo.png'],
+    ['png/technuggets-logo-horizontal-dark-600.png', 'logo-dark.png'],
+  ];
+  let n = 0;
+  for (const [src, dst] of copies) {
+    const s = path.join(B, src);
+    if (fs.existsSync(s)) { fs.copyFileSync(s, path.join(OUT, dst)); n++; }
+    else console.log(`  ⚠ brand asset missing: ${src}`);
+  }
+  console.log(`✅ copied ${n} brand assets → site/`);
+})();
+
 fs.writeFileSync(path.join(OUT, 'style.css'), CSS.trim() + '\n');
 fs.writeFileSync(path.join(OUT, 'quiz.js'), QUIZ_JS.trim() + '\n');
 
@@ -393,8 +621,17 @@ for (const c of COURSES) {
   fs.writeFileSync(path.join(OUT, `${c.page}.html`), certPage(c, qs, domainPages));
   sitemapPaths.push(`${c.page}.html`);
   const deal = c.coupon ? `<span class="badge deal">${c.coupon.price} coupon</span>` : '';
-  cards.push(`<div class="card"><h2>${esc(c.name)}<span class="badge ${c.live ? 'live' : 'soon'}">${c.live ? 'Course live' : 'Course in review'}</span>${deal}</h2>
-  <p>${esc(c.tagline)}</p><a class="go" href="${c.page}.html">Take the free ${qs.length}-question practice test →</a></div>`);
+  // Prominent course button (live courses only — in-review ones have dead Udemy
+  // links). Prefer the discounted coupon link when there is one so visitors land
+  // on the deal price; label carries the price to make the CTA compelling.
+  const courseUrl = (c.coupon && c.coupon.url) ? c.coupon.url : c.udemy;
+  const courseBtn = c.live
+    ? `<a class="btn course" href="${courseUrl}" rel="sponsored" target="_blank">${c.coupon ? `Get my ${c.coupon.price} deal →` : 'Start my full course →'}</a>`
+    : '';
+  const accent = vendorAccent(c);
+  cards.push(`<div class="card" style="--vendor:${accent}"><h2><span class="vchip"></span>${esc(c.name)}<span class="badge ${c.live ? 'live' : 'soon'}">${c.live ? 'Course live' : 'Course in review'}</span>${deal}</h2>
+  <p>${esc(c.tagline)}</p>
+  <div class="actions">${courseBtn}<a class="btn practice" href="${c.page}.html">Free ${qs.length}-question practice test →</a></div></div>`);
   console.log(`✅ ${c.page}.html (${qs.length} questions, ${domainPages.length} domain pages)`);
 }
 if (!INCLUDE_ALL) {
@@ -409,5 +646,8 @@ fs.writeFileSync(path.join(OUT, 'sitemap.xml'),
   sitemapPaths.map(p => `  <url><loc>${SITE_URL}/${p}</loc><changefreq>weekly</changefreq><priority>${p === '' ? '1.0' : p.includes('-') && !COURSES.some(c => p === c.page + '.html') ? '0.7' : '0.9'}</priority></url>`).join('\n') +
   `\n</urlset>\n`);
 fs.writeFileSync(path.join(OUT, 'robots.txt'), `User-agent: *\nAllow: /\nSitemap: ${SITE_URL}/sitemap.xml\n`);
-
 console.log(`✅ index.html (${cards.length} certs) + sitemap.xml + robots.txt\n→ ${OUT}`);
+}
+
+// Shared registry export so the email/marketing pipeline can reuse one source of truth.
+module.exports = { COURSES, SITE_URL };

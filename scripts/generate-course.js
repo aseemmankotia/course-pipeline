@@ -265,7 +265,7 @@ ${domainsBlock}
 EXTRA GUIDANCE: ${CFG.extra_guidance}
 AUTHOR: ${CFG.author} — use this exact name anywhere an author/instructor is referenced.
 
-UDEMY COMPLIANCE — the marketplace rejects overpromising copy. In course_title, course_subtitle, and course_description: NEVER promise outcomes. Banned: "pass" as a promise, "first attempt", "guaranteed", "you will pass", monetary/job/salary outcomes. Use "prepare for", "exam-focused preparation", "master the domains" framing instead.
+UDEMY COMPLIANCE — the marketplace rejects overpromising copy. In course_title, course_subtitle, and course_description: NEVER promise outcomes. Banned: "pass" as a promise, "first attempt", "guaranteed", "you will pass", monetary/job/salary outcomes. Use "prepare for", "exam-focused preparation", "master the domains" framing instead. Do NOT use the word "guarantee" in ANY form — not even in a negated disclaimer like "does not guarantee a passing score." An automated checker flags the literal token, and such a disclaimer is unnecessary; simply omit any claim about the exam result rather than disclaiming one.
 
 Create exactly ${CFG.chapters_target} chapters. Order chapters by exam-domain order. The final chapter is a full exam simulation + test-taking strategy. Respond with ONLY this JSON:
 {
@@ -510,7 +510,20 @@ function assemble() {
       quiz_questions: ch.quiz_questions,
       concepts: ch.concepts,
       heygen_local_file: `heygen-chapter-${String(ch.number).padStart(2, '0')}.mp4`,
-      output_filename: `chapter-${String(ch.number).padStart(2, '0')}-${slugify(ch.title)}.mp4`,
+      // Prefix with the exam code so every rendered video filename is GLOBALLY
+      // unique across the catalog. Courses that share a chapter title (esp. the
+      // final "…-full-practice-exam-simulation-and-time-management-strategy")
+      // otherwise produce byte-identical filenames, and attach-by-filename can
+      // then grab the wrong course's asset from the shared Udemy library
+      // (NCP-OUSD/NCA-ADS/CPM collision, 2026-08-03). autopilot.js's salvage reads
+      // this output_filename, and collect-videos.js applies the same prefix.
+      output_filename: `${slugify(CFG.exam_code || CFG.slug)}-chapter-${String(ch.number).padStart(2, '0')}-${slugify(ch.title)}.mp4`,
+      // Logo branding in chapter intro/outro/footers. Default ON for newly generated
+      // courses (the two new ones + everything going forward); set brand_logo:false in a
+      // config to opt out. Already-published courses keep their pre-existing render inputs
+      // (no brand_logo field → renderer treats as false), so remediation re-renders leave
+      // them text-only — only their landing pages get the new branding.
+      brand_logo: CFG.brand_logo !== false,
       // TTS narration mode: audio comes from the narration track, slides fill the screen
       ...(CFG.narration_mode === 'tts' ? { pip_mode: 'none' } : {}),
     };

@@ -27,6 +27,7 @@ const axios        = require('axios');
 const puppeteer    = require('puppeteer');
 const { spawn, spawnSync } = require('child_process');
 const { callAI }   = require('./ai-client-node.js');
+const { buildAlignedTimeline } = require('./slide-timing.js');
 
 // Chapter number: argv wins over whatever is in the JSON
 const CHAPTER_NUM  = process.argv[2] ? parseInt(process.argv[2]) : null;
@@ -89,6 +90,37 @@ const ACCENT     = '#e94560';
 const NAVY       = '#1a1a2e';
 const DEEP_BLUE  = '#16213e';
 
+// ── TechNuggets brand marks (embedded as data URIs so each rendered slide is
+// self-contained). Loaded once from brand/. Falls back to '' if a file is missing,
+// in which case the slide keeps its text wordmark. Used to brand every chapter's
+// intro (title card) and outro (chapter-complete card) plus the content footer.
+function _dataUri(rel) {
+  try {
+    const p = path.join(__dirname, '..', 'brand', rel);
+    const ext = path.extname(rel).slice(1).toLowerCase();
+    const mime = ext === 'svg' ? 'image/svg+xml' : `image/${ext === 'ico' ? 'x-icon' : ext}`;
+    return `data:${mime};base64,${fs.readFileSync(p).toString('base64')}`;
+  } catch { return ''; }
+}
+const LOGO_LIGHT = _dataUri('png/technuggets-logo-horizontal-600.png');        // for light backgrounds
+const LOGO_DARK  = _dataUri('png/technuggets-logo-horizontal-dark-600.png');    // for dark backgrounds
+const LOGO_ICON  = _dataUri('png/technuggets-icon-64.png');                     // small mark for footers
+// Logo branding is OPT-IN per course (set from input.brand_logo in main()). Off by
+// default so already-published courses render EXACTLY as before even if re-rendered
+// for A/V remediation — only courses generated with brand_logo:true (the new + future
+// ones) show the logo. See generate-course.js renderInput.brand_logo.
+let BRAND_ENABLED = false;
+// <img> logo lockup (variant 'light'|'dark'); falls back to a text wordmark if the asset is absent.
+function brandLogo(variant, height, extraStyle = '') {
+  const src = variant === 'dark' ? LOGO_DARK : LOGO_LIGHT;
+  if (src) return `<img src="${src}" alt="TechNuggets Academy" style="height:${height}px;width:auto;display:block;${extraStyle}">`;
+  return `<span style="font-family:'Poppins',sans-serif;font-weight:700;font-size:${Math.round(height * 0.62)}px;color:${variant === 'dark' ? 'rgba(255,255,255,.85)' : NAVY};${extraStyle}">TechNuggets Academy</span>`;
+}
+function brandIcon(size) {
+  if (LOGO_ICON) return `<img src="${LOGO_ICON}" alt="" style="height:${size}px;width:${size}px;display:inline-block;vertical-align:middle;">`;
+  return '';
+}
+
 // ── Entry ─────────────────────────────────────────────────────────────────────
 
 async function main() {
@@ -101,6 +133,11 @@ async function main() {
     quiz_questions = [], concepts = [],
     output_filename,
   } = input;
+
+  // Opt-in logo branding: only courses generated with brand_logo:true carry the logo
+  // in their chapter intro/outro/footers. Existing courses (whose render inputs predate
+  // this flag) stay text-only, so remediation re-renders don't restyle them.
+  BRAND_ENABLED = input.brand_logo === true;
 
   // Set up chapter-specific directory structure using the effective chapter number
   const PATHS = setupChapterPaths(chapter_number);
@@ -199,9 +236,17 @@ async function main() {
   if (fs.existsSync(sectionsCache)) {
     try {
       const cached = JSON.parse(fs.readFileSync(sectionsCache, 'utf8'));
-      if (cached.scriptLength === script.length && Array.isArray(cached.sections) && cached.sections.length) {
+      // A cache is only valid if EVERY content slide carries a `cue` — the
+      // verbatim narration locator that drives audio-aligned slide timing. Old
+      // caches (pre-alignment fix) lack cues, so re-renders of already-built
+      // courses must re-split to earn them. Fixed cards never have cues.
+      const dyn = (cached.sections || []).filter(s => !['chapter_title','chapter_summary','quiz'].includes(s.type));
+      const allHaveCues = dyn.length && dyn.every(s => typeof s.cue === 'string' && s.cue.trim().split(/\s+/).length >= 3);
+      if (cached.scriptLength === script.length && Array.isArray(cached.sections) && cached.sections.length && allHaveCues) {
         sections = cached.sections;
         log(`   ✓ ${sections.length} slides loaded from cache (no AI call)`);
+      } else if (cached.sections && cached.sections.length && !allHaveCues) {
+        log('   ↻ cached slides predate the audio-alignment fix (no cues) — re-splitting');
       }
     } catch (_) { /* stale cache — re-split */ }
   }
@@ -262,7 +307,32 @@ async function main() {
   const totalDuration = getVideoDuration(ffprobe, tempHeygenPath);
   log(`   ✓ Total duration: ${totalDuration.toFixed(2)}s`);
 
-  const timed = distributeTimings(allSections, totalDuration);
+  // ── Audio-aligned slide timing ───────────────────────────────────────────
+  // Preferred path: flip each slide exactly when the narrator reaches it, using
+  // the per-word timestamps tts-generate.js saved next to the narration voice
+  // track (heygen-chapter-NN.words.json) + each slide's verbatim `cue`. If the
+  // sidecar is missing (e.g. an ElevenLabs course, or audio made before this
+  // fix) or alignment isn't confident, fall back to the old proportional timing
+  // so a render is never worse than before.
+  let timed = null;
+  const wordsPath = heygenVideoPath.replace(/\.[^.]+$/, '.words.json');
+  if (fs.existsSync(wordsPath)) {
+    try {
+      const wt = JSON.parse(fs.readFileSync(wordsPath, 'utf8'));
+      const aligned = buildAlignedTimeline(allSections, wt, totalDuration);
+      if (aligned) {
+        timed = allSections.map((s, i) => ({ ...s, duration: aligned.durations[i] }));
+        log(`   ✓ Audio-aligned timing: ${aligned.matched}/${aligned.contentCount} slide cues matched to spoken audio`);
+      } else {
+        log('   ⚠ word timings present but alignment not confident — using proportional timing');
+      }
+    } catch (e) {
+      log(`   ⚠ could not read ${path.basename(wordsPath)} (${String(e.message).slice(0,60)}) — using proportional timing`);
+    }
+  } else {
+    log(`   ⓘ no ${path.basename(wordsPath)} — using proportional timing (run tts-generate to enable audio-aligned slides)`);
+  }
+  if (!timed) timed = distributeTimings(allSections, totalDuration);
   timed.forEach((s, i) => log(`   Slide ${i + 1}: ${s.duration.toFixed(1)}s — ${s.type}`));
 
   // ── Step 6: Composite slides + HeyGen video PIP ──────────────────────────
@@ -313,6 +383,7 @@ Rules:
 - Keep bullets to 3-5 per slide
 - VARIETY IS MANDATORY: use at least 4 different slide types per chapter; never more than 2 "concept" slides in a row — break theory up with live_code, diagram, portal_demo, or analogy slides
 - Prefer "live_code" over "code" whenever demonstrating execution; prefer "diagram" whenever the script describes an architecture, flow, or comparison
+- CUE (REQUIRED on EVERY slide): copy VERBATIM the first 8–12 words of the exact portion of the Script that this slide covers — the words as they are actually spoken, in order, exactly as written in the Script (do NOT paraphrase, summarize, translate, or fix them). The cues, read top to bottom, must march FORWARD through the Script (each slide's cue starts at or after the previous slide's). This is what lets us flip the slide at the moment the narrator reaches it, so it must be a real substring of the Script.
 - Return ONLY a JSON array, no markdown`,
     prompt: `Chapter: ${input.chapter_title}
 Concepts: ${(input.concepts || []).join(', ')}
@@ -326,6 +397,7 @@ Return JSON array of slides:
     "type": "concept",
     "title": "Slide title",
     "bullets": ["point 1", "point 2", "point 3"],
+    "cue": "verbatim first 8-12 words of the script span this slide covers",
     "duration_seconds": 30
   },
   {
@@ -334,6 +406,7 @@ Return JSON array of slides:
     "language": "python",
     "code": "# actual code here\\nprint('hello')",
     "explanation": "What this code does",
+    "cue": "verbatim first 8-12 words of the script span this slide covers",
     "duration_seconds": 45
   },
   {
@@ -632,8 +705,11 @@ function progressDots(index, total) {
 }
 
 function chapterBadge(input) {
-  return `<div style="position:absolute;bottom:22px;right:24px;font-size:12px;color:#9ca3af;font-weight:500;">
+  if (!BRAND_ENABLED) return `<div style="position:absolute;bottom:22px;right:24px;font-size:12px;color:#9ca3af;font-weight:500;">
     ${esc(input.course_title || '')} · Ch ${input.chapter_number}
+  </div>`;
+  return `<div style="position:absolute;bottom:20px;right:24px;font-size:12px;color:#9ca3af;font-weight:500;display:flex;align-items:center;gap:7px;">
+    ${brandIcon(16)}<span>${esc(input.course_title || 'TechNuggets Academy')} · Ch ${input.chapter_number}</span>
   </div>`;
 }
 
@@ -668,7 +744,7 @@ function buildChapterTitleSlide(s) {
   <div class="ch-sub">${esc(s.chapter_subtitle || '')}</div>
   <div style="display:flex;gap:6px;align-items:center;">${dots}</div>
 </div>
-<div class="academy">TechNuggets Academy</div>
+<div class="academy">${BRAND_ENABLED ? brandLogo('dark', 30) : 'TechNuggets Academy'}</div>
 </body></html>`;
 }
 
@@ -834,7 +910,7 @@ body{width:1280px;height:720px;background:#1a1a2e;font-family:'Inter',sans-serif
   </div>
 </div>
 <div class="expl-bar" id="expl-bar">💡 <span id="expl-text"></span></div>
-<div class="slide-brand">TechNuggets Academy · Ch ${input.chapter_number}</div>
+<div class="slide-brand">${BRAND_ENABLED ? brandIcon(15) + ' ' : ''}TechNuggets Academy · Ch ${input.chapter_number}</div>
 <div class="slide-dots">${progressDots(index, total)}</div>
 <script>
 const CODE_LINES  = ${codeLinesJson};
@@ -1072,7 +1148,7 @@ ${accentBar()}
   </div>
 </div>
 <div style="position:absolute;bottom:22px;right:32px;font-size:12px;color:#9ca3af;font-weight:500;">
-  TechNuggets Academy
+  ${BRAND_ENABLED ? brandLogo('light', 26) : 'TechNuggets Academy'}
 </div>
 </body></html>`;
 }
