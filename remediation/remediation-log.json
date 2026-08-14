@@ -1,0 +1,496 @@
+{
+  "fix": "audio-aligned-timing-2026-08-04",
+  "wave": "waiting-to-publish (10 net-new drafts)",
+  "revTag": "rev1",
+  "created": "2026-08-04T23:03:46.006Z",
+  "note": "Pass 1 = these 10 built-but-unpublished courses. Pass 2 (later) = all published courses via --include-live (pulls in refreshes too).",
+  "courses": {
+    "aipmm-cdpm-certified-digital-product-manager-2026": {
+      "slug": "aipmm-cdpm-certified-digital-product-manager-2026",
+      "status": "collected",
+      "revTag": "rev1",
+      "chapters": 12,
+      "examCode": "CDPM",
+      "videos": [
+        "cdpm-chapter-01-digital-product-management-foundations-rev1.mp4",
+        "cdpm-chapter-02-customer-discovery-jtbd-and-design-thinking-understanding-th-rev1.mp4",
+        "cdpm-chapter-03-continuous-discovery-and-opportunity-framing-rev1.mp4",
+        "cdpm-chapter-04-lean-startup-and-riskiest-assumption-testing-rev1.mp4",
+        "cdpm-chapter-05-mvp-types-and-experiment-design-rev1.mp4",
+        "cdpm-chapter-06-agile-delivery-fundamentals-for-digital-products-rev1.mp4",
+        "cdpm-chapter-07-prioritization-frameworks-and-outcome-based-roadmapping-rev1.mp4",
+        "cdpm-chapter-08-product-analytics-foundations-and-the-north-star-metric-rev1.mp4",
+        "cdpm-chapter-09-growth-experimentation-pricing-and-product-led-growth-rev1.mp4",
+        "cdpm-chapter-10-ux-fundamentals-accessibility-and-design-systems-for-pms-rev1.mp4",
+        "cdpm-chapter-11-responsible-ai-platform-thinking-and-security-for-digital-pr-rev1.mp4",
+        "cdpm-chapter-12-full-exam-simulation-and-time-management-strategy-rev1.mp4"
+      ],
+      "reattached": false,
+      "notes": [
+        "2026-08-05T21:49:38.215Z: rev1 pass fell back to proportional (empty word sidecars); edge-tts boundary fix applied, re-render pending"
+      ],
+      "startedAt": "2026-08-06T00:24:09.277Z",
+      "updatedAt": "2026-08-07T00:16:08.652Z",
+      "videosDir": "exports/aipmm-cdpm-certified-digital-product-manager-2026/videos-rev1",
+      "collectedAt": "2026-08-06T02:54:27.879Z",
+      "cueMatch": {
+        "2": "16/16",
+        "3": "10/16",
+        "4": "11/16",
+        "5": "11/14",
+        "6": "12/16",
+        "8": "12/16",
+        "9": "10/16",
+        "12": "10/16"
+      },
+      "proportionalFallbackChapters": [
+        1,
+        7,
+        10,
+        11
+      ],
+      "udemyCourseId": 7283479,
+      "reattachedChapters": 11,
+      "pendingTranscodeChapters": [
+        "ch3"
+      ]
+    },
+    "aipmm-cpm-certified-product-manager-2026": {
+      "slug": "aipmm-cpm-certified-product-manager-2026",
+      "status": "collected",
+      "revTag": "rev1",
+      "chapters": 12,
+      "examCode": "CPM",
+      "videos": [
+        "cpm-chapter-01-prodbok-vocabulary-and-the-seven-phase-product-life-cycle-rev1.mp4",
+        "cpm-chapter-02-phase-gate-decisions-and-the-inbound-outbound-go-to-function-rev1.mp4",
+        "cpm-chapter-03-primary-and-secondary-research-methods-and-sizing-the-market-rev1.mp4",
+        "cpm-chapter-04-competitive-analysis-frameworks-and-turning-evidence-into-op-rev1.mp4",
+        "cpm-chapter-05-product-vision-strategy-and-the-business-case-rev1.mp4",
+        "cpm-chapter-06-portfolio-decisions-build-buy-partner-and-product-market-dat-rev1.mp4",
+        "cpm-chapter-07-mrd-vs-prd-requirement-types-personas-and-use-cases-rev1.mp4",
+        "cpm-chapter-08-prioritizing-requirements-scope-and-first-release-scope-rev1.mp4",
+        "cpm-chapter-09-roadmaps-prioritization-frameworks-and-cross-functional-coor-rev1.mp4",
+        "cpm-chapter-10-launch-readiness-launch-tiers-and-positioning-messaging-rev1.mp4",
+        "cpm-chapter-11-pricing-and-packaging-strategy-and-post-launch-metrics-rev1.mp4",
+        "cpm-chapter-12-full-practice-exam-simulation-and-time-management-strategy-rev1.mp4"
+      ],
+      "reattached": true,
+      "notes": [
+        "2026-08-05T21:49:38.215Z: rev1 pass fell back to proportional (empty word sidecars); edge-tts boundary fix applied, re-render pending"
+      ],
+      "startedAt": "2026-08-05T21:50:56.243Z",
+      "updatedAt": "2026-08-07T00:16:08.652Z",
+      "videosDir": "exports/aipmm-cpm-certified-product-manager-2026/videos-rev1",
+      "collectedAt": "2026-08-06T00:12:01.765Z",
+      "cueMatch": {
+        "1": "12/15",
+        "3": "12/15",
+        "4": "11/16",
+        "5": "16/16",
+        "6": "9/15",
+        "7": "10/15",
+        "8": "10/16",
+        "9": "10/15",
+        "10": "10/16",
+        "11": "11/16",
+        "12": "9/11"
+      },
+      "proportionalFallbackChapters": [
+        2
+      ],
+      "udemyCourseId": 7283433,
+      "reattachedChapters": 12
+    },
+    "aws-data-engineer-associate-dea-c01-2026": {
+      "slug": "aws-data-engineer-associate-dea-c01-2026",
+      "status": "collected",
+      "revTag": "rev1",
+      "chapters": 12,
+      "examCode": "DEA-C01",
+      "videos": [
+        "dea-c01-chapter-01-streaming-ingestion-kinesis-and-msk-rev1.mp4",
+        "dea-c01-chapter-02-batch-ingestion-dms-datasync-and-appflow-rev1.mp4",
+        "dea-c01-chapter-03-transformation-glue-emr-and-lambda-rev1.mp4",
+        "dea-c01-chapter-04-orchestration-and-data-formats-rev1.mp4",
+        "dea-c01-chapter-05-s3-data-lakes-lake-formation-and-athena-rev1.mp4",
+        "dea-c01-chapter-06-data-warehousing-with-amazon-redshift-rev1.mp4",
+        "dea-c01-chapter-07-operational-stores-and-metadata-management-rev1.mp4",
+        "dea-c01-chapter-08-monitoring-logging-and-troubleshooting-rev1.mp4",
+        "dea-c01-chapter-09-performance-and-cost-optimization-rev1.mp4",
+        "dea-c01-chapter-10-encryption-and-access-control-rev1.mp4",
+        "dea-c01-chapter-11-data-privacy-masking-and-governance-rev1.mp4",
+        "dea-c01-chapter-12-full-exam-simulation-and-test-taking-strategy-rev1.mp4"
+      ],
+      "reattached": true,
+      "notes": [
+        "2026-08-05T21:49:38.215Z: rev1 pass fell back to proportional (empty word sidecars); edge-tts boundary fix applied, re-render pending"
+      ],
+      "startedAt": "2026-08-06T02:54:27.940Z",
+      "updatedAt": "2026-08-07T00:39:42.567Z",
+      "videosDir": "exports/aws-data-engineer-associate-dea-c01-2026/videos-rev1",
+      "collectedAt": "2026-08-06T04:58:06.634Z",
+      "cueMatch": {
+        "1": "12/16",
+        "2": "10/15",
+        "4": "11/16",
+        "5": "12/16",
+        "6": "9/15",
+        "7": "10/15",
+        "8": "10/15",
+        "10": "13/16",
+        "12": "8/13"
+      },
+      "proportionalFallbackChapters": [
+        3,
+        9,
+        11
+      ],
+      "udemyCourseId": 7290003,
+      "reattachedChapters": 12
+    },
+    "aws-machine-learning-engineer-associate-mla-c01": {
+      "slug": "aws-machine-learning-engineer-associate-mla-c01",
+      "status": "collected",
+      "revTag": "rev1",
+      "chapters": 12,
+      "examCode": "MLA-C01",
+      "videos": [
+        "mla-c01-chapter-01-data-ingestion-and-storage-for-ml-rev1.mp4",
+        "mla-c01-chapter-02-data-transformation-and-feature-engineering-rev1.mp4",
+        "mla-c01-chapter-03-data-integrity-bias-detection-and-labeling-rev1.mp4",
+        "mla-c01-chapter-04-choosing-the-right-modeling-approach-rev1.mp4",
+        "mla-c01-chapter-05-training-and-tuning-sagemaker-models-rev1.mp4",
+        "mla-c01-chapter-06-evaluating-and-explaining-model-performance-rev1.mp4",
+        "mla-c01-chapter-07-selecting-ml-deployment-infrastructure-rev1.mp4",
+        "mla-c01-chapter-08-infrastructure-as-code-for-ml-deployments-rev1.mp4",
+        "mla-c01-chapter-09-automating-ml-pipelines-and-ci-cd-rev1.mp4",
+        "mla-c01-chapter-10-monitoring-model-and-data-quality-rev1.mp4",
+        "mla-c01-chapter-11-cost-optimization-and-security-for-ml-systems-rev1.mp4",
+        "mla-c01-chapter-12-full-exam-simulation-and-test-taking-strategy-rev1.mp4"
+      ],
+      "reattached": false,
+      "notes": [
+        "2026-08-05T21:49:38.215Z: rev1 pass fell back to proportional (empty word sidecars); edge-tts boundary fix applied, re-render pending"
+      ],
+      "startedAt": "2026-08-06T04:58:06.690Z",
+      "updatedAt": "2026-08-07T00:16:08.652Z",
+      "videosDir": "exports/aws-machine-learning-engineer-associate-mla-c01/videos-rev1",
+      "collectedAt": "2026-08-06T06:31:56.659Z",
+      "cueMatch": {
+        "1": "10/16",
+        "2": "9/9",
+        "4": "14/15",
+        "5": "16/16",
+        "7": "9/15",
+        "8": "16/16",
+        "9": "10/16",
+        "10": "10/16",
+        "11": "14/16",
+        "12": "11/15"
+      },
+      "proportionalFallbackChapters": [
+        3,
+        6
+      ],
+      "udemyCourseId": 7280793,
+      "reattachedChapters": 11,
+      "pendingTranscodeChapters": [
+        "ch5"
+      ]
+    },
+    "google-associate-cloud-engineer-2026": {
+      "slug": "google-associate-cloud-engineer-2026",
+      "status": "collected",
+      "revTag": "rev1",
+      "chapters": 12,
+      "examCode": "Associate Cloud Engineer",
+      "videos": [
+        "associate-cloud-engineer-chapter-01-resource-hierarchy-projects-and-billing-rev1.mp4",
+        "associate-cloud-engineer-chapter-02-cloud-sdk-gcloud-cli-cloud-shell-and-apis-rev1.mp4",
+        "associate-cloud-engineer-chapter-03-choosing-the-right-compute-option-rev1.mp4",
+        "associate-cloud-engineer-chapter-04-choosing-storage-databases-and-network-design-rev1.mp4",
+        "associate-cloud-engineer-chapter-05-deploying-compute-engine-at-scale-rev1.mp4",
+        "associate-cloud-engineer-chapter-06-deploying-gke-clusters-and-workloads-rev1.mp4",
+        "associate-cloud-engineer-chapter-07-deploying-serverless-and-data-solutions-rev1.mp4",
+        "associate-cloud-engineer-chapter-08-day-2-operations-compute-gke-and-storage-rev1.mp4",
+        "associate-cloud-engineer-chapter-09-monitoring-logging-and-cost-management-rev1.mp4",
+        "associate-cloud-engineer-chapter-10-iam-roles-and-service-accounts-rev1.mp4",
+        "associate-cloud-engineer-chapter-11-least-privilege-iam-conditions-and-audit-logs-rev1.mp4",
+        "associate-cloud-engineer-chapter-12-full-exam-simulation-and-time-management-strategy-rev1.mp4"
+      ],
+      "reattached": true,
+      "notes": [
+        "2026-08-05T21:49:38.215Z: rev1 pass fell back to proportional (empty word sidecars); edge-tts boundary fix applied, re-render pending"
+      ],
+      "startedAt": "2026-08-06T06:31:56.720Z",
+      "updatedAt": "2026-08-07T00:39:42.567Z",
+      "videosDir": "exports/google-associate-cloud-engineer-2026/videos-rev1",
+      "collectedAt": "2026-08-06T07:54:40.716Z",
+      "cueMatch": {
+        "1": "13/16",
+        "2": "12/16",
+        "3": "12/16",
+        "4": "10/16",
+        "5": "13/16",
+        "6": "13/15",
+        "7": "12/15",
+        "8": "12/15",
+        "9": "16/16",
+        "11": "10/16",
+        "12": "10/16"
+      },
+      "proportionalFallbackChapters": [
+        10
+      ],
+      "udemyCourseId": 7289999,
+      "reattachedChapters": 12
+    },
+    "google-cloud-professional-ml-engineer-2026": {
+      "slug": "google-cloud-professional-ml-engineer-2026",
+      "status": "collected",
+      "revTag": "rev1",
+      "chapters": 12,
+      "examCode": "Professional ML Engineer",
+      "videos": [
+        "professional-ml-engineer-chapter-01-bigquery-ml-automl-and-the-low-code-decision-tree-rev1.mp4",
+        "professional-ml-engineer-chapter-02-data-pipelines-at-scale-dataflow-dataproc-pub-sub-dataplex-rev1.mp4",
+        "professional-ml-engineer-chapter-03-feature-store-collaborative-notebooks-and-model-governance-rev1.mp4",
+        "professional-ml-engineer-chapter-04-from-notebook-to-vertex-ai-custom-training-job-rev1.mp4",
+        "professional-ml-engineer-chapter-05-gpus-tpus-and-distributed-training-strategy-rev1.mp4",
+        "professional-ml-engineer-chapter-06-transfer-learning-overfitting-and-retraining-strategy-rev1.mp4",
+        "professional-ml-engineer-chapter-07-online-vs-batch-prediction-and-endpoint-design-rev1.mp4",
+        "professional-ml-engineer-chapter-08-model-optimization-traffic-splitting-and-a-b-testing-rev1.mp4",
+        "professional-ml-engineer-chapter-09-vertex-ai-pipelines-and-ci-cd-for-ml-rev1.mp4",
+        "professional-ml-engineer-chapter-10-orchestration-lineage-and-automated-retraining-rev1.mp4",
+        "professional-ml-engineer-chapter-11-model-monitoring-security-and-production-reliability-rev1.mp4",
+        "professional-ml-engineer-chapter-12-full-practice-exam-simulation-and-time-management-strategy-rev1.mp4"
+      ],
+      "reattached": false,
+      "notes": [
+        "2026-08-05T21:49:38.215Z: rev1 pass fell back to proportional (empty word sidecars); edge-tts boundary fix applied, re-render pending"
+      ],
+      "startedAt": "2026-08-06T07:54:40.755Z",
+      "updatedAt": "2026-08-07T00:16:08.652Z",
+      "videosDir": "exports/google-cloud-professional-ml-engineer-2026/videos-rev1",
+      "collectedAt": "2026-08-06T09:22:24.904Z",
+      "cueMatch": {
+        "1": "13/16",
+        "3": "10/16",
+        "7": "9/14",
+        "8": "10/15",
+        "9": "13/16",
+        "10": "11/15",
+        "11": "10/16"
+      },
+      "proportionalFallbackChapters": [
+        2,
+        4,
+        5,
+        6,
+        12
+      ],
+      "udemyCourseId": 7280555,
+      "reattachedChapters": 11,
+      "pendingTranscodeChapters": [
+        "ch9"
+      ]
+    },
+    "nvidia-nca-ads-accelerated-data-science-2026": {
+      "slug": "nvidia-nca-ads-accelerated-data-science-2026",
+      "status": "collected",
+      "revTag": "rev1",
+      "chapters": 12,
+      "examCode": "NCA-ADS",
+      "videos": [
+        "nca-ads-chapter-01-cudf-fundamentals-the-gpu-dataframe-and-pandas-bridge-rev1.mp4",
+        "nca-ads-chapter-02-cudf-in-practice-joins-grouping-strings-nulls-and-synthetic--rev1.mp4",
+        "nca-ads-chapter-03-scaling-out-dask-and-dask-cudf-for-multi-gpu-workflows-rev1.mp4",
+        "nca-ads-chapter-04-i-o-formats-caching-and-high-throughput-pipeline-design-rev1.mp4",
+        "nca-ads-chapter-05-cuml-fundamentals-regression-classification-and-clustering-a-rev1.mp4",
+        "nca-ads-chapter-06-gpu-feature-engineering-and-rapid-hyperparameter-tuning-rev1.mp4",
+        "nca-ads-chapter-07-gpu-accelerated-eda-time-series-and-anomaly-detection-rev1.mp4",
+        "nca-ads-chapter-08-cugraph-building-graphs-and-running-gpu-scale-algorithms-rev1.mp4",
+        "nca-ads-chapter-09-gpu-architecture-basics-and-memory-management-rev1.mp4",
+        "nca-ads-chapter-10-rapids-environments-cloud-gpus-and-profiling-with-nsight-dlp-rev1.mp4",
+        "nca-ads-chapter-11-visualizing-gpu-data-and-operationalizing-rapids-workflows-rev1.mp4",
+        "nca-ads-chapter-12-full-practice-exam-simulation-and-time-management-strategy-rev1.mp4"
+      ],
+      "reattached": true,
+      "notes": [
+        "2026-08-05T21:49:38.215Z: rev1 pass fell back to proportional (empty word sidecars); edge-tts boundary fix applied, re-render pending",
+        "2026-08-06T10:04:34.151Z: tts-generate failed (exit 1)"
+      ],
+      "startedAt": "2026-08-06T12:12:36.861Z",
+      "updatedAt": "2026-08-07T00:16:08.652Z",
+      "videosDir": "exports/nvidia-nca-ads-accelerated-data-science-2026/videos-rev1",
+      "collectedAt": "2026-08-06T12:58:50.747Z",
+      "cueMatch": {
+        "1": "14/16",
+        "4": "14/16",
+        "5": "13/15",
+        "6": "15/16",
+        "7": "14/16",
+        "8": "13/16",
+        "9": "11/15",
+        "10": "12/16",
+        "11": "14/16",
+        "12": "10/14"
+      },
+      "proportionalFallbackChapters": [
+        2,
+        3
+      ],
+      "udemyCourseId": 7284909,
+      "reattachedChapters": 12
+    },
+    "nvidia-ncp-aai-agentic-ai-2026": {
+      "slug": "nvidia-ncp-aai-agentic-ai-2026",
+      "status": "collected",
+      "revTag": "rev1",
+      "chapters": 12,
+      "examCode": "NCP-AAI",
+      "videos": [
+        "ncp-aai-chapter-01-anatomy-of-an-llm-agent-rev1.mp4",
+        "ncp-aai-chapter-02-structured-reasoning-and-tool-calling-schemas-rev1.mp4",
+        "ncp-aai-chapter-03-multi-agent-coordination-patterns-rev1.mp4",
+        "ncp-aai-chapter-04-orchestration-frameworks-and-state-management-rev1.mp4",
+        "ncp-aai-chapter-05-task-decomposition-and-memory-systems-rev1.mp4",
+        "ncp-aai-chapter-06-retrieval-augmented-generation-for-agents-rev1.mp4",
+        "ncp-aai-chapter-07-tool-integration-apis-and-the-model-context-protocol-rev1.mp4",
+        "ncp-aai-chapter-08-serving-agentic-workloads-on-the-nvidia-stack-rev1.mp4",
+        "ncp-aai-chapter-09-guardrails-observability-and-scaling-multi-agent-workloads-rev1.mp4",
+        "ncp-aai-chapter-10-evaluating-agentic-systems-rev1.mp4",
+        "ncp-aai-chapter-11-guardrails-security-and-responsible-deployment-rev1.mp4",
+        "ncp-aai-chapter-12-full-exam-simulation-and-time-management-strategy-rev1.mp4"
+      ],
+      "reattached": true,
+      "notes": [
+        "2026-08-05T21:49:38.215Z: rev1 pass fell back to proportional (empty word sidecars); edge-tts boundary fix applied, re-render pending",
+        "2026-08-06T10:04:56.144Z: tts-generate failed (exit 1)"
+      ],
+      "startedAt": "2026-08-06T12:58:50.789Z",
+      "updatedAt": "2026-08-07T00:16:08.652Z",
+      "videosDir": "exports/nvidia-ncp-aai-agentic-ai-2026/videos-rev1",
+      "collectedAt": "2026-08-06T14:42:58.702Z",
+      "cueMatch": {
+        "1": "10/16",
+        "2": "15/15",
+        "3": "12/16",
+        "4": "12/17",
+        "5": "14/16",
+        "7": "11/16",
+        "8": "10/16",
+        "9": "14/16",
+        "10": "10/16",
+        "11": "11/15",
+        "12": "11/15"
+      },
+      "proportionalFallbackChapters": [
+        6
+      ],
+      "udemyCourseId": 7282241,
+      "reattachedChapters": 12
+    },
+    "nvidia-ncp-genl-generative-ai-llm-2026": {
+      "slug": "nvidia-ncp-genl-generative-ai-llm-2026",
+      "status": "collected",
+      "revTag": "rev1",
+      "chapters": 12,
+      "examCode": "NCP-GENL",
+      "videos": [
+        "ncp-genl-chapter-01-transformer-internals-attention-positional-encoding-and-effi-rev1.mp4",
+        "ncp-genl-chapter-02-scaling-laws-tokenization-and-context-window-mechanics-rev1.mp4",
+        "ncp-genl-chapter-03-advanced-prompting-chain-of-thought-react-and-constrained-de-rev1.mp4",
+        "ncp-genl-chapter-04-rag-as-adaptation-prompt-vs-rag-vs-fine-tune-decision-framew-rev1.mp4",
+        "ncp-genl-chapter-05-dataset-curation-cleaning-and-instruction-tuning-data-design-rev1.mp4",
+        "ncp-genl-chapter-06-customization-strategies-lora-qlora-rlhf-vs-dpo-and-nvidia-n-rev1.mp4",
+        "ncp-genl-chapter-07-distributed-training-data-tensor-pipeline-and-sequence-paral-rev1.mp4",
+        "ncp-genl-chapter-08-inference-acceleration-tensorrt-llm-quantization-and-specula-rev1.mp4",
+        "ncp-genl-chapter-09-serving-llms-nvidia-nim-triton-inference-server-and-model-re-rev1.mp4",
+        "ncp-genl-chapter-10-autoscaling-rollouts-and-llm-mlops-lifecycle-monitoring-rev1.mp4",
+        "ncp-genl-chapter-11-evaluating-llms-and-mitigating-hallucination-bias-and-toxici-rev1.mp4",
+        "ncp-genl-chapter-12-full-practice-exam-simulation-and-120-minute-test-taking-str-rev1.mp4"
+      ],
+      "reattached": false,
+      "notes": [
+        "2026-08-05T21:49:38.215Z: rev1 pass fell back to proportional (empty word sidecars); edge-tts boundary fix applied, re-render pending",
+        "2026-08-06T10:05:18.148Z: tts-generate failed (exit 1)"
+      ],
+      "startedAt": "2026-08-06T14:42:58.753Z",
+      "updatedAt": "2026-08-07T00:16:08.652Z",
+      "videosDir": "exports/nvidia-ncp-genl-generative-ai-llm-2026/videos-rev1",
+      "collectedAt": "2026-08-06T16:57:50.058Z",
+      "cueMatch": {
+        "1": "16/16",
+        "2": "10/14",
+        "5": "13/16",
+        "6": "12/16",
+        "7": "10/16",
+        "8": "10/16",
+        "9": "14/16",
+        "10": "11/16",
+        "11": "9/15"
+      },
+      "proportionalFallbackChapters": [
+        3,
+        4,
+        12
+      ],
+      "udemyCourseId": 7282045,
+      "reattachedChapters": 11,
+      "pendingTranscodeChapters": [
+        "ch1"
+      ]
+    },
+    "nvidia-ncp-ousd-openusd-development-2026": {
+      "slug": "nvidia-ncp-ousd-openusd-development-2026",
+      "status": "collected",
+      "revTag": "rev1",
+      "chapters": 12,
+      "examCode": "NCP-OUSD",
+      "videos": [
+        "ncp-ousd-chapter-01-the-usd-object-model-stages-layers-prims-and-properties-rev1.mp4",
+        "ncp-ousd-chapter-02-schemas-time-samples-primvars-and-model-hierarchy-rev1.mp4",
+        "ncp-ousd-chapter-03-composition-arcs-sublayers-references-and-payloads-rev1.mp4",
+        "ncp-ousd-chapter-04-livrps-strength-ordering-and-list-editing-operations-rev1.mp4",
+        "ncp-ousd-chapter-05-variant-sets-inherits-specializes-and-non-destructive-overri-rev1.mp4",
+        "ncp-ousd-chapter-06-component-and-assembly-asset-design-for-aggregation-rev1.mp4",
+        "ncp-ousd-chapter-07-native-prototype-instancing-and-point-instancing-rev1.mp4",
+        "ncp-ousd-chapter-08-file-formats-usdz-packaging-and-asset-resolution-rev1.mp4",
+        "ncp-ousd-chapter-09-authoring-stages-with-usd-sdf-gf-and-vt-in-python-rev1.mp4",
+        "ncp-ousd-chapter-10-stage-traversal-programmatic-composition-editing-and-hydra-b-rev1.mp4",
+        "ncp-ousd-chapter-11-debugging-composition-with-usdview-and-optimizing-scenes-at--rev1.mp4",
+        "ncp-ousd-chapter-12-full-practice-exam-simulation-and-time-management-strategy-rev1.mp4"
+      ],
+      "reattached": true,
+      "notes": [
+        "2026-08-05T21:49:38.215Z: rev1 pass fell back to proportional (empty word sidecars); edge-tts boundary fix applied, re-render pending",
+        "2026-08-06T10:05:40.150Z: tts-generate failed (exit 1)"
+      ],
+      "startedAt": "2026-08-06T22:49:22.311Z",
+      "updatedAt": "2026-08-07T00:16:08.652Z",
+      "videosDir": "exports/nvidia-ncp-ousd-openusd-development-2026/videos-rev1",
+      "collectedAt": "2026-08-06T23:48:34.275Z",
+      "cueMatch": {
+        "1": "14/15",
+        "2": "13/16",
+        "3": "12/15",
+        "4": "10/15",
+        "5": "11/16",
+        "6": "14/14",
+        "7": "11/15",
+        "9": "15/16",
+        "11": "11/14",
+        "12": "10/15"
+      },
+      "proportionalFallbackChapters": [
+        8,
+        10
+      ],
+      "udemyCourseId": 7284889,
+      "reattachedChapters": 12
+    }
+  },
+  "revNote": "rev1 first attempt fell back to proportional everywhere (edge-tts 7.x boundary defaulted to SentenceBoundary → empty sidecars). Fixed in tts-generate.js. Re-render regenerates audio+sidecars."
+}

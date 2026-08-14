@@ -158,6 +158,7 @@ function quarantineLegacyMedia() {
     // normalize-domains exits non-zero only when a tag can't be mapped at all
     // (a genuinely wrong/retired exam version), which SHOULD reach QA and block.
     if (!SKIP.has('generate')) {
+      run('unwrap nested questions', process.execPath, ['scripts/normalize-questions.js', `--slug=${course.slug}`], { allowFail: true });
       run('normalize domain tags', process.execPath, ['scripts/normalize-domains.js', `--slug=${course.slug}`], { allowFail: true });
       run('balance answer positions', process.execPath, ['scripts/balance-answers.js', `--slug=${course.slug}`], { allowFail: true });
       run('re-assemble after heal', process.execPath, ['scripts/generate-course.js', `--config=${course.config}`, '--stage=assemble'], { allowFail: true });
@@ -169,6 +170,7 @@ function quarantineLegacyMedia() {
     // the model, so they run ONLY when QA actually blocks — no cost on clean runs.
     if (!SKIP.has('qa')) {
       const deepHeal = (n) => {
+        run(`unwrap nested questions (heal ${n})`, process.execPath, ['scripts/normalize-questions.js', `--slug=${course.slug}`], { allowFail: true });
         run(`fix multi-select questions (heal ${n})`, process.execPath, ['scripts/fix-multiselect.js', `--slug=${course.slug}`], { allowFail: true });
         run(`expand short chapters (heal ${n})`, process.execPath, ['scripts/expand-short-chapter.js', `--slug=${course.slug}`], { allowFail: true });
         run(`condense long / dedupe (heal ${n})`, process.execPath, ['scripts/fix-qa-warnings.js', `--slug=${course.slug}`], { allowFail: true });
@@ -274,8 +276,10 @@ function quarantineLegacyMedia() {
         // cached after the first download)
         run('ensure chrome-headless-shell', 'npx', ['puppeteer', 'browsers', 'install', 'chrome-headless-shell'], { allowFail: true, shell: process.platform === 'win32' });
         // Kill stray headless Chrome processes from earlier failed runs — they
-        // accumulate and starve new instances (never touches your real Chrome)
-        if (process.platform !== 'win32') {
+        // accumulate and starve new instances (never touches your real Chrome).
+        // SKIP under PIPELINE_PARALLEL: a global pkill would kill the headless
+        // Chrome of OTHER courses rendering concurrently (pipeline-parallel.js).
+        if (process.platform !== 'win32' && !process.env.PIPELINE_PARALLEL) {
           spawnSync('pkill', ['-f', 'Chrome for Testing'], { stdio: 'ignore' });
           spawnSync('pkill', ['-f', 'chrome-headless-shell'], { stdio: 'ignore' });
         }

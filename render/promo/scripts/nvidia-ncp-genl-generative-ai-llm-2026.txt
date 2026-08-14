@@ -1,0 +1,3 @@
+Quick question: do you know why GQA, FlashAttention, and MoE aren't interchangeable? If you're chasing the NVIDIA NCP-GENL cert, that gap will cost you.
+
+This course gets you exam-ready, fast. You'll master transformer internals, knowing exactly which efficiency variant solves which bottleneck. You'll learn to apply sca

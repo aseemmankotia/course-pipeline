@@ -1,0 +1,22 @@
+{
+  "run_date": "2026-08-10",
+  "total_courses": 35,
+  "by_status": {
+    "Live": [7283433, 7277647, 7277667, 7279877, 7279885, 7280555, 7280793, 7282045, 7282241, 7273711, 7283479, 7284889, 7284909, 7289999, 7290003, 7292669, 7292673, 7292675, 7263267, 7150221, 7156661, 7202905, 7259429, 7259919, 7262413, 7264743, 7265593, 7267627, 7268317, 7271281, 7271283, 7273707],
+    "Submitted for review": [],
+    "Needs fixes": [],
+    "Draft": [7214909],
+    "Unpublished": [7148503],
+    "Banned": [7159077]
+  },
+  "changes_since_2026-08-08": {
+    "newly_live": [
+      {"id": 7289999, "title": "Google Cloud ACE: Associate Cloud Engineer Exam Prep", "url": "https://www.udemy.com/course/google-cloud-ace-associate-cloud-engineer-exam-prep/"},
+      {"id": 7290003, "title": "AWS Certified Data Engineer Associate DEA-C01 Prep", "url": "https://www.udemy.com/course/aws-certified-data-engineer-associate-dea-c01-prep/"},
+      {"id": 7292669, "title": "NCA-GENM: NVIDIA Generative AI Multimodal Exam Prep", "url": "https://www.udemy.com/course/nca-genm-nvidia-generative-ai-multimodal-exam-prep/"},
+      {"id": 7292673, "title": "NCP-ADS: NVIDIA Accelerated Data Science Prep", "url": "https://www.udemy.com/course/ncp-ads-nvidia-accelerated-data-science-prep/"},
+      {"id": 7292675, "title": "NCP-AII: NVIDIA AI Infrastructure Professional Prep", "url": "https://www.udemy.com/course/ncp-aii-nvidia-ai-infrastructure-professional-prep/"}
+    ]
+  },
+  "note": "Nothing pending review, nothing needs fixes. 7292669/7292673/7292675 were never seen as drafts (submitted + approved between 08-08 and 08-10 runs). 7159077 remains Banned (pre-existing). 7148503 Unpublished, 7214909 old draft — both unchanged."
+}

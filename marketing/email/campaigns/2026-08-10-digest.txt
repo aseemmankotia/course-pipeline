@@ -1,0 +1,39 @@
+TechNuggets Academy — new & popular exam-prep courses
+
+NEW: NVIDIA-Certified Associate: Generative AI Multimodal
+  Core Machine Learning and AI Knowledge, Experimentation
+  $34.99 (was $99.99), code FREETEST33 ends September 9
+  Enroll: https://www.udemy.com/course/nca-genm-nvidia-generative-ai-multimodal-exam-prep/?couponCode=FREETEST33
+  Free practice test: https://aseemmankotia.github.io/nca-genm.html
+NEW: NVIDIA-Certified Professional: Accelerated Data Science
+  GPU-Accelerated Data Science Fundamentals, Data Preparation and Manipulation with cuDF
+  $34.99 (was $129.99), code FREETEST33 ends September 9
+  Enroll: https://www.udemy.com/course/ncp-ads-nvidia-accelerated-data-science-prep/?couponCode=FREETEST33
+  Free practice test: https://aseemmankotia.github.io/ncp-ads.html
+NEW: NVIDIA-Certified Professional: AI Infrastructure
+  System and Server Bring-up, Server and Network Installation and Configuration
+  $34.99 (was $199.99), code FREETEST33 ends September 9
+  Enroll: https://www.udemy.com/course/ncp-aii-nvidia-ai-infrastructure-professional-prep/?couponCode=FREETEST33
+  Free practice test: https://aseemmankotia.github.io/ncp-aii.html
+NEW: Google Cloud Professional Machine Learning Engineer
+  Architecting low-code AI solutions, Collaborating to manage data and models
+  $34.99 (was $129.99), code FREETEST33 ends September 7
+  Enroll: https://www.udemy.com/course/google-cloud-professional-ml-engineer-exam-prep/?couponCode=FREETEST33
+  Free practice test: https://aseemmankotia.github.io/professional-ml-engineer.html
+POPULAR: NVIDIA-Certified Professional: Generative AI and LLMs
+  LLM Foundations and Architecture, Prompt Engineering and Adaptation
+  Enroll: https://www.udemy.com/course/ncp-genl-nvidia-generative-ai-llms-cert-prep/?couponCode=FREETEST33
+  Free practice test: https://aseemmankotia.github.io/ncp-genl.html
+POPULAR: AWS Certified Machine Learning Engineer - Associate
+  Data Preparation for Machine Learning (ML), ML Model Development
+  Enroll: https://www.udemy.com/course/aws-certified-ml-engineer-associate-mla-c01-prep/?couponCode=FREETEST33
+  Free practice test: https://aseemmankotia.github.io/mla-c01.html
+POPULAR: AWS Certified AI Practitioner (AIF-C01)
+  Foundational AWS AI/ML and generative AI
+  Enroll: https://www.udemy.com/course/aws-ai-practitioner-aif-c01-first-attempt-certification/?couponCode=FREETEST33
+  Free practice test: https://aseemmankotia.github.io/aws-aif-c01.html
+
+All courses: https://aseemmankotia.github.io
+
+You opted in at TechNuggets Academy. {{physical_address}}
+Unsubscribe: {{unsubscribe_url}}  (sent to {{email}})

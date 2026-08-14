@@ -25,7 +25,28 @@ const args = Object.fromEntries(process.argv.slice(2).map(a => {
 if (!args.slug) { console.error('Usage: node scripts/compliance-check.js --slug=<slug>'); process.exit(2); }
 
 const DISCLOSURE = 'This course contains the use of artificial intelligence.';
-const PROMISE = /\b(pass the|pass your|on your first (attempt|try)|guarantee\w*|100% pass|ensure you pass)\b/i;
+// Unconditional promise phrases — always a violation.
+const PROMISE = /\b(pass the|pass your|on your first (attempt|try)|100% pass|ensure you pass|guaranteed to pass)\b/i;
+// "guarantee" is only a violation when it is NOT negated. A disclaimer like
+// "this does not guarantee a passing score" is compliant and must pass; a
+// promise like "we guarantee you pass" must fail. We inspect the words
+// immediately preceding each "guarantee" for a negation cue.
+const GUARANTEE = /\bguarantee\w*\b/ig;
+const NEGATED_BEFORE = /(?:\b(?:no|not|never|without|cannot|can\s?not|nor|isn|aren|doesn|don|won|wouldn|couldn|shouldn)\b|n['’]t)\W+(?:\w+\W+){0,3}$/i;
+
+// Return the first genuine promise phrase in `text`, or null. Negated
+// "guarantee" mentions (disclaimers) are ignored.
+function findPromise(text) {
+  const m = text.match(PROMISE);
+  if (m) return m[0];
+  let g;
+  GUARANTEE.lastIndex = 0;
+  while ((g = GUARANTEE.exec(text))) {
+    const before = text.slice(Math.max(0, g.index - 40), g.index);
+    if (!NEGATED_BEFORE.test(before)) return g[0];
+  }
+  return null;
+}
 
 const listingPath = path.join(ROOT, 'generated', args.slug, 'udemy-listing.md');
 if (!fs.existsSync(listingPath)) {
@@ -61,7 +82,7 @@ const goals = ['What you\'ll learn', 'Requirements', 'Who this course is for'];
 const scanTargets = { Description: descNoComments };
 for (const g of goals) scanTargets[g] = section(g);
 for (const [where, text] of Object.entries(scanTargets)) {
-  const hit = (text.match(PROMISE) || [])[0];
+  const hit = findPromise(text);
   if (hit) fails.push(`Outcome-promise language "${hit}" found in the ${where} section — use "prepare for / exam-focused" framing.`);
 }
 

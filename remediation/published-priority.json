@@ -1,0 +1,15 @@
+{
+  "note": "Priority published-course remediation (>1 student). Replace live videos then announce, per course after its videos are attached.",
+  "announcement": {
+    "approach": "per-course after videos replaced",
+    "reviewFooter": false
+  },
+  "courses": [
+    { "slug": "nvidia-nca-aiio-refresh-2026", "udemyCourseId": 7156661, "students": 21, "refreshOf": "NVIDIA NCA-AIIO", "renderChapters": 8, "verifyLectureCount": true },
+    { "slug": "ai-901-azure-ai-fundamentals-refresh-2026", "udemyCourseId": 7150221, "students": 16, "refreshOf": "AI-901", "renderChapters": 9, "verifyLectureCount": true },
+    { "slug": "iapp-aigp-ai-governance", "udemyCourseId": 7263267, "students": 7, "renderChapters": 10 },
+    { "slug": "comptia-secai-plus-cy0-001", "udemyCourseId": 7259919, "students": 5, "renderChapters": 10 },
+    { "slug": "aws-solutions-architect-associate-saa-c04", "udemyCourseId": 7279877, "students": 2, "renderChapters": 12 },
+    { "slug": "nvidia-ncp-aio-ai-operations-2026", "udemyCourseId": 7273711, "students": 2, "renderChapters": 9 }
+  ]
+}

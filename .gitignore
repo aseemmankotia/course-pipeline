@@ -29,3 +29,6 @@ course-data-export.json
 # Headless generator output (large, machine-specific)
 generated/
 site/
+
+# parallel pipeline isolated worker dirs
+.workers/

@@ -1,0 +1,7 @@
+AI systems are under attack right now. Prompt injection, data poisoning, model theft. And your organization needs defenders who actually know how to stop them.
+
+This is the CompTIA SecAI Plus Fast Track. You'll execute and defend against prompt injection and jailbreaking attacks on live LLMs. You'll identify all ten OWASP LLM vulnerabilities in production systems. You'll map every AI threat to MITRE ATLAS technique IDs for real threat modeling.
+
+Ten chapters. Hands-on labs with the actual tools red teamers use. Direct and indirect injection scenarios. Guardrail deployment. RAG poisoning defense. Everything the certification exam throws at you, built for security engineers who need to pass fast.
+
+Enroll now and become the AI security expert your team desperately needs.

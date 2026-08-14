@@ -1,0 +1,11 @@
+{
+  "campaign": "2026-08-12",
+  "mode": "dry-run",
+  "at": "2026-08-12T13:11:35.383Z",
+  "log": [
+    {
+      "email": "aseem.mankotia@gmail.com",
+      "status": "dry-run"
+    }
+  ]
+}

@@ -61,9 +61,23 @@ for f in glob.glob(os.path.join(ROOT, "course-configs", "*.json")):
         break
 
 accent_hex = args.get("color") if isinstance(args.get("color"), str) else None
+explicit_color = accent_hex is not None
 if not accent_hex:
     accent_hex = next((c for k, c in VENDOR_COLOR.items() if k in vendor), "#50E6FF")
 ACCENT = hex2rgb(accent_hex)
+# When using the vendor default (no explicit --color), rotate the hue deterministically
+# per slug so courses from the SAME vendor get visually DISTINCT cards. Udemy rejects a
+# course image that looks like another course's image (learned 2026-08-13 on AB-730/AB-731,
+# which both defaulted to the same Microsoft blue and were bounced as "not unique").
+if not explicit_color:
+    import colorsys
+    r, g, b = [x / 255 for x in ACCENT]
+    h, s, v = colorsys.rgb_to_hsv(r, g, b)
+    _buckets = [0.12, 0.20, 0.28, 0.36, 0.44, -0.12, -0.20, -0.28, -0.36, -0.44]  # always a meaningful, non-zero shift
+    h = (h + _buckets[sum(ord(c) for c in slug) % len(_buckets)]) % 1.0
+    s = min(1.0, max(0.45, s))
+    r, g, b = colorsys.hsv_to_rgb(h, s, v)
+    ACCENT = (int(r * 255), int(g * 255), int(b * 255))
 
 W, H = 750, 422
 random.seed(sum(ord(c) for c in slug))  # deterministic per slug

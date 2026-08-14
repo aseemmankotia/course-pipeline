@@ -175,7 +175,19 @@ const COURSES = [
     udemy: 'https://www.udemy.com/course/nca-genm-nvidia-generative-ai-multimodal-exam-prep/?referralCode=979950D891544A0B1645', live: true,
     coupon: { code: 'FREETEST33', price: '$34.99', list: '$99.99', expires: 'September 9',
       url: 'https://www.udemy.com/course/nca-genm-nvidia-generative-ai-multimodal-exam-prep/?couponCode=FREETEST33' } },
-
+  { slug: 'pmi-cpmai-managing-ai-2026', name: "PMI Certified Professional in Managing AI",
+    tagline: "Support Responsible and Trustworthy AI Efforts, Identify Business Needs and Solutions", page: 'pmi-cpmai',
+    udemy: 'https://www.udemy.com/course/pmi-cpmai-certification-exam-prep-masterclass/', live: true },
+  { slug: 'gsdc-certified-forward-deployed-engineer-2026', name: "GSDC Certified Forward Deployed Engineer",
+    tagline: "FDE Mindset and Problem Structuring, Production Python, Backend Development, and API Design", page: 'cfde',
+    udemy: 'https://www.udemy.com/course/gsdc-cfde-certification-forward-deployed-engineer-prep/', live: true },
+  { slug: 'aws-data-engineer-associate-dea-c01-2026', name: "AWS Certified Data Engineer - Associate",
+    tagline: "Data Ingestion and Transformation, Data Store Management", page: 'dea-c01',
+    udemy: 'https://www.udemy.com/course/aws-certified-data-engineer-associate-dea-c01-prep/', live: true },
+  { slug: 'google-associate-cloud-engineer-2026', name: "Google Cloud Certified - Associate Cloud Engineer",
+    tagline: "Setting Up a Cloud Solution Environment, Planning and Configuring a Cloud Solution", page: 'associate-cloud-engineer',
+    udemy: 'https://www.udemy.com/course/google-cloud-ace-associate-cloud-engineer-exam-prep/', live: true },
+  // __COURSES_END__ (register-course.js inserts new course objects immediately above this line)
 ];
 
 const N_QUESTIONS = 12;

@@ -1,0 +1,26 @@
+{
+  "updated": "2026-08-10T20:04:08.262Z",
+  "subscribers": [
+    {
+      "email": "aseem.mankotia@gmail.com",
+      "name": "Aseem Mankotia",
+      "source": "self-test",
+      "channels": {
+        "email": true,
+        "whatsapp": false
+      },
+      "whatsapp_number": "",
+      "consent": {
+        "given": true,
+        "method": "owner",
+        "timestamp": "2026-08-10T20:04:08.262Z",
+        "source": "self-test",
+        "ip": ""
+      },
+      "status": "active",
+      "token": "cf96cc539f474b25be6ad6c9c1517c0fe938bdcc97f91226",
+      "subscribed_at": "2026-08-10T20:04:08.262Z",
+      "unsubscribed_at": null
+    }
+  ]
+}

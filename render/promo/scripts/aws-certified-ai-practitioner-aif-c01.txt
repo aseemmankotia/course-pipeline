@@ -1,0 +1,7 @@
+AWS just released their AI Practitioner certification and companies are desperate for certified professionals who can actually implement generative AI solutions. This is your fast track to that credential and those skills.
+
+You'll configure Amazon Bedrock foundation models with exact inference parameters for production use. You'll build complete RAG pipelines using vector databases so AI answers from your company's actual data. You'll master prompt engineering techniques that get consistently better outputs from any language model.
+
+This course is pure exam-focused prep. Ten chapters covering all four certification domains. Hands-on labs with SageMaker, Bedrock, and Amazon Q. Zero theory fluff. Just the configurations, parameters, and implementation patterns that appear on the actual AIF-C01 exam.
+
+Enroll now and get certified fast.

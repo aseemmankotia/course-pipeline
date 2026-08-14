@@ -1,0 +1,7 @@
+AWS just launched the first professional generative AI certification and most developers have no idea how to pass it. This isn't theory. It's Bedrock in production.
+
+You'll master the Converse API for streaming and tool use. Build production RAG pipelines with Knowledge Bases and vector stores. Deploy multi-agent systems with action groups and guardrails that actually work at scale.
+
+This is exam-focused training. Every lesson maps to real certification questions. You'll learn cost-aware architecture decisions, cross-region inference patterns, and IAM configurations that examiners specifically test for. Ten chapters of pure signal.
+
+Get certified fast. Enroll now and become an AWS Certified Generative AI Developer.

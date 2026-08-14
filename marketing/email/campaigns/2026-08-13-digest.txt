@@ -1,0 +1,39 @@
+TechNuggets Academy — new & popular exam-prep courses
+
+NEW: NVIDIA-Certified Associate: Generative AI Multimodal
+  Core Machine Learning and AI Knowledge, Experimentation
+  $34.99 (was $99.99), code FREETEST33 ends September 9
+  Enroll: https://www.udemy.com/course/nca-genm-nvidia-generative-ai-multimodal-exam-prep/?couponCode=FREETEST33
+  Free practice test: https://aseemmankotia.github.io/nca-genm.html
+NEW: NVIDIA-Certified Professional: Accelerated Data Science
+  GPU-Accelerated Data Science Fundamentals, Data Preparation and Manipulation with cuDF
+  $34.99 (was $129.99), code FREETEST33 ends September 9
+  Enroll: https://www.udemy.com/course/ncp-ads-nvidia-accelerated-data-science-prep/?couponCode=FREETEST33
+  Free practice test: https://aseemmankotia.github.io/ncp-ads.html
+NEW: NVIDIA-Certified Professional: AI Infrastructure
+  System and Server Bring-up, Server and Network Installation and Configuration
+  $34.99 (was $199.99), code FREETEST33 ends September 9
+  Enroll: https://www.udemy.com/course/ncp-aii-nvidia-ai-infrastructure-professional-prep/?couponCode=FREETEST33
+  Free practice test: https://aseemmankotia.github.io/ncp-aii.html
+NEW: Google Cloud Professional Machine Learning Engineer
+  Architecting low-code AI solutions, Collaborating to manage data and models
+  $34.99 (was $129.99), code FREETEST33 ends September 7
+  Enroll: https://www.udemy.com/course/google-cloud-professional-ml-engineer-exam-prep/?couponCode=FREETEST33
+  Free practice test: https://aseemmankotia.github.io/professional-ml-engineer.html
+POPULAR: IAPP AI Governance Professional (AIGP)
+  EU AI Act, NIST AI RMF, ISO/IEC 42001
+  Enroll: https://www.udemy.com/course/iapp-aigp-certification-eu-ai-act/?couponCode=FREETEST33
+  Free practice test: https://aseemmankotia.github.io/iapp-aigp.html
+POPULAR: AWS Certified GenAI Developer (AIP-C01)
+  Bedrock, RAG and production GenAI on AWS
+  Enroll: https://www.udemy.com/course/aws-certified-genai-developer-aip-c01/?couponCode=FREETEST33
+  Free practice test: https://aseemmankotia.github.io/aws-aip-c01.html
+POPULAR: CompTIA SecAI+ (CY0-001)
+  AI security: MITRE ATLAS, OWASP LLM Top 10
+  Enroll: https://www.udemy.com/course/comptia-secai-cy0-001-certification-fast-track/?couponCode=FREETEST33
+  Free practice test: https://aseemmankotia.github.io/comptia-secai.html
+
+All courses: https://aseemmankotia.github.io
+
+You opted in at TechNuggets Academy. {{physical_address}}
+Unsubscribe: {{unsubscribe_url}}  (sent to {{email}})

@@ -1,0 +1,7 @@
+Quick question: do you actually know which opinion wins when five layers disagree? If not, you'll fail the NVIDIA OpenUSD exam.
+
+This course fixes that. You'll master LIVRPS strength ordering so you can predict, instantly, which opinion wins in any composition. You'll learn the difference between references and payloads, and exactly when to use inherits versus specializes for non-destructive overrides. You'll finally understand stages, layers, prims, and properties the way the exam actually tests them.
+
+Twelve focused chapters. No fluff, no filler, just exam-precise breakdowns of composition arcs, schemas, time samples, and variant sets. Built specifically for NVIDIA's OpenUSD Development certification, by people who know exactly what the exam demands.
+
+Stop guessing which opinion wins. Enroll now and walk into that exam ready to pass.

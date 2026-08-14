@@ -1,0 +1,7 @@
+Companies are hiring for generative AI roles right now, but most candidates can't explain how transformers actually work or write production-ready prompts. That's the gap costing you six-figure opportunities.
+
+This course prepares you for NVIDIA's NCA-GENL certification. You'll master transformer architecture, including self-attention mechanisms and positional encoding. You'll write zero-shot, few-shot, and chain-of-thought prompts that actually perform. You'll learn to identify and prevent hallucinations, bias, and prompt injection attacks using real guardrails.
+
+Ten focused chapters take you from neural network fundamentals through NVIDIA NeMo and NIM. Beginner-friendly but exam-focused. Every lesson maps directly to certification objectives. No theory without application.
+
+Enroll now and prove you're ready for enterprise generative AI work.

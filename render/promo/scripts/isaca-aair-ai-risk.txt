@@ -1,0 +1,7 @@
+AI systems are failing audits and regulators are watching. Companies are deploying models without proper risk controls, and someone has to be accountable when things go wrong. Is that person you?
+
+This ISACA AAIR certification prep course teaches you to integrate AI risk into enterprise frameworks, not build parallel systems. You'll master RACI accountability matrices that meet compliance standards. You'll learn when model drift requires retraining versus complete redesign. And you'll build executive dashboards that boards actually understand.
+
+Ten expert-level chapters cover governance, lifecycle controls, and regulatory compliance including EU AI Act classifications. You'll distinguish algorithm selection as risk decisions, not just technical choices. Real scenarios, zero theory bloat.
+
+Stop guessing. Master AI risk management. Enroll now and own the room when executives ask the hard questions.

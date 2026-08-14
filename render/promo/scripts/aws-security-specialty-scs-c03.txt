@@ -1,0 +1,7 @@
+The AWS Security Specialty exam just got harder. Multi-account threat detection, AI guardrails, and IAM policy intersection logic now dominate the SCS-C03. Most candidates fail because they memorize services instead of understanding security architecture decisions.
+
+You'll master multi-account threat hunting with CloudTrail Lake and OCSF normalization. You'll build automated incident response playbooks that terminate active sessions and preserve forensic evidence. You'll secure generative AI with Bedrock Guardrails against prompt injection and data leakage using OWASP LLM Top 10 controls.
+
+This isn't theory. Ten chapters of hands-on labs covering all six exam domains. You'll troubleshoot real IAM policy evaluation across permissions boundaries and SCPs. You'll design detection strategies Security Hub actually recommends. Expert-level content that mirrors how AWS architects real production environments.
+
+Enroll now and pass SCS-C03 on your first attempt.

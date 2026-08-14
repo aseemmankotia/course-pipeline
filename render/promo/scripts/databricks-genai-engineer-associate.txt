@@ -1,0 +1,7 @@
+You're building GenAI apps, but your RAG system hallucinates. Your agents pick wrong tools. Your models fail in production. And the Databricks certification exam crushes unprepared engineers daily.
+
+This course changes everything. You'll master Vector Search with Delta tables to build RAG systems that actually work. You'll engineer prompts and chains using LangChain with MLflow tracking. You'll deploy agents with function calling that choose the right tools every time.
+
+Ten focused chapters. Real Databricks patterns. Not generic theory—exam-specific design decisions. When RAG beats fine-tuning. How rerankers boost precision. Which guardrails prevent failures. Everything tested on the Certified Generative AI Engineer Associate exam.
+
+Stop guessing. Start passing. Enroll now and build production-ready GenAI systems on Databricks.

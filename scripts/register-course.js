@@ -57,7 +57,9 @@ function patch(file, marker, insert, presentTest) {
 }
 
 // 1. practice-site registry
-patch('scripts/build-practice-site.js', '\n];', `  { slug: '${slug}', name: ${JSON.stringify(name)},
+// NOTE: anchor on the COURSES sentinel, NOT the generic '\n];' — build-practice-site.js
+// has a later VENDOR_ACCENT array whose close would otherwise capture the insert (2026-08-14 fix).
+patch('scripts/build-practice-site.js', '  // __COURSES_END__ (register-course.js inserts new course objects immediately above this line)\n', `  { slug: '${slug}', name: ${JSON.stringify(name)},
     tagline: ${JSON.stringify(tagline)}, page: '${page}',
     udemy: '${args.udemy}', live: true${args.coupon ? `,
     coupon: { code: '${args.coupon}', price: '${args.price || ''}', list: '${args.list || ''}', expires: '${args.expires || ''}',
