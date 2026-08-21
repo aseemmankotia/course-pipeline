@@ -10,7 +10,7 @@ Databricks GenAI Engineer, NVIDIA NCA-GENL, Salesforce Agentforce Specialist,
 Claude Certified Developer (CCDV-F). (Agentforce → r/salesforce, r/AgentforceAI;
 CCDV-F → r/ClaudeAI, r/LLMDevs — both now live, added 2026-07-29.)
 Week-6 go-lives added 2026-08-02: CompTIA Security+ SY0-701, AWS SAA-C04,
-Microsoft AI-300, Google Cloud GenAI Leader, NVIDIA NCP-AIO, Microsoft AI-103, AWS Certified Solutions Architect - Associate (added 2026-08-02), NVIDIA-Certified Associate: Accelerated Data Science (added 2026-08-07), NVIDIA-Certified Professional: OpenUSD Development (added 2026-08-07), AIPMM Certified Digital Product Manager (added 2026-08-07), AIPMM Certified Product Manager (added 2026-08-07), NVIDIA-Certified Professional: Agentic AI (added 2026-08-07), NVIDIA-Certified Professional: Generative AI and LLMs (added 2026-08-07), AWS Certified Machine Learning Engineer - Associate (added 2026-08-07), Google Cloud Professional Machine Learning Engineer (added 2026-08-07), NVIDIA-Certified Professional: AI Infrastructure (added 2026-08-09), NVIDIA-Certified Professional: Accelerated Data Science (added 2026-08-09), NVIDIA-Certified Associate: Generative AI Multimodal (added 2026-08-09), PMI Certified Professional in Managing AI (added 2026-08-14), GSDC Certified Forward Deployed Engineer (added 2026-08-14), AWS Certified Data Engineer - Associate (added 2026-08-14), Google Cloud Certified - Associate Cloud Engineer (added 2026-08-14).
+Microsoft AI-300, Google Cloud GenAI Leader, NVIDIA NCP-AIO, Microsoft AI-103, AWS Certified Solutions Architect - Associate (added 2026-08-02), NVIDIA-Certified Associate: Accelerated Data Science (added 2026-08-07), NVIDIA-Certified Professional: OpenUSD Development (added 2026-08-07), AIPMM Certified Digital Product Manager (added 2026-08-07), AIPMM Certified Product Manager (added 2026-08-07), NVIDIA-Certified Professional: Agentic AI (added 2026-08-07), NVIDIA-Certified Professional: Generative AI and LLMs (added 2026-08-07), AWS Certified Machine Learning Engineer - Associate (added 2026-08-07), Google Cloud Professional Machine Learning Engineer (added 2026-08-07), NVIDIA-Certified Professional: AI Infrastructure (added 2026-08-09), NVIDIA-Certified Professional: Accelerated Data Science (added 2026-08-09), NVIDIA-Certified Associate: Generative AI Multimodal (added 2026-08-09), PMI Certified Professional in Managing AI (added 2026-08-14), GSDC Certified Forward Deployed Engineer (added 2026-08-14), AWS Certified Data Engineer - Associate (added 2026-08-14), Google Cloud Certified - Associate Cloud Engineer (added 2026-08-14), Microsoft Certified: Fabric Analytics Engineer Associate (added 2026-08-16), Google Cloud Certified - Professional Data Engineer (added 2026-08-16), Microsoft Certified: AI Business Professional (added 2026-08-20), Microsoft Certified: AI Transformation Leader (added 2026-08-20), AWS Certified Developer - Associate (added 2026-08-20).
 
 ---
 
@@ -565,3 +565,79 @@ a value-first r/AWSCertifications post for DEA-C01 (AWS-relevant). Awaiting Asee
    r/AWSCertifications post for DEA-C01? (Coupons expire 08/19.)
 3. Free:Open is 1/course/month — the ~24 older courses regenerate Sept 1. Use Free:Targeted
    (100 seats/31 days) in the meantime, or wait?
+
+**Update — 2026-08-14 (later): social distribution approved + LinkedIn posted.**
+- Aseem approved social distribution this session.
+- LinkedIn: POSTED from Aseem's profile ("now" in feed, ACE link-preview card rendered) —
+  the 4 newly-live courses with FREEREVIEW10 links + honest-review framing, the 3 NVIDIA
+  free-this-week courses offered via comment/DM, "25+ more live" CTA, cert hashtags.
+- Reddit: NOT posted yet — r/AWSCertifications allows promo Mondays only (next window
+  Mon 08/18). Plan: value-first DEA-C01 post with the FREEREVIEW10 link on 08/18 (coupon
+  expires 08/19, so post early that day). Other subs' rules unchecked — verify before posting.
+
+---
+
+## Run log — 2026-08-21 (scheduled task) — ⛔ Udemy actions BLOCKED (no confirmable browser; Aseem absent)
+
+**Why blocked:** This was an unattended scheduled run. Two Chrome extensions are
+connected — "Browser 1" (Windows, remote) and "Browser 2" (macOS, local, where the
+instructor session lives). The browser-selection safety guard requires Aseem to
+confirm which browser to drive, and he was not present to confirm, so NO Udemy
+instructor-session action could run this pass (course-status check, coupon creation,
+announcements, and posts all need that session). Sensitive/irreversible actions
+(announcements, LinkedIn/Reddit posts) also require his approval, which was likewise
+unavailable. Consistent with the 08-01 and (partial) 08-14 precedents.
+
+**Local funnel state VERIFIED (idempotent, safe — done this run):**
+- All 36 portfolio courses are fully registered across all three registries. The 5
+  newest (registered on the Mac 08-16→08-20, portfolio edits were uncommitted) are
+  present in build-practice-site.js COURSES, promo-all.js COURSES, and the reviews
+  portfolio line:
+  - microsoft-dp-600-fabric-analytics-engineer-2026 (DP-600 / Fabric Analytics)
+  - google-cloud-professional-data-engineer-2026 (PDE)
+  - microsoft-ab-730-ai-business-professional-2026 (AB-730)
+  - microsoft-ab-731-ai-transformation-leader-2026 (AB-731)
+  - aws-certified-developer-associate-dva-c02-2026 (DVA-C02)
+- Each of the 5 has its promo Short already rendered
+  (exports/<slug>/welcome-promo-short.mp4) + shell-spec + videos. register-course.js
+  is effectively a no-op for the whole portfolio → nothing to register this run.
+- ⚠️ LIVE status of the 5 newest is UNCONFIRMED (needs the instructor session). As of
+  08-14: AB-730/AB-731 were "submitted for review", Google PDE was draft, DP-600 not
+  yet noted live. They may have flipped to Live since; verify on /instructor/courses/
+  next attended run and, for any newly-live one, create its first FREEREVIEW10 coupon
+  + upload its Short.
+
+**Practice-site build/deploy:** NOT run in-sandbox. `build-practice-site.js --all`
+fails at `fs.rmSync(site/)` with EPERM (the mounted folder blocks file deletion —
+known limitation). Site build + deploy remains a Mac step:
+`cd ~/course-pipeline && node scripts/build-practice-site.js --all` then push site/
+to aseemmankotia.github.io. This also clears any per-course-page deploy backlog for
+the 5 newest courses.
+
+**Coupons:** NONE created (no instructor session). Reminder of budget reality
+(discovered 08-08): Free:Open is 1 coupon/course/month. The ~31 older courses that
+got Free:Open on 08-02/08-08/08-14 are spent until **Sept 1**. Only a genuinely
+newly-live course with no August Free:Open would have budget — i.e. any of the 5
+newest that are now Live. Nothing actionable without the browser.
+
+**Educational announcements:** NONE sent (no session; Aseem absent for approval).
+The ~31 older courses already received August checklist announcements; a repeat
+risks unsubscribe/spam fatigue. Recommend a first announcement to the 5 newest once
+they are Live and have an enrolled base.
+
+**Social posts:** NONE posted (irreversible; needs approval + session). The Mon
+08-18 r/AWSCertifications window for DEA-C01 (planned 08-14) has passed; next Monday
+promo window is **08-24**. r/comptia + r/dataengineering remain no-post per their rules.
+
+**Decisions / follow-ups needed from Aseem (attended run):**
+1. Log into / confirm the correct Chrome (the local macOS one) so the weekly Udemy
+   levers can run; re-run this task — everything is idempotent and will catch up.
+2. Confirm which of DP-600, Google PDE, AB-730, AB-731, DVA-C02 are now Live →
+   create their first FREEREVIEW10 coupon + upload their promo Short.
+3. (Mac) `node scripts/build-practice-site.js --all` + push site/ to
+   aseemmankotia.github.io (clears per-course-page deploy backlog); then
+   `node scripts/promo-all.js --slug=<slug>` + `--upload` for any Shorts not yet on YouTube.
+4. Approve the recurring LinkedIn post + the 08-24 r/AWSCertifications value-first
+   post once fresh coupons exist.
+5. Sept 1: bulk Free:Open regeneration window for the ~31 older courses (or use
+   Free:Targeted 100 seats/31 days sooner if desired).
