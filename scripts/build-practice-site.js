@@ -4,9 +4,9 @@
  * question banks in generated/<slug>/state.json.
  *
  * The site is the top of the marketing funnel: free questions per cert with
- * real explanations, then a coupon-powered link to the full Udemy course.
- * Sales through referral/coupon links carry a 97% instructor share vs 37%
- * organic, so every student this site converts is worth ~2.6x an organic one.
+ * real explanations, then a referral link to the full Udemy course. Sales through
+ * referral links carry a 97% instructor share vs 37% organic, so every student
+ * this site converts is worth ~2.6x an organic one.
  *
  * Output: site/
  *   index.html, style.css, quiz.js
@@ -15,11 +15,15 @@
  *   sitemap.xml, robots.txt
  *
  * Conversion features:
- *   - coupon CTA (code + discounted price) on live-cert pages
- *   - score-gated reveal: on completion, shows missed-domain gaps + coupon highlight
+ *   - referral CTA to the full Udemy course on live-cert pages
+ *   - score-gated reveal: on completion, shows missed-domain gaps
+ *   - Learning Path Bundles: related certs grouped by technology at 20% off the
+ *     combined price (see BUNDLES). Replaces the retired weekly single-course
+ *     free/near-free coupon campaign. Rationale: ClaudeFolder/bundle-strategy-2026-08.md
  *
- * NOTE: coupons expire monthly (Udemy 31-day custom-price coupons). When
- * refreshing coupons, update the `coupon` fields below and rebuild + redeploy.
+ * PRICING: each course carries a plain `list` field (its Udemy list price). Bundle
+ * prices are computed from it at build time (BUNDLE_DISCOUNT). To wire a native Udemy
+ * bundle's single-checkout link, set its `udemyBundleUrl` in BUNDLES and rebuild.
  *
  * Usage: node scripts/build-practice-site.js
  */
@@ -29,165 +33,213 @@ const path = require('path');
 
 const ROOT = path.join(__dirname, '..');
 const OUT = path.join(ROOT, 'site');
-const SITE_URL = 'https://aseemmankotia.github.io';
-// Where the static subscribe form POSTs (and where unsubscribe links resolve).
-// Point this at your running marketing/email/server.js (behind HTTPS). Set at build
-// time: SUBSCRIBE_ENDPOINT=https://your-host/subscribe node scripts/build-practice-site.js --all
+const SITE_URL = 'https://technuggets.academy';
+// Where the static subscribe form POSTs. This is the Brevo subscribe Worker
+// (marketing/email/subscribe-worker/) — it holds the Brevo API key server-side and
+// adds the contact to the newsletter list. Set at build time:
+//   SUBSCRIBE_ENDPOINT=https://technuggets-subscribe.<sub>.workers.dev/subscribe \
+//     node scripts/build-practice-site.js --all
 const SUBSCRIBE_ENDPOINT = process.env.SUBSCRIBE_ENDPOINT || 'https://REPLACE-WITH-YOUR-HOST/subscribe';
+// Only render the subscribe form once a REAL endpoint is configured, so the public
+// site never ships a control that errors on submit.
+const SUBSCRIBE_READY = !SUBSCRIBE_ENDPOINT.includes('REPLACE-WITH-YOUR-HOST');
 
 // slug -> { file, name, tagline, udemy (referral if live, plain if in review), badge }
 const COURSES = [
   { slug: 'aws-certified-ai-practitioner-aif-c01', name: 'AWS Certified AI Practitioner (AIF-C01)',
     tagline: 'Foundational AWS AI/ML and generative AI', page: 'aws-aif-c01',
-    udemy: 'https://www.udemy.com/course/aws-ai-practitioner-aif-c01-first-attempt-certification/?referralCode=003B046A1F6935BDE16F', live: true,
-    coupon: { code: 'FREETEST33', price: '$17.99', list: '$54.99', expires: 'August 22',
-      url: 'https://www.udemy.com/course/aws-ai-practitioner-aif-c01-first-attempt-certification/?couponCode=FREETEST33' } },
+    udemy: 'https://www.udemy.com/course/aws-ai-practitioner-aif-c01-first-attempt-certification/?referralCode=003B046A1F6935BDE16F', live: true, list: '$54.99' },
   { slug: 'iapp-aigp-ai-governance', name: 'IAPP AI Governance Professional (AIGP)',
     tagline: 'EU AI Act, NIST AI RMF, ISO/IEC 42001', page: 'iapp-aigp',
-    udemy: 'https://www.udemy.com/course/iapp-aigp-certification-eu-ai-act/?referralCode=0B6A80F71D9FCB827C55', live: true,
-    coupon: { code: 'FREETEST33', price: '$34.99', list: '$109.99', expires: 'August 22',
-      url: 'https://www.udemy.com/course/iapp-aigp-certification-eu-ai-act/?couponCode=FREETEST33' } },
+    udemy: 'https://www.udemy.com/course/iapp-aigp-certification-eu-ai-act/?referralCode=0B6A80F71D9FCB827C55', live: true, list: '$109.99' },
   { slug: 'aws-genai-developer-aip-c01', name: 'AWS Certified GenAI Developer (AIP-C01)',
     tagline: 'Bedrock, RAG and production GenAI on AWS', page: 'aws-aip-c01',
-    udemy: 'https://www.udemy.com/course/aws-certified-genai-developer-aip-c01/?referralCode=25D9BA793B6B69835FCB', live: true,
-    coupon: { code: 'FREETEST33', price: '$17.99', list: '$54.99', expires: 'August 22',
-      url: 'https://www.udemy.com/course/aws-certified-genai-developer-aip-c01/?couponCode=FREETEST33' } },
+    udemy: 'https://www.udemy.com/course/aws-certified-genai-developer-aip-c01/?referralCode=25D9BA793B6B69835FCB', live: true, list: '$54.99' },
   { slug: 'comptia-secai-plus-cy0-001', name: 'CompTIA SecAI+ (CY0-001)',
     tagline: 'AI security: MITRE ATLAS, OWASP LLM Top 10', page: 'comptia-secai',
-    udemy: 'https://www.udemy.com/course/comptia-secai-cy0-001-certification-fast-track/?referralCode=0051CB797C361B6638DD', live: true,
-    coupon: { code: 'FREETEST33', price: '$34.99', list: '$109.99', expires: 'August 23',
-      url: 'https://www.udemy.com/course/comptia-secai-cy0-001-certification-fast-track/?couponCode=FREETEST33' } },
+    udemy: 'https://www.udemy.com/course/comptia-secai-cy0-001-certification-fast-track/?referralCode=0051CB797C361B6638DD', live: true, list: '$109.99' },
   { slug: 'aws-security-specialty-scs-c03', name: 'AWS Certified Security – Specialty (SCS-C03)',
     tagline: 'IAM, detection, data protection and AI guardrails', page: 'aws-scs-c03',
-    udemy: 'https://www.udemy.com/course/aws-certified-security-specialty-scs-c03-exam-prep/?referralCode=DB55717A7CE2D886873D', live: true,
-    coupon: { code: 'FREETEST33', price: '$34.99', list: '$119.99', expires: 'August 23',
-      url: 'https://www.udemy.com/course/aws-certified-security-specialty-scs-c03-exam-prep/?couponCode=FREETEST33' } },
+    udemy: 'https://www.udemy.com/course/aws-certified-security-specialty-scs-c03-exam-prep/?referralCode=DB55717A7CE2D886873D', live: true, list: '$119.99' },
   { slug: 'isaca-aair-ai-risk', name: 'ISACA Advanced in AI Risk (AAIR)',
     tagline: 'Enterprise AI risk programs and governance', page: 'isaca-aair',
-    udemy: 'https://www.udemy.com/course/isaca-aair-advanced-ai-risk-certification-prep/?referralCode=2D84313C4CEA3D1FAAD9', live: true,
-    coupon: { code: 'FREETEST33', price: '$34.99', list: '$109.99', expires: 'August 23',
-      url: 'https://www.udemy.com/course/isaca-aair-advanced-ai-risk-certification-prep/?couponCode=FREETEST33' } },
+    udemy: 'https://www.udemy.com/course/isaca-aair-advanced-ai-risk-certification-prep/?referralCode=2D84313C4CEA3D1FAAD9', live: true, list: '$109.99' },
   { slug: 'databricks-genai-engineer-associate', name: 'Databricks Certified GenAI Engineer Associate',
     tagline: 'Vector Search, MLflow, Model Serving and RAG', page: 'databricks-genai',
-    udemy: 'https://www.udemy.com/course/databricks-genai-engineer-associate-exam-prep/?referralCode=8DE765A37F8FA8316910', live: true,
-    coupon: { code: 'FREETEST33', price: '$66.99', list: '$199.99', expires: 'August 23',
-      url: 'https://www.udemy.com/course/databricks-genai-engineer-associate-exam-prep/?couponCode=FREETEST33' } },
+    udemy: 'https://www.udemy.com/course/databricks-genai-engineer-associate-exam-prep/?referralCode=8DE765A37F8FA8316910', live: true, list: '$199.99' },
   { slug: 'nvidia-nca-genl-generative-ai-llms', name: 'NVIDIA Generative AI & LLMs (NCA-GENL)',
     tagline: 'Transformers, prompt engineering and the NVIDIA stack', page: 'nvidia-nca-genl',
-    udemy: 'https://www.udemy.com/course/nvidia-nca-genl-generative-ai-llm-certification-prep/?referralCode=8B242DD8B0A1E0E31860', live: true,
-    coupon: { code: 'FREETEST33', price: '$17.99', list: '$54.99', expires: 'August 23',
-      url: 'https://www.udemy.com/course/nvidia-nca-genl-generative-ai-llm-certification-prep/?couponCode=FREETEST33' } },
+    udemy: 'https://www.udemy.com/course/nvidia-nca-genl-generative-ai-llm-certification-prep/?referralCode=8B242DD8B0A1E0E31860', live: true, list: '$54.99' },
   // Week-5 launches — live on Udemy, added to the funnel 2026-07-29. FREETEST33
   // coupons + referral links added 2026-08-01 (weekly marketing check).
   { slug: 'salesforce-agentforce-specialist', name: 'Salesforce Agentforce Specialist',
     tagline: 'Agentforce agents, Prompt Builder and Data Cloud grounding', page: 'salesforce-agentforce',
-    udemy: 'https://www.udemy.com/course/salesforce-agentforce-specialist-exam-focused-preparation/?referralCode=932FEB83A87411DC2DE8', live: true,
-    coupon: { code: 'FREETEST33', price: '$34.99', list: '$199.99', expires: 'September 1',
-      url: 'https://www.udemy.com/course/salesforce-agentforce-specialist-exam-focused-preparation/?couponCode=FREETEST33' } },
+    udemy: 'https://www.udemy.com/course/salesforce-agentforce-specialist-exam-focused-preparation/?referralCode=932FEB83A87411DC2DE8', live: true, list: '$199.99' },
   { slug: 'anthropic-claude-developer-foundations', name: 'Claude Certified Developer (CCDV-F)',
     tagline: 'Building, deploying and evaluating apps with Claude', page: 'claude-ccdv-f',
-    udemy: 'https://www.udemy.com/course/claude-certified-developer-ccdv-f-complete-exam-prep/?referralCode=8AFA75B665B80C410125', live: true,
-    coupon: { code: 'FREETEST33', price: '$17.99', list: '$54.99', expires: 'September 1',
-      url: 'https://www.udemy.com/course/claude-certified-developer-ccdv-f-complete-exam-prep/?couponCode=FREETEST33' } },
+    udemy: 'https://www.udemy.com/course/claude-certified-developer-ccdv-f-complete-exam-prep/?referralCode=8AFA75B665B80C410125', live: true, list: '$54.99' },
   // Week-6 go-lives — found live on Udemy 2026-08-02 (weekly marketing check).
   // FREETEST33 coupons + referral links created same day, expire September 2.
   { slug: 'comptia-security-plus-sy0-701', name: 'CompTIA Security+ (SY0-701)',
     tagline: 'Security concepts, threats and SecOps for SY0-701', page: 'sy0-701',
-    udemy: 'https://www.udemy.com/course/comptia-security-sy0-701-exam-focused-prep/?referralCode=2E09250951BA6C33C873', live: true,
-    coupon: { code: 'FREETEST33', price: '$34.99', list: '$109.99', expires: 'September 2',
-      url: 'https://www.udemy.com/course/comptia-security-sy0-701-exam-focused-prep/?couponCode=FREETEST33' } },
+    udemy: 'https://www.udemy.com/course/comptia-security-sy0-701-exam-focused-prep/?referralCode=2E09250951BA6C33C873', live: true, list: '$109.99' },
   { slug: 'aws-solutions-architect-associate-saa-c04', name: 'AWS Certified Solutions Architect – Associate (SAA-C04)',
     tagline: 'Secure, resilient and cost-optimized AWS architectures', page: 'saa-c04',
-    udemy: 'https://www.udemy.com/course/aws-saa-c04-exam-prep-solutions-architect-associate/?referralCode=1F2F34A5C4485414A399', live: true,
-    coupon: { code: 'FREETEST33', price: '$34.99', list: '$109.99', expires: 'September 2',
-      url: 'https://www.udemy.com/course/aws-saa-c04-exam-prep-solutions-architect-associate/?couponCode=FREETEST33' } },
+    udemy: 'https://www.udemy.com/course/aws-saa-c04-exam-prep-solutions-architect-associate/?referralCode=1F2F34A5C4485414A399', live: true, list: '$109.99' },
   { slug: 'microsoft-ai-300-mlops-genaiops-2026', name: 'Microsoft MLOps Engineer Associate (AI-300)',
     tagline: 'MLOps infrastructure and model lifecycle on Azure', page: 'ai-300',
-    udemy: 'https://www.udemy.com/course/ai-300-mlops-genaiops-engineer-exam-preparation/?referralCode=E77DA0B8890568F118C6', live: true,
-    coupon: { code: 'FREETEST33', price: '$34.99', list: '$129.99', expires: 'September 2',
-      url: 'https://www.udemy.com/course/ai-300-mlops-genaiops-engineer-exam-preparation/?couponCode=FREETEST33' } },
+    udemy: 'https://www.udemy.com/course/ai-300-mlops-genaiops-engineer-exam-preparation/?referralCode=E77DA0B8890568F118C6', live: true, list: '$129.99' },
   { slug: 'google-cloud-generative-ai-leader-2026', name: 'Google Cloud Generative AI Leader',
     tagline: 'GenAI fundamentals and Google Cloud\'s GenAI stack', page: 'generative-ai-leader',
-    udemy: 'https://www.udemy.com/course/google-cloud-generative-ai-leader-exam-prep-2026/?referralCode=F008FA2B73A7485FF710', live: true,
-    coupon: { code: 'FREETEST33', price: '$34.99', list: '$99.99', expires: 'September 2',
-      url: 'https://www.udemy.com/course/google-cloud-generative-ai-leader-exam-prep-2026/?couponCode=FREETEST33' } },
+    udemy: 'https://www.udemy.com/course/google-cloud-generative-ai-leader-exam-prep-2026/?referralCode=F008FA2B73A7485FF710', live: true, list: '$99.99' },
   { slug: 'nvidia-ncp-aio-ai-operations-2026', name: 'NVIDIA AI Operations Professional (NCP-AIO)',
     tagline: 'Deploying and administering NVIDIA AI infrastructure', page: 'ncp-aio',
-    udemy: 'https://www.udemy.com/course/ncp-aio-nvidia-ai-operations-professional-certification/?referralCode=DE36F0D7F6A6C9C92CD8', live: true,
-    coupon: { code: 'FREETEST33', price: '$34.99', list: '$199.99', expires: 'September 2',
-      url: 'https://www.udemy.com/course/ncp-aio-nvidia-ai-operations-professional-certification/?couponCode=FREETEST33' } },
+    udemy: 'https://www.udemy.com/course/ncp-aio-nvidia-ai-operations-professional-certification/?referralCode=DE36F0D7F6A6C9C92CD8', live: true, list: '$199.99' },
   { slug: 'microsoft-ai-103-azure-ai-apps-agents-2026', name: 'Microsoft Azure AI Apps & Agents Developer (AI-103)',
     tagline: 'Azure AI apps, agents and generative AI solutions', page: 'ai-103',
-    udemy: 'https://www.udemy.com/course/ai-103-azure-ai-apps-agents-developer-certification/?referralCode=A5946EF37692CED37B08', live: true,
-    coupon: { code: 'FREETEST33', price: '$34.99', list: '$109.99', expires: 'September 2',
-      url: 'https://www.udemy.com/course/ai-103-azure-ai-apps-agents-developer-certification/?couponCode=FREETEST33' } },  { slug: 'nvidia-nca-ads-accelerated-data-science-2026', name: "NVIDIA-Certified Associate: Accelerated Data Science",
+    udemy: 'https://www.udemy.com/course/ai-103-azure-ai-apps-agents-developer-certification/?referralCode=A5946EF37692CED37B08', live: true, list: '$109.99' },  { slug: 'nvidia-nca-ads-accelerated-data-science-2026', name: "NVIDIA-Certified Associate: Accelerated Data Science",
     tagline: "GPU-Accelerated Data Manipulation and Preparation, ETL and Scalable GPU Pipelines", page: 'nca-ads',
-    udemy: 'https://www.udemy.com/course/nca-ads-nvidia-accelerated-data-science-exam-prep/?referralCode=9B6E2B7FF4CF980A7994', live: true,
-    coupon: { code: 'FREETEST33', price: '$34.99', list: '$99.99', expires: 'September 7',
-      url: 'https://www.udemy.com/course/nca-ads-nvidia-accelerated-data-science-exam-prep/?couponCode=FREETEST33' } },
+    udemy: 'https://www.udemy.com/course/nca-ads-nvidia-accelerated-data-science-exam-prep/?referralCode=9B6E2B7FF4CF980A7994', live: true, list: '$99.99' },
   { slug: 'nvidia-ncp-ousd-openusd-development-2026', name: "NVIDIA-Certified Professional: OpenUSD Development",
     tagline: "OpenUSD Fundamentals and Data Modeling, Composition and Composition Arcs", page: 'ncp-ousd',
-    udemy: 'https://www.udemy.com/course/ncp-ousd-nvidia-openusd-development-certification-prep/?referralCode=23DC329290344BD82776', live: true,
-    coupon: { code: 'FREETEST33', price: '$34.99', list: '$109.99', expires: 'September 7',
-      url: 'https://www.udemy.com/course/ncp-ousd-nvidia-openusd-development-certification-prep/?couponCode=FREETEST33' } },
+    udemy: 'https://www.udemy.com/course/ncp-ousd-nvidia-openusd-development-certification-prep/?referralCode=23DC329290344BD82776', live: true, list: '$109.99' },
   { slug: 'aipmm-cdpm-certified-digital-product-manager-2026', name: "AIPMM Certified Digital Product Manager",
     tagline: "Digital Product Management Foundations, Customer Discovery, JTBD, and Design Thinking", page: 'cdpm',
-    udemy: 'https://www.udemy.com/course/aipmm-cdpm-exam-prep-digital-product-management/?referralCode=10284AA60F904C506094', live: true,
-    coupon: { code: 'FREETEST33', price: '$34.99', list: '$109.99', expires: 'September 7',
-      url: 'https://www.udemy.com/course/aipmm-cdpm-exam-prep-digital-product-management/?couponCode=FREETEST33' } },
+    udemy: 'https://www.udemy.com/course/aipmm-cdpm-exam-prep-digital-product-management/?referralCode=10284AA60F904C506094', live: true, list: '$109.99' },
   { slug: 'aipmm-cpm-certified-product-manager-2026', name: "AIPMM Certified Product Manager",
     tagline: "Product Management Foundations and the ProdBOK Life Cycle, Market Research and Competitive Analysis", page: 'cpm',
-    udemy: 'https://www.udemy.com/course/aipmm-cpm-certified-product-manager-exam-prep/?referralCode=07EDCD4FC46B47DCCF21', live: true,
-    coupon: { code: 'FREETEST33', price: '$34.99', list: '$109.99', expires: 'September 7',
-      url: 'https://www.udemy.com/course/aipmm-cpm-certified-product-manager-exam-prep/?couponCode=FREETEST33' } },
+    udemy: 'https://www.udemy.com/course/aipmm-cpm-certified-product-manager-exam-prep/?referralCode=07EDCD4FC46B47DCCF21', live: true, list: '$109.99' },
   { slug: 'nvidia-ncp-aai-agentic-ai-2026', name: "NVIDIA-Certified Professional: Agentic AI",
     tagline: "Agent Design and Cognition, Orchestration and Multi-Agent Systems", page: 'ncp-aai',
-    udemy: 'https://www.udemy.com/course/nvidia-ncp-aai-agentic-ai-certification-prep/?referralCode=5696EF5C81591EBA8CB8', live: true,
-    coupon: { code: 'FREETEST33', price: '$34.99', list: '$129.99', expires: 'September 7',
-      url: 'https://www.udemy.com/course/nvidia-ncp-aai-agentic-ai-certification-prep/?couponCode=FREETEST33' } },
+    udemy: 'https://www.udemy.com/course/nvidia-ncp-aai-agentic-ai-certification-prep/?referralCode=5696EF5C81591EBA8CB8', live: true, list: '$129.99' },
   { slug: 'nvidia-ncp-genl-generative-ai-llm-2026', name: "NVIDIA-Certified Professional: Generative AI and LLMs",
     tagline: "LLM Foundations and Architecture, Prompt Engineering and Adaptation", page: 'ncp-genl',
-    udemy: 'https://www.udemy.com/course/ncp-genl-nvidia-generative-ai-llms-cert-prep/?referralCode=45A462FCEE67660749E1', live: true,
-    coupon: { code: 'FREETEST33', price: '$34.99', list: '$129.99', expires: 'September 7',
-      url: 'https://www.udemy.com/course/ncp-genl-nvidia-generative-ai-llms-cert-prep/?couponCode=FREETEST33' } },
+    udemy: 'https://www.udemy.com/course/ncp-genl-nvidia-generative-ai-llms-cert-prep/?referralCode=45A462FCEE67660749E1', live: true, list: '$129.99' },
   { slug: 'aws-machine-learning-engineer-associate-mla-c01', name: "AWS Certified Machine Learning Engineer - Associate",
     tagline: "Data Preparation for Machine Learning (ML), ML Model Development", page: 'mla-c01',
-    udemy: 'https://www.udemy.com/course/aws-certified-ml-engineer-associate-mla-c01-prep/?referralCode=63AA3C5B6CCFB916DCAB', live: true,
-    coupon: { code: 'FREETEST33', price: '$34.99', list: '$109.99', expires: 'September 7',
-      url: 'https://www.udemy.com/course/aws-certified-ml-engineer-associate-mla-c01-prep/?couponCode=FREETEST33' } },
+    udemy: 'https://www.udemy.com/course/aws-certified-ml-engineer-associate-mla-c01-prep/?referralCode=63AA3C5B6CCFB916DCAB', live: true, list: '$109.99' },
   { slug: 'google-cloud-professional-ml-engineer-2026', name: "Google Cloud Professional Machine Learning Engineer",
     tagline: "Architecting low-code AI solutions, Collaborating to manage data and models", page: 'professional-ml-engineer',
-    udemy: 'https://www.udemy.com/course/google-cloud-professional-ml-engineer-exam-prep/?referralCode=3A86432A198744ED2F33', live: true,
-    coupon: { code: 'FREETEST33', price: '$34.99', list: '$129.99', expires: 'September 7',
-      url: 'https://www.udemy.com/course/google-cloud-professional-ml-engineer-exam-prep/?couponCode=FREETEST33' } },
+    udemy: 'https://www.udemy.com/course/google-cloud-professional-ml-engineer-exam-prep/?referralCode=3A86432A198744ED2F33', live: true, list: '$129.99' },
   { slug: 'nvidia-ncp-aii-ai-infrastructure-professional-2026', name: "NVIDIA-Certified Professional: AI Infrastructure",
     tagline: "System and Server Bring-up, Server and Network Installation and Configuration", page: 'ncp-aii',
-    udemy: 'https://www.udemy.com/course/ncp-aii-nvidia-ai-infrastructure-professional-prep/?referralCode=EEC8729A0880EB8DA3B9', live: true,
-    coupon: { code: 'FREETEST33', price: '$34.99', list: '$199.99', expires: 'September 9',
-      url: 'https://www.udemy.com/course/ncp-aii-nvidia-ai-infrastructure-professional-prep/?couponCode=FREETEST33' } },
+    udemy: 'https://www.udemy.com/course/ncp-aii-nvidia-ai-infrastructure-professional-prep/?referralCode=EEC8729A0880EB8DA3B9', live: true, list: '$199.99' },
   { slug: 'nvidia-ncp-ads-accelerated-data-science-professional-2026', name: "NVIDIA-Certified Professional: Accelerated Data Science",
     tagline: "GPU-Accelerated Data Science Fundamentals, Data Preparation and Manipulation with cuDF", page: 'ncp-ads',
-    udemy: 'https://www.udemy.com/course/ncp-ads-nvidia-accelerated-data-science-prep/?referralCode=DFA6E1D64C762E0C8F71', live: true,
-    coupon: { code: 'FREETEST33', price: '$34.99', list: '$129.99', expires: 'September 9',
-      url: 'https://www.udemy.com/course/ncp-ads-nvidia-accelerated-data-science-prep/?couponCode=FREETEST33' } },
+    udemy: 'https://www.udemy.com/course/ncp-ads-nvidia-accelerated-data-science-prep/?referralCode=DFA6E1D64C762E0C8F71', live: true, list: '$129.99' },
   { slug: 'nvidia-nca-genm-generative-ai-multimodal-2026', name: "NVIDIA-Certified Associate: Generative AI Multimodal",
     tagline: "Core Machine Learning and AI Knowledge, Experimentation", page: 'nca-genm',
-    udemy: 'https://www.udemy.com/course/nca-genm-nvidia-generative-ai-multimodal-exam-prep/?referralCode=979950D891544A0B1645', live: true,
-    coupon: { code: 'FREETEST33', price: '$34.99', list: '$99.99', expires: 'September 9',
-      url: 'https://www.udemy.com/course/nca-genm-nvidia-generative-ai-multimodal-exam-prep/?couponCode=FREETEST33' } },
+    udemy: 'https://www.udemy.com/course/nca-genm-nvidia-generative-ai-multimodal-exam-prep/?referralCode=979950D891544A0B1645', live: true, list: '$99.99' },
   { slug: 'pmi-cpmai-managing-ai-2026', name: "PMI Certified Professional in Managing AI",
     tagline: "Support Responsible and Trustworthy AI Efforts, Identify Business Needs and Solutions", page: 'pmi-cpmai',
-    udemy: 'https://www.udemy.com/course/pmi-cpmai-certification-exam-prep-masterclass/', live: true },
+    udemy: 'https://www.udemy.com/course/pmi-cpmai-certification-exam-prep-masterclass/?referralCode=EBBE361FDE69720D376D', live: true, list: '$109.99' },
   { slug: 'gsdc-certified-forward-deployed-engineer-2026', name: "GSDC Certified Forward Deployed Engineer",
     tagline: "FDE Mindset and Problem Structuring, Production Python, Backend Development, and API Design", page: 'cfde',
-    udemy: 'https://www.udemy.com/course/gsdc-cfde-certification-forward-deployed-engineer-prep/', live: true },
+    udemy: 'https://www.udemy.com/course/gsdc-cfde-certification-forward-deployed-engineer-prep/?referralCode=1FD231084B32F7758F63', live: true, list: '$109.99' },
   { slug: 'aws-data-engineer-associate-dea-c01-2026', name: "AWS Certified Data Engineer - Associate",
     tagline: "Data Ingestion and Transformation, Data Store Management", page: 'dea-c01',
-    udemy: 'https://www.udemy.com/course/aws-certified-data-engineer-associate-dea-c01-prep/', live: true },
+    udemy: 'https://www.udemy.com/course/aws-certified-data-engineer-associate-dea-c01-prep/?referralCode=E8551F84', live: true, list: '$109.99' },
   { slug: 'google-associate-cloud-engineer-2026', name: "Google Cloud Certified - Associate Cloud Engineer",
     tagline: "Setting Up a Cloud Solution Environment, Planning and Configuring a Cloud Solution", page: 'associate-cloud-engineer',
-    udemy: 'https://www.udemy.com/course/google-cloud-ace-associate-cloud-engineer-exam-prep/', live: true },
+    udemy: 'https://www.udemy.com/course/google-cloud-ace-associate-cloud-engineer-exam-prep/?referralCode=47821734DE4ED7926356', live: true, list: '$99.99' },
+  { slug: 'microsoft-dp-600-fabric-analytics-engineer-2026', name: "Microsoft Certified: Fabric Analytics Engineer Associate",
+    tagline: "Maintain a data analytics solution, Prepare data", page: 'dp-600',
+    udemy: 'https://www.udemy.com/course/dp-600-fabric-analytics-engineer-certification-prep/?referralCode=D1EC0EE91860A6A58FA3', live: true, list: '$109.99' },
+  { slug: 'google-cloud-professional-data-engineer-2026', name: "Google Cloud Certified - Professional Data Engineer",
+    tagline: "Designing data processing systems, Ingesting and processing the data", page: 'professional-data-engineer',
+    udemy: 'https://www.udemy.com/course/google-professional-data-engineer-exam-prep/?referralCode=B9FC71138A6ABD41E3D3', live: true, list: '$129.99' },
+  { slug: 'microsoft-ab-730-ai-business-professional-2026', name: "Microsoft Certified: AI Business Professional",
+    tagline: "Understand generative AI fundamentals, Manage prompts and conversations by using AI", page: 'ab-730',
+    udemy: 'https://www.udemy.com/course/ab-730-microsoft-ai-business-professional-exam-prep-k/?referralCode=412BE0E98C4D8C930FDD', live: true, list: '$99.99' },
+  { slug: 'microsoft-ab-731-ai-transformation-leader-2026', name: "Microsoft Certified: AI Transformation Leader",
+    tagline: "Business value of generative AI, Microsoft AI apps and services", page: 'ab-731',
+    udemy: 'https://www.udemy.com/course/ab-731-ai-transformation-leader-exam-prep/?referralCode=FF397BBD3797643B41D5', live: true, list: '$109.99' },
+  { slug: 'aws-certified-developer-associate-dva-c02-2026', name: "AWS Certified Developer - Associate",
+    tagline: "Development with AWS Services, Security", page: 'dva-c02',
+    udemy: 'https://www.udemy.com/course/aws-certified-developer-associate-dva-c02-prep/?referralCode=DD7CB49F86F4BB472122', live: true, list: '$109.99' },
+  { slug: 'google-cloud-professional-cloud-architect-2026', name: "Google Cloud Certified - Professional Cloud Architect",
+    tagline: "Designing and planning a cloud solution architecture, Managing and provisioning a solution infrastructure", page: 'professional-cloud-architect',
+    udemy: 'https://www.udemy.com/course/google-cloud-professional-cloud-architect-pca-prep/', live: true, list: '$129.99' },
+  { slug: 'hashicorp-terraform-associate-004-2026', name: "HashiCorp Certified: Terraform Associate (004)",
+    tagline: "Understand infrastructure as code (IaC) concepts, Understand Terraform's purpose (vs other IaC)", page: 'ta-004',
+    udemy: 'https://www.udemy.com/course/terraform-associate-004-certification-prep/', live: true, list: '$99.99' },
+  { slug: 'microsoft-az-305-azure-solutions-architect-2026', name: "Microsoft Certified: Azure Solutions Architect Expert",
+    tagline: "Design identity, governance, and monitoring solutions, Design data storage solutions", page: 'az-305',
+    udemy: 'https://www.udemy.com/course/az-305-azure-solutions-architect-expert-prep/', live: true, list: '$119.99' },
+  { slug: 'aws-certified-sysops-administrator-associate-soa-c02-2026', name: "AWS Certified SysOps Administrator - Associate",
+    tagline: "Monitoring, Logging, and Remediation, Reliability and Business Continuity", page: 'soa-c02',
+    udemy: 'https://www.udemy.com/course/aws-sysops-administrator-soa-c02-exam-prep/', live: true, list: '$109.99' },
+  { slug: 'comptia-network-plus-n10-009-2026', name: "CompTIA Network+",
+    tagline: "Networking Fundamentals, Network Implementations", page: 'n10-009',
+    udemy: 'https://www.udemy.com/course/comptia-network-n10-009-exam-focused-prep/', live: true, list: '$109.99' },
+  { slug: 'comptia-a-plus-core-1-220-1201-2026', name: "CompTIA A+ (Core 1)",
+    tagline: "Mobile Devices, Networking", page: '220-1201',
+    udemy: 'https://www.udemy.com/course/comptia-a-core-1-220-1201-exam-prep-w/?referralCode=E9C2F71E84C4F4779984', live: true , list: '$99.99' },
+  { slug: 'comptia-a-plus-core-2-220-1202-2026', name: "CompTIA A+ (Core 2)",
+    tagline: "Operating Systems, Security", page: '220-1202',
+    udemy: 'https://www.udemy.com/course/comptia-a-core-2-220-1202-exam-prep-course/?referralCode=A5AE61D1C709A7886458', live: true , list: '$99.99' },
+  { slug: 'microsoft-az-104-azure-administrator-2026', name: "Microsoft Certified: Azure Administrator Associate",
+    tagline: "Manage Azure identities and governance, Implement and manage storage", page: 'az-104',
+    udemy: 'https://www.udemy.com/course/az-104-azure-administrator-associate-exam-prep-g/?referralCode=D00137EB1DCF6F4CB465', live: true , list: '$109.99' },
+  { slug: 'microsoft-az-204-azure-developer-2026', name: "Microsoft Certified: Azure Developer Associate",
+    tagline: "Develop Azure compute solutions, Develop for Azure storage", page: 'az-204',
+    udemy: 'https://www.udemy.com/course/az-204-azure-developer-associate-exam-focused-prep/?referralCode=C963B2384D070A86FD31', live: true , list: '$109.99' },
   // __COURSES_END__ (register-course.js inserts new course objects immediately above this line)
+];
+
+// --------------------------------------------------------------- bundles ----
+// Learning-path bundles: courses grouped by shared domain / base technology and
+// sold at BUNDLE_DISCOUNT off the combined original (list) price. This replaces the
+// retired weekly free/near-free single-course coupon campaign. Each bundle is 2-3
+// courses so it maps 1:1 to Udemy's native Course Bundling tool (Instructor →
+// Tools → Course Bundling), which is durable (no monthly coupon refresh).
+//
+// `pages` reference courses by their `page` field (stable, unique). Once the native
+// Udemy bundle exists, paste its public URL into `udemyBundleUrl` and rebuild — the
+// card's button then points straight at the single-checkout bundle. Until then the
+// card links each member course individually.
+// Strategy + pricing rationale: ClaudeFolder/bundle-strategy-2026-08.md
+const BUNDLE_DISCOUNT = 0.20;
+const BUNDLES = [
+  { id: 'aws-associate-trio', title: 'AWS Associate Trio',
+    blurb: 'The three core AWS Associate certs — architect, developer and sysops — the classic path to AWS credibility.',
+    pages: ['saa-c04', 'dva-c02', 'soa-c02'], udemyBundleUrl: '' },
+  { id: 'aws-ai-ml', title: 'AWS AI/ML Engineer Path',
+    blurb: 'From AI fundamentals to building GenAI apps and engineering ML on AWS — Bedrock, SageMaker and production ML.',
+    pages: ['aws-aif-c01', 'aws-aip-c01', 'mla-c01'], udemyBundleUrl: '' },
+  { id: 'aws-data', title: 'AWS Data Engineering Path',
+    blurb: 'Build the data foundation, then the models on top — AWS data pipelines paired with ML engineering.',
+    pages: ['dea-c01', 'mla-c01'], udemyBundleUrl: '' },
+  { id: 'nvidia-genai', title: 'NVIDIA Generative AI & LLMs Path',
+    blurb: 'Associate to professional coverage of LLMs, prompt engineering and multimodal GenAI on the NVIDIA stack.',
+    pages: ['nvidia-nca-genl', 'ncp-genl', 'nca-genm'], udemyBundleUrl: '' },
+  { id: 'nvidia-infra-ops', title: 'NVIDIA AI Infrastructure & Operations Path',
+    blurb: 'Stand up and run NVIDIA AI infrastructure end to end — infrastructure, operations and agentic AI at professional level.',
+    pages: ['ncp-aio', 'ncp-aii', 'ncp-aai'], udemyBundleUrl: '' },
+  { id: 'nvidia-ads', title: 'NVIDIA Accelerated Data Science Path',
+    blurb: 'GPU-accelerated data science from associate to professional — cuDF, RAPIDS and scalable GPU pipelines.',
+    pages: ['nca-ads', 'ncp-ads'], udemyBundleUrl: '' },
+  { id: 'ms-azure-ai-dev', title: 'Microsoft Azure AI Developer Path',
+    blurb: 'Build Azure AI apps and agents (AI-103), then operate them in production with MLOps and GenAIOps (AI-300).',
+    pages: ['ai-103', 'ai-300'], udemyBundleUrl: '' },
+  { id: 'ms-ai-business', title: 'Microsoft AI Business Leadership Path',
+    blurb: 'The non-engineering AI track — AI business fundamentals plus leading an AI transformation with Microsoft AI.',
+    pages: ['ab-730', 'ab-731'], udemyBundleUrl: '' },
+  { id: 'google-professional', title: 'Google Cloud Professional Path',
+    blurb: 'The three Google Cloud professional exams — architect, data engineer and ML engineer — on one platform.',
+    pages: ['professional-cloud-architect', 'professional-data-engineer', 'professional-ml-engineer'], udemyBundleUrl: '' },
+  { id: 'google-foundations', title: 'Google Cloud Foundations Path',
+    blurb: 'Get grounded on Google Cloud — the Associate Cloud Engineer cert plus GenAI leadership fundamentals.',
+    pages: ['associate-cloud-engineer', 'generative-ai-leader'], udemyBundleUrl: '' },
+  { id: 'comptia-security', title: 'CompTIA Security Path',
+    blurb: 'A vendor-neutral security progression — networking (Network+), core security (Security+) and AI security (SecAI+).',
+    pages: ['n10-009', 'sy0-701', 'comptia-secai'], udemyBundleUrl: '' },
+  { id: 'ai-governance', title: 'AI Governance, Risk & Compliance Path',
+    blurb: 'The credentials for responsible-AI roles — IAPP AIGP, ISACA Advanced in AI Risk and PMI managing-AI.',
+    pages: ['iapp-aigp', 'isaca-aair', 'pmi-cpmai'], udemyBundleUrl: '' },
+  { id: 'ai-product', title: 'AI Product Management Path',
+    blurb: 'The AIPMM product-management pair — digital product management foundations and the certified product manager body of knowledge.',
+    pages: ['cdpm', 'cpm'], udemyBundleUrl: '' },
 ];
 
 const N_QUESTIONS = 12;
@@ -263,83 +315,365 @@ function configForSlug(slug) {
 }
 
 const CSS = `
-:root{--bg:#ffffff;--card:#f8fafc;--txt:#0f172a;--ink:#0f172a;--dim:#475569;--acc:#0ea5e9;--ok:#16a34a;
- --bad:#dc2626;--cta:#f97316;--cta-h:#ea580c;--amber:#f59e0b;--line:#e2e8f0;--vendor:#0ea5e9}
+/* ==========================================================================
+   TechNuggets Academy — brand design system
+   Nugget amber #F59E0B · deep #B45309 · light #FBBF24
+   Ink navy #0F172A · slate #475569
+   Drop-in replacement: same class names the site generator emits.
+   ========================================================================== */
+
+:root{
+  /* brand */
+  --amber:#F59E0B;
+  --amber-deep:#B45309;
+  --amber-light:#FBBF24;
+  --amber-50:#FFFBEB;
+  --amber-100:#FEF3C7;
+  --amber-200:#FDE68A;
+  --ember:#7C2D12;
+
+  /* ink */
+  --txt:#0F172A;
+  --ink:#0F172A;
+  --dim:#475569;
+  --muted:#64748B;
+
+  /* surfaces */
+  --bg:#FCFAF6;
+  --card:#FFFFFF;
+  --line:#E7E3DA;
+  --line-soft:#F1EEE7;
+
+  /* roles (kept for backwards compatibility with generated markup) */
+  --acc:#B45309;
+  --cta:#F59E0B;
+  --cta-h:#D97706;
+  --ok:#15803D;
+  --ok-bg:#F0FDF4;
+  --ok-line:#86EFAC;
+  --bad:#B91C1C;
+  --bad-bg:#FEF2F2;
+  --bad-line:#FCA5A5;
+  --vendor:#F59E0B;
+
+  --radius:14px;
+  --radius-sm:10px;
+  --shadow-sm:0 1px 2px rgba(15,23,42,.05);
+  --shadow:0 4px 16px -4px rgba(15,23,42,.10),0 1px 3px rgba(15,23,42,.05);
+  --font:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--txt);line-height:1.6}
-.wrap{max-width:780px;margin:0 auto;padding:0 16px 64px}
-/* brand bar */
-.brandbar{display:flex;align-items:center;gap:10px;padding:16px 0 4px}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+
+body{
+  font-family:var(--font);
+  background:var(--bg);
+  color:var(--txt);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+}
+
+img{max-width:100%;height:auto}
+a{color:var(--amber-deep)}
+::selection{background:var(--amber-200);color:var(--ink)}
+:focus-visible{outline:3px solid var(--amber);outline-offset:2px;border-radius:6px}
+
+.wrap{max-width:880px;margin:0 auto;padding:0 20px 72px}
+
+/* --------------------------------------------------------------- brand bar */
+
+.brandbar{
+  display:flex;align-items:center;gap:10px;
+  padding:18px 0 14px;margin-bottom:6px;
+  border-bottom:1px solid var(--line-soft);
+}
 .brandbar a{display:inline-flex;align-items:center;text-decoration:none}
-.brandbar img{height:34px;width:auto;display:block}
-h1{font-size:1.55rem;line-height:1.2}h1 a{color:var(--txt);text-decoration:none}
-.sub{color:var(--dim);margin:6px 0 18px}
-/* hero (dark navy, logo + facts + above-fold CTA) */
-.hero{background:linear-gradient(135deg,#0b1220,#111c33);border-radius:16px;padding:26px 24px;margin:14px 0 22px;color:#e2e8f0}
-.hero .chip{display:inline-block;font-size:.72rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
- padding:4px 10px;border-radius:99px;background:var(--vendor);color:#fff;margin-bottom:12px}
-.hero h1{color:#fff;font-size:1.7rem}
-.hero .sub{color:#cbd5e1;margin:8px 0 16px}
-.hero .facts{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 4px}
-.hero .fact{font-size:.8rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);
- border-radius:8px;padding:6px 11px;color:#e2e8f0}
-.hero .fact b{color:#fff}
-.cta-row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:18px}
-.urgency{font-size:.82rem;font-weight:700;color:#fdba74}
-/* buttons */
-.btn{display:inline-block;text-decoration:none;font-weight:700;font-size:.92rem;border-radius:10px;padding:13px 22px;
- transition:background .15s,border-color .15s,transform .05s}
+.brandbar img{height:44px;width:auto;display:block}
+
+/* page heading — domain sub-pages use <header><h1> */
+h1{font-size:1.75rem;line-height:1.2;letter-spacing:-.025em;font-weight:800}
+h1 a{color:var(--txt);text-decoration:none}
+header{padding:26px 0 6px}
+.sub{color:var(--dim);margin:8px 0 20px}
+
+/* -------------------------------------------------------------------- hero */
+
+.hero{
+  position:relative;overflow:hidden;
+  background:
+    radial-gradient(120% 130% at 88% -10%,rgba(251,191,36,.32) 0%,rgba(251,191,36,0) 58%),
+    linear-gradient(180deg,#FFFDF7 0%,#FFF6E4 100%);
+  border:1px solid var(--amber-200);
+  border-radius:22px;
+  padding:34px 32px 30px;
+  margin:20px 0 22px;
+  color:var(--txt);
+}
+/* nugget mark, watermarked into the hero */
+.hero::after{
+  content:"";position:absolute;right:-58px;top:-48px;width:236px;height:236px;
+  background:url("icon.svg") center/contain no-repeat;
+  opacity:.10;transform:rotate(-12deg);pointer-events:none;
+}
+.hero > *{position:relative}
+
+.hero .chip{
+  display:inline-flex;align-items:center;gap:7px;
+  font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+  padding:6px 13px;border-radius:99px;
+  background:var(--card);border:1px solid var(--amber-200);
+  color:var(--amber-deep);margin-bottom:14px;box-shadow:var(--shadow-sm);
+}
+.hero .chip::before{
+  content:"";width:9px;height:9px;border-radius:2px;
+  background:var(--vendor);box-shadow:0 0 0 3px rgba(245,158,11,.20);
+}
+.hero h1{color:var(--ink);font-size:clamp(1.6rem,3.8vw,2.25rem);max-width:22ch}
+.hero .sub{color:var(--dim);margin:10px 0 16px;max-width:60ch}
+
+.hero .facts{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 4px}
+.hero .fact{
+  font-size:.8rem;background:var(--card);border:1px solid var(--line);
+  border-radius:9px;padding:7px 12px;color:var(--dim);box-shadow:var(--shadow-sm);
+}
+.hero .fact b{color:var(--ink);font-weight:750}
+
+.cta-row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:20px}
+.urgency{font-size:.82rem;font-weight:750;color:var(--ember)}
+
+/* ----------------------------------------------------------------- buttons */
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  text-decoration:none;font-weight:700;font-size:.92rem;
+  border-radius:10px;padding:12px 22px;border:1px solid transparent;
+  cursor:pointer;white-space:nowrap;
+  transition:background .15s,border-color .15s,color .15s,box-shadow .15s,transform .06s;
+}
 .btn:active{transform:translateY(1px)}
-.btn.enroll{background:var(--cta);color:#fff;font-size:1.02rem;box-shadow:0 4px 16px rgba(249,115,22,.35)}
-.btn.enroll:hover{background:var(--cta-h)}
-.btn.course{background:var(--cta);color:#fff;box-shadow:0 3px 12px rgba(249,115,22,.3)}
-.btn.course:hover{background:var(--cta-h)}
-.btn.practice{background:transparent;color:var(--acc);border:1px solid var(--line)}
-.btn.practice:hover{border-color:var(--acc);background:#f1f5f9}
-.btn.ghost{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.25)}
-.btn.ghost:hover{background:rgba(255,255,255,.18)}
-/* trust band */
-.trust{display:flex;flex-wrap:wrap;gap:8px 20px;font-size:.82rem;color:var(--dim);margin:2px 0 22px;padding:12px 0;border-bottom:1px solid var(--line)}
-.trust span{display:inline-flex;align-items:center;gap:6px}
-.trust b{color:var(--ok)}
-.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:14px 0}
-.card h2{font-size:1.05rem;margin-bottom:4px}.card p{color:var(--dim);font-size:.92rem}
-.card .vchip{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:8px;vertical-align:middle;background:var(--vendor)}
-.card a.go{display:inline-block;margin-top:10px;color:var(--acc);text-decoration:none;font-weight:600}
-.card .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
-.q{margin-bottom:8px;font-weight:600}
-.opt{display:block;width:100%;text-align:left;background:#f8fafc;border:1px solid #cbd5e1;color:var(--txt);
- border-radius:8px;padding:10px 12px;margin:6px 0;cursor:pointer;font-size:.95rem}
-.opt:hover{border-color:var(--acc)}
-.opt.correct{border-color:var(--ok);background:#dcfce7}
-.opt.wrong{border-color:var(--bad);background:#fee2e2}
-.expl{display:none;background:#f1f5f9;border-left:3px solid var(--acc);padding:10px 12px;margin-top:8px;
- border-radius:0 8px 8px 0;font-size:.92rem;color:var(--dim)}
-.meta{font-size:.78rem;color:var(--dim);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em}
-.cta{background:linear-gradient(135deg,#0b1220,#1e293b);border-radius:14px;padding:24px;margin:26px 0;text-align:center;color:#e2e8f0}
-.cta strong{color:#fff;font-size:1.1rem}
-.cta a{display:inline-block;background:var(--cta);color:#fff;font-weight:700;text-decoration:none;
- padding:13px 26px;border-radius:10px;margin-top:12px;box-shadow:0 4px 16px rgba(249,115,22,.35)}
-.cta a:hover{background:var(--cta-h)}
-.cta p{color:#cbd5e1}
-.cta .strike{text-decoration:line-through;opacity:.6}
-.cta .price{color:#86efac;font-weight:800}
-.cta .code{background:rgba(255,255,255,.14);border:1px dashed #fff;border-radius:6px;padding:2px 8px;font-weight:700;color:#fff}
-.score{font-size:1.1rem;font-weight:700;margin:18px 0 6px}
-.gaps{display:none;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:10px 0;color:var(--dim);font-size:.95rem}
+
+.btn.enroll,.btn.course{
+  background:linear-gradient(180deg,var(--amber-light) 0%,var(--amber) 100%);
+  color:#3B2205;border-color:var(--amber-deep);
+  box-shadow:0 2px 0 0 var(--amber-deep),0 6px 16px -6px rgba(180,83,9,.55);
+}
+.btn.enroll{font-size:1rem;padding:13px 24px}
+.btn.enroll:hover,.btn.course:hover{
+  background:linear-gradient(180deg,var(--amber) 0%,#E08C08 100%);color:#2E1A03;
+}
+
+.btn.practice{background:var(--card);color:var(--ink);border-color:var(--line);box-shadow:var(--shadow-sm)}
+.btn.practice:hover{border-color:var(--amber);color:var(--amber-deep);background:var(--amber-50)}
+
+/* .ghost sits inside the (now light) hero — solid ink for contrast */
+.btn.ghost{background:var(--ink);color:#fff;border-color:var(--ink);box-shadow:0 8px 20px -10px rgba(15,23,42,.6)}
+.btn.ghost:hover{background:#1E293B;border-color:#1E293B}
+
+/* -------------------------------------------------------------- trust band */
+
+.trust{
+  display:flex;flex-wrap:wrap;gap:8px;
+  font-size:.83rem;color:var(--dim);
+  margin:2px 0 26px;padding:0;border:0;
+}
+.trust span{
+  display:inline-flex;align-items:center;gap:7px;
+  background:var(--card);border:1px solid var(--line);
+  border-radius:99px;padding:7px 14px;box-shadow:var(--shadow-sm);
+}
+.trust b{color:var(--ink);font-weight:750}
+
+/* ------------------------------------------------------------------- cards */
+
+.card{
+  position:relative;
+  background:var(--card);border:1px solid var(--line);
+  border-radius:var(--radius);padding:20px 22px;margin:14px 0;
+  box-shadow:var(--shadow-sm);
+  transition:box-shadow .18s ease,transform .18s ease,border-color .18s ease;
+}
+.card[style*="--vendor"]{border-top:3px solid var(--vendor)}
+.card[style*="--vendor"]:hover{transform:translateY(-2px);box-shadow:var(--shadow);border-color:var(--amber-200)}
+
+.card h2{font-size:1.05rem;line-height:1.35;font-weight:750;letter-spacing:-.012em;margin-bottom:5px}
+.card p{color:var(--dim);font-size:.92rem}
+.card .vchip{
+  display:inline-block;width:10px;height:10px;border-radius:3px;
+  margin-right:8px;vertical-align:middle;background:var(--vendor);
+}
+.card a.go{display:inline-block;margin-top:10px;color:var(--amber-deep);text-decoration:none;font-weight:700}
+.card a.go:hover{text-decoration:underline}
+.card .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+
+/* -------------------------------------------------------------------- quiz */
+
+.qcard{padding:22px 24px}
+.q{margin-bottom:12px;font-weight:650;font-size:1.02rem;line-height:1.55}
+
+.opt{
+  display:block;width:100%;text-align:left;
+  background:var(--bg);border:1px solid var(--line);color:var(--txt);
+  border-radius:var(--radius-sm);padding:12px 14px;margin:8px 0;
+  cursor:pointer;font-size:.95rem;font-family:inherit;line-height:1.5;
+  transition:border-color .14s,background .14s,transform .06s;
+}
+.opt:hover{border-color:var(--amber);background:var(--amber-50)}
+.opt:active{transform:translateY(1px)}
+.opt.correct{border-color:var(--ok-line);background:var(--ok-bg);font-weight:650}
+.opt.wrong{border-color:var(--bad-line);background:var(--bad-bg)}
+.opt.correct::after{content:" ✓";color:var(--ok);font-weight:800}
+.opt.wrong::after{content:" ✕";color:var(--bad);font-weight:800}
+
+.expl{
+  display:none;background:var(--amber-50);
+  border:1px solid var(--amber-200);border-left:4px solid var(--amber);
+  padding:13px 15px;margin-top:12px;
+  border-radius:0 var(--radius-sm) var(--radius-sm) 0;
+  font-size:.92rem;color:#57534E;line-height:1.6;
+}
+
+.meta{
+  font-size:.72rem;color:var(--muted);margin-bottom:10px;
+  text-transform:uppercase;letter-spacing:.08em;font-weight:750;
+}
+
+.score{font-size:1.15rem;font-weight:800;margin:26px 0 8px;letter-spacing:-.015em}
+.gaps{
+  display:none;background:var(--card);border:1px solid var(--line);
+  border-radius:var(--radius);padding:18px 22px;margin:10px 0;
+  color:var(--dim);font-size:.95rem;box-shadow:var(--shadow-sm);
+}
 .gaps strong{color:var(--txt)}
-/* FAQ + exam facts */
-.faq{margin:30px 0}
-.faq h3{font-size:1.15rem;margin-bottom:10px}
-.faq details{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin:8px 0}
-.faq summary{font-weight:700;cursor:pointer;font-size:.95rem}
-.faq p{color:var(--dim);font-size:.92rem;margin-top:8px}
-.domains{margin:26px 0}.domains a{display:inline-block;margin:4px 8px 4px 0;color:var(--acc);text-decoration:none;font-size:.9rem}
-footer{color:var(--dim);font-size:.8rem;margin-top:44px;border-top:1px solid var(--line);padding-top:16px}
-footer a{color:var(--dim)}
-.badge{display:inline-block;font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:99px;margin-left:8px;vertical-align:middle}
-.badge.live{background:#dcfce7;color:#166534}.badge.soon{background:#e0f2fe;color:#075985}
-.badge.deal{background:#ffedd5;color:#9a3412}
+
+/* --------------------------------------------------------- conversion CTA */
+
+.cta{
+  position:relative;overflow:hidden;
+  background:linear-gradient(135deg,#B45309 0%,#D97706 48%,#F59E0B 100%);
+  border-radius:20px;padding:30px 32px;margin:30px 0;
+  text-align:center;color:#FFF7E6;
+  box-shadow:0 18px 40px -18px rgba(180,83,9,.55);
+}
+.cta::after{
+  content:"";position:absolute;left:-42px;bottom:-62px;width:196px;height:196px;
+  background:url("icon.svg") center/contain no-repeat;
+  opacity:.13;transform:rotate(14deg);pointer-events:none;
+}
+.cta > *{position:relative}
+.cta strong{color:#fff;font-size:1.22rem;letter-spacing:-.02em}
+.cta p{color:#FFF7E6;margin:6px auto 0;max-width:58ch}
+.cta a{
+  display:inline-block;background:#fff;color:var(--ember);font-weight:800;
+  text-decoration:none;padding:13px 26px;border-radius:10px;margin-top:14px;
+  box-shadow:0 6px 18px -6px rgba(0,0,0,.4);
+  transition:transform .1s,box-shadow .15s;
+}
+.cta a:hover{transform:translateY(-1px);box-shadow:0 10px 24px -8px rgba(0,0,0,.45)}
+.cta .strike{text-decoration:line-through;opacity:.7}
+.cta .price{color:#fff;font-weight:800}
+.cta .code{
+  background:rgba(255,255,255,.2);border:1px dashed rgba(255,255,255,.85);
+  border-radius:6px;padding:2px 9px;font-weight:800;color:#fff;letter-spacing:.04em;
+}
+
+/* --------------------------------------------------------------------- FAQ */
+
+.faq{margin:34px 0}
+.faq h3{font-size:1.2rem;margin-bottom:12px;letter-spacing:-.02em;font-weight:800}
+.faq details{
+  background:var(--card);border:1px solid var(--line);
+  border-radius:var(--radius-sm);padding:13px 17px;margin:8px 0;
+  box-shadow:var(--shadow-sm);
+}
+.faq details[open]{border-color:var(--amber-200);background:var(--amber-50)}
+.faq summary{font-weight:700;cursor:pointer;font-size:.95rem;list-style:none}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::before{content:"＋ ";color:var(--amber-deep);font-weight:800}
+.faq details[open] summary::before{content:"− "}
+.faq p{color:var(--dim);font-size:.92rem;margin-top:9px}
+
+/* ---------------------------------------------------------- domain links */
+
+.domains{
+  margin:28px 0;padding:20px 22px;
+  background:var(--card);border:1px solid var(--line);
+  border-radius:var(--radius);box-shadow:var(--shadow-sm);
+}
+.domains .meta{margin-bottom:10px}
+.domains a{
+  display:inline-block;margin:5px 8px 5px 0;
+  color:var(--amber-deep);text-decoration:none;font-size:.89rem;font-weight:600;
+  border-bottom:1px solid transparent;
+}
+.domains a:hover{border-bottom-color:var(--amber)}
+
+/* ------------------------------------------------------------------ badges */
+
+.badge{
+  display:inline-block;font-size:.68rem;font-weight:800;letter-spacing:.03em;
+  padding:3px 9px;border-radius:99px;margin-left:8px;vertical-align:middle;
+  text-transform:uppercase;
+}
+.badge.live{background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok-line)}
+.badge.soon{background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE}
+.badge.deal{background:var(--amber-50);color:var(--amber-deep);border:1px solid var(--amber-200)}
+
+/* ------------------------------------------------------------------ footer */
+
+footer{
+  position:relative;
+  color:var(--muted);font-size:.83rem;line-height:1.7;
+  margin-top:52px;border-top:1px solid var(--line);
+  padding:64px 0 0;
+}
+/* nugget mark above the footer text — no markup change needed */
+footer::before{
+  content:"";position:absolute;left:0;top:22px;width:32px;height:32px;
+  background:url("icon.svg") center/contain no-repeat;
+}
+footer a{color:var(--dim);text-decoration:none;border-bottom:1px solid var(--line)}
+footer a:hover{color:var(--amber-deep);border-bottom-color:var(--amber)}
+
+/* -------------------------------------------------------------- responsive */
+
+@media (max-width:640px){
+  .wrap{padding:0 16px 56px}
+  .hero{padding:26px 20px 24px;border-radius:18px}
+  .hero::after{width:152px;height:152px;right:-40px;top:-32px}
+  .brandbar img{height:36px}
+  .card,.qcard{padding:18px}
+  .cta{padding:24px 20px}
+  .cta-row .btn{flex:1 1 100%}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important;animation:none!important;scroll-behavior:auto!important}
+}
+
+@media print{
+  .cta,.trust,.hero::after,.cta::after{display:none}
+  body{background:#fff}
+  .expl{display:block!important}
+}
+
+/* ---------------------------------------------------------- bundles section */
+#bundles{margin:30px 0 6px}
+.section-h{font-size:1.4rem;font-weight:800;letter-spacing:-.02em;margin-bottom:4px}
+.section-sub{color:var(--dim);margin:0 0 14px;max-width:66ch}
+.card.bundle .bundle-list{list-style:none;margin:12px 0 4px;padding:0}
+.card.bundle .bundle-list li{
+  display:flex;justify-content:space-between;gap:12px;
+  padding:7px 0;border-bottom:1px solid var(--line-soft);font-size:.93rem;
+}
+.card.bundle .bundle-list li:last-child{border-bottom:0}
+.card.bundle .bundle-list a{color:var(--ink);text-decoration:none;font-weight:600}
+.card.bundle .bundle-list a:hover{color:var(--amber-deep);text-decoration:underline}
+.card.bundle .bp{color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.bundle-price{margin:14px 0 2px;font-size:1rem;display:flex;flex-wrap:wrap;align-items:baseline;gap:8px}
+.bundle-price .strike{text-decoration:line-through;color:var(--muted)}
+.bundle-price .now{font-weight:800;color:var(--ink);font-size:1.25rem}
+.bundle-price .save{color:var(--ok);font-weight:750;font-size:.9rem}
 `;
 
 // shared quiz behavior: per-domain miss tracking + score-gated gap/coupon reveal
@@ -388,19 +722,24 @@ function head(title, desc, canonicalPath, accent) {
 <meta name="description" content="${desc}">
 <link rel="canonical" href="${SITE_URL}/${canonicalPath}">
 <link rel="icon" href="favicon.ico" sizes="any">
-<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#F59E0B">
+<meta property="og:site_name" content="TechNuggets Academy">
 <meta property="og:title" content="${title}">
 <meta property="og:description" content="${desc}">
 <meta property="og:type" content="website">
-<meta property="og:image" content="${SITE_URL}/icon-512.png">
-<meta name="theme-color" content="#0f172a">
+<meta property="og:url" content="${SITE_URL}/${canonicalPath}">
+<meta property="og:image" content="${SITE_URL}/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="${SITE_URL}/og-image.png">
 <link rel="stylesheet" href="style.css">${accentVar}</head><body><div class="wrap">`;
 }
 
 // Brand bar (logo → home) shown at the top of every page.
 function brandbar() {
-  return `<div class="brandbar"><a href="index.html"><img src="logo.png" alt="TechNuggets Academy" width="200" height="34"></a></div>`;
+  return `<div class="brandbar"><a href="index.html"><img src="logo.png" alt="TechNuggets Academy" width="200" height="50"></a></div>`;
 }
 
 function ctaBlock(course) {
@@ -528,6 +867,49 @@ ${ctaBlock(course)}
 ${footerHtml}`;
 }
 
+// ---------------------------------------------------------- bundle pricing/render
+const priceNum = s => parseFloat(String(s || '').replace(/[^0-9.]/g, '')) || 0;
+const money = n => '$' + n.toFixed(2);
+
+function bundleMembers(bundle) {
+  return bundle.pages.map(pg => COURSES.find(c => c.page === pg)).filter(Boolean);
+}
+function bundlePricing(bundle) {
+  const members = bundleMembers(bundle);
+  const listTotal = members.reduce((s, c) => s + priceNum(c.list), 0);
+  const price = Math.round(listTotal * (1 - BUNDLE_DISCOUNT) * 100) / 100;
+  const save = Math.round((listTotal - price) * 100) / 100;
+  return { members, listTotal, price, save, pct: Math.round(BUNDLE_DISCOUNT * 100) };
+}
+function bundleCard(bundle) {
+  const { members, listTotal, price, save, pct } = bundlePricing(bundle);
+  if (members.length < 2) return ''; // never show a 1-course "bundle"
+  const items = members.map(m =>
+    `<li><a href="${m.page}.html">${esc(m.name)}</a> <span class="bp">${esc(m.list)}</span></li>`).join('');
+  // Once the native Udemy bundle URL is set, the button is a single-checkout link;
+  // until then it scrolls to the individual courses below.
+  const cta = bundle.udemyBundleUrl
+    ? `<a class="btn course" href="${bundle.udemyBundleUrl}" rel="sponsored" target="_blank">Get the bundle — ${money(price)} →</a>`
+    : `<a class="btn practice" href="#courses">Browse the ${members.length} courses ↓</a>`;
+  return `<div class="card bundle" style="--vendor:var(--amber)">
+  <h2><span class="vchip"></span>${esc(bundle.title)}<span class="badge deal">Save ${pct}%</span></h2>
+  <p>${esc(bundle.blurb)}</p>
+  <ul class="bundle-list">${items}</ul>
+  <p class="bundle-price"><span class="strike">${money(listTotal)}</span> <span class="now">${money(price)}</span> <span class="save">you save ${money(save)}</span></p>
+  <div class="actions">${cta}</div>
+</div>`;
+}
+function bundlesSection() {
+  const cards = BUNDLES.map(bundleCard).filter(Boolean).join('\n');
+  if (!cards) return '';
+  const pct = Math.round(BUNDLE_DISCOUNT * 100);
+  return `<section id="bundles">
+  <h2 class="section-h">Learning Path Bundles — save ${pct}%</h2>
+  <p class="section-sub">Related certifications grouped by technology and role, bundled at ${pct}% off the combined price. Build a whole skill set, not just one exam.</p>
+  ${cards}
+</section>`;
+}
+
 function indexPage(cards) {
   return head(
     'Free AI Certification Practice Tests — AWS, ISACA, IAPP, CompTIA, Databricks, NVIDIA',
@@ -538,17 +920,19 @@ function indexPage(cards) {
   <span class="chip">Free certification practice</span>
   <h1>Pass-ready practice for the certs employers actually ask for</h1>
   <p class="sub">Free, exam-style questions with detailed explanations across ${COURSES.filter(c=>c.live).length}+ AI &amp; cloud certifications — no sign-up. Score yourself, then close your gaps with a full course.</p>
-  <div class="cta-row"><a class="btn ghost" href="#courses">Browse the certs →</a></div>
+  <div class="cta-row"><a class="btn ghost" href="#courses">Browse the certs →</a><a class="btn practice" href="#bundles">Save 20% with bundles →</a></div>
 </div>
-<div class="trust"><span>✅ <b>Free</b> practice — no sign-up</span><span>📝 Real exam-style questions</span><span>💡 Detailed explanations</span><span>🔄 Fresh coupons every week</span></div>
+<div class="trust"><span>✅ <b>Free</b> practice — no sign-up</span><span>📝 Real exam-style questions</span><span>💡 Detailed explanations</span><span>📦 <b>Save 20%</b> with course bundles</span></div>
+${bundlesSection()}
 <div id="courses"></div>
 ${cards}
-<section id="subscribe" style="margin:28px 0;padding:24px;border:1px solid var(--line,#e2e8f0);border-radius:14px;background:var(--card,#f8fafc)">
-  <h2 style="margin:0 0 6px">Get new courses &amp; coupons — a short email every few days</h2>
-  <p style="margin:0 0 14px;color:var(--dim,#475569)">Opt in for a brief heads-up when we launch new certification prep or run a discount. No spam, and one-click unsubscribe anytime.</p>
+${SUBSCRIBE_READY ? `<section id="subscribe" style="margin:28px 0;padding:24px;border:1px solid var(--line,#e2e8f0);border-radius:14px;background:var(--card,#f8fafc)">
+  <h2 style="margin:0 0 6px">Get new courses &amp; bundle deals — a short email every few days</h2>
+  <p style="margin:0 0 14px;color:var(--dim,#475569)">Opt in for a brief heads-up when we launch new certification prep or a new learning-path bundle. No spam, and one-click unsubscribe anytime.</p>
   <form id="subForm" style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start">
     <input type="email" name="email" required placeholder="you@email.com" style="flex:1 1 220px;padding:10px 12px;border:1px solid var(--line,#e2e8f0);border-radius:8px;font-size:15px">
     <input type="text" name="name" placeholder="First name (optional)" style="flex:1 1 160px;padding:10px 12px;border:1px solid var(--line,#e2e8f0);border-radius:8px;font-size:15px">
+    <input type="text" name="company" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0" placeholder="Company">
     <button type="submit" style="padding:10px 20px;border:0;border-radius:8px;background:var(--btn,#0ea5e9);color:#fff;font-weight:600;font-size:15px;cursor:pointer">Subscribe</button>
     <label style="flex:1 1 100%;font-size:13px;color:var(--dim,#475569);display:flex;gap:8px;align-items:flex-start">
       <input type="checkbox" name="consent" required style="margin-top:3px">
@@ -562,16 +946,16 @@ ${cards}
   if(!f) return;
   f.addEventListener('submit', function(e){
     e.preventDefault();
-    var email=f.email.value.trim(), name=f.name.value.trim();
+    var email=f.email.value.trim(), name=f.name.value.trim(), company=f.company?f.company.value:'';
     if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)){ m.style.color='#dc2626'; m.textContent='Please enter a valid email.'; return; }
     m.style.color='#475569'; m.textContent='Subscribing…';
-    fetch(${JSON.stringify(SUBSCRIBE_ENDPOINT)}, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email:email, name:name})})
+    fetch(${JSON.stringify(SUBSCRIBE_ENDPOINT)}, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email:email, name:name, company:company})})
       .then(function(r){ return r.json().catch(function(){return {ok:r.ok};}); })
-      .then(function(d){ if(d && d.ok){ m.style.color='#16a34a'; m.textContent='You’re in! Watch your inbox for new courses and coupons.'; f.reset(); } else { throw new Error(); } })
+      .then(function(d){ if(d && d.ok){ m.style.color='#16a34a'; m.textContent='You’re in! Watch your inbox for new courses and bundle deals.'; f.reset(); } else { throw new Error(); } })
       .catch(function(){ m.style.color='#dc2626'; m.textContent='Something went wrong — please try again in a moment.'; });
   });
 })();
-</script>
+</script>` : ''}
 <footer>© TechNuggets Academy (Aseem Mankotia). Course links may be referral links. Not affiliated with or endorsed by any certification vendor.</footer>
 </div></body></html>`;
 }
@@ -591,6 +975,11 @@ fs.mkdirSync(OUT, { recursive: true });
     ['png/technuggets-icon-512.png', 'icon-512.png'],
     ['png/technuggets-logo-horizontal-600.png', 'logo.png'],
     ['png/technuggets-logo-horizontal-dark-600.png', 'logo-dark.png'],
+    // SVGs: icon.svg is REQUIRED — style.css uses it for the hero/CTA/footer marks
+    ['technuggets-icon.svg', 'icon.svg'],
+    ['technuggets-logo-horizontal.svg', 'logo.svg'],
+    ['technuggets-logo-horizontal-dark.svg', 'logo-dark.svg'],
+    ['png/og-image.png', 'og-image.png'],
   ];
   let n = 0;
   for (const [src, dst] of copies) {
@@ -658,6 +1047,10 @@ fs.writeFileSync(path.join(OUT, 'sitemap.xml'),
   sitemapPaths.map(p => `  <url><loc>${SITE_URL}/${p}</loc><changefreq>weekly</changefreq><priority>${p === '' ? '1.0' : p.includes('-') && !COURSES.some(c => p === c.page + '.html') ? '0.7' : '0.9'}</priority></url>`).join('\n') +
   `\n</urlset>\n`);
 fs.writeFileSync(path.join(OUT, 'robots.txt'), `User-agent: *\nAllow: /\nSitemap: ${SITE_URL}/sitemap.xml\n`);
+
+// Custom domain for GitHub Pages. NOTE: DNS for technuggets.academy must resolve
+// BEFORE this file is published, or the old github.io URL redirects into a void.
+fs.writeFileSync(path.join(OUT, 'CNAME'), new URL(SITE_URL).hostname + '\n');
 console.log(`✅ index.html (${cards.length} certs) + sitemap.xml + robots.txt\n→ ${OUT}`);
 }
 
