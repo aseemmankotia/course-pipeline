@@ -1,0 +1,15 @@
+{
+  "name": "udemy-autopublish",
+  "version": "0.1.0",
+  "private": true,
+  "description": "API-only automation to publish a rendered course to Udemy (parallel to course-pipeline; no changes to it).",
+  "type": "commonjs",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "auth:check": "node -e \"const {UdemyClient}=require('./lib/client');new UdemyClient().whoami().then(u=>console.log('OK as',u.display_name)).catch(e=>{console.error(String(e));process.exit(1)})\"",
+    "pt:load": "node load-practice-tests.js",
+    "pt:load:dry": "node load-practice-tests.js --dry-run",
+    "publish": "node udemy-publish.js",
+    "publish:dry": "node udemy-publish.js --dry-run"
+  }
+}

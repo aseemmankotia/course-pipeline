@@ -1,0 +1,39 @@
+TechNuggets Academy — new & popular exam-prep courses
+
+NEW: Google Cloud Certified - Associate Cloud Engineer
+  Setting Up a Cloud Solution Environment, Planning and Configuring a Cloud Solution
+  $34.99 (was $99.99), code FREETEST33 ends September 14
+  Enroll: https://www.udemy.com/course/google-cloud-ace-associate-cloud-engineer-exam-prep/?couponCode=FREETEST33
+  Free practice test: https://technuggets.academy/associate-cloud-engineer.html
+NEW: AWS Certified Data Engineer - Associate
+  Data Ingestion and Transformation, Data Store Management
+  $34.99 (was $109.99), code FREETEST33 ends September 14
+  Enroll: https://www.udemy.com/course/aws-certified-data-engineer-associate-dea-c01-prep/?couponCode=FREETEST33
+  Free practice test: https://technuggets.academy/dea-c01.html
+NEW: GSDC Certified Forward Deployed Engineer
+  FDE Mindset and Problem Structuring, Production Python, Backend Development, and API Design
+  $34.99 (was $109.99), code FREETEST33 ends September 14
+  Enroll: https://www.udemy.com/course/gsdc-cfde-certification-forward-deployed-engineer-prep/?couponCode=FREETEST33
+  Free practice test: https://technuggets.academy/cfde.html
+NEW: PMI Certified Professional in Managing AI
+  Support Responsible and Trustworthy AI Efforts, Identify Business Needs and Solutions
+  $34.99 (was $109.99), code FREETEST33 ends September 14
+  Enroll: https://www.udemy.com/course/pmi-cpmai-certification-exam-prep-masterclass/?couponCode=FREETEST33
+  Free practice test: https://technuggets.academy/pmi-cpmai.html
+POPULAR: NVIDIA-Certified Associate: Generative AI Multimodal
+  Core Machine Learning and AI Knowledge, Experimentation
+  Enroll: https://www.udemy.com/course/nca-genm-nvidia-generative-ai-multimodal-exam-prep/?couponCode=FREETEST33
+  Free practice test: https://technuggets.academy/nca-genm.html
+POPULAR: AWS Certified AI Practitioner (AIF-C01)
+  Foundational AWS AI/ML and generative AI
+  Enroll: https://www.udemy.com/course/aws-ai-practitioner-aif-c01-first-attempt-certification/?couponCode=FREETEST33
+  Free practice test: https://technuggets.academy/aws-aif-c01.html
+POPULAR: IAPP AI Governance Professional (AIGP)
+  EU AI Act, NIST AI RMF, ISO/IEC 42001
+  Enroll: https://www.udemy.com/course/iapp-aigp-certification-eu-ai-act/?couponCode=FREETEST33
+  Free practice test: https://technuggets.academy/iapp-aigp.html
+
+All courses: https://technuggets.academy
+
+You opted in at TechNuggets Academy. {{physical_address}}
+Unsubscribe: {{unsubscribe_url}}  (sent to {{email}})

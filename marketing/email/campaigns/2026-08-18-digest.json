@@ -1,0 +1,18 @@
+{
+  "date": "2026-08-18",
+  "subject": "New on TechNuggets Academy: Google Cloud Certified - Professional Data Engineer + 3 more",
+  "preheader": "New certification courses and this week's discounted picks — with free practice tests.",
+  "new": [
+    "google-cloud-professional-data-engineer-2026",
+    "microsoft-dp-600-fabric-analytics-engineer-2026",
+    "google-associate-cloud-engineer-2026",
+    "aws-data-engineer-associate-dea-c01-2026"
+  ],
+  "popular": [
+    "databricks-genai-engineer-associate",
+    "nvidia-nca-genl-generative-ai-llms",
+    "salesforce-agentforce-specialist"
+  ],
+  "htmlFile": "marketing/email/campaigns/2026-08-18-digest.html",
+  "textFile": "marketing/email/campaigns/2026-08-18-digest.txt"
+}

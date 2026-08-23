@@ -1,0 +1,63 @@
+# Bundle ad creative — 2026-08 (replaces old course/coupon ads)
+
+New paid-social promotions for the 13 learning-path bundles (20% off). All creative
+points to the **new domain** `https://technuggets.academy/#bundles` (the old ads used
+`aseemmankotia.github.io`). Compliance: exam-focused framing only — **no** "pass",
+"guarantee", or "first attempt" language.
+
+## Cleanup of OLD campaigns first (external platforms — do in each dashboard)
+
+I can't delete these via API (no ad-platform connector). Status from `marketing/ads-log.md`:
+
+- **Meta (Facebook) Ads Manager** — "NCA-ADS Card Image Ad" (traffic, $10 lifetime, ended
+  **Aug 16 2026** → already stopped spending) + a stub "New Traffic Campaign with recommended
+  settings" draft. Delete/archive both. Page "TechNuggets Academy" (ID 1187947767742236) stays.
+- **Google Ads** — draft campaign **10208186673** (no ad ever attached, never published).
+  Remove the draft.
+- **TikTok** — nothing exists (account was logged out). Nothing to delete.
+
+(If you want, I can drive Meta Ads Manager + Google Ads via Claude-in-Chrome to delete these,
+provided you're logged in.)
+
+## New campaign structure
+
+One campaign per vendor track + a generic "all bundles" campaign. Destination for every ad:
+`https://technuggets.academy/#bundles`. Objective: Traffic. Audience: US, tech/IT-career
+interests. Suggested budget: keep the prior $10 lifetime test per campaign until CTR is known.
+
+### Generic — "Learning-path bundles"
+- **Primary text:** Level up faster: we grouped our AI & cloud certification courses into focused learning paths — buy a whole path and save 20%. Exam-focused practice tests, video lessons and hands-on labs.
+- **Headline:** Cert bundles — save 20%
+- **Description:** 13 learning paths at TechNuggets Academy
+- **CTA:** Learn more
+
+### AWS — "AWS Associate Trio / AI-ML"
+- **Primary text:** Going all-in on AWS? Bundle the three Associate certs (Solutions Architect, Developer, SysOps) — or the AI/ML path (AIF-C01 → AIP-C01 → MLA-C01) — and save 20%. Exam-focused prep with practice tests, videos and labs.
+- **Headline:** AWS cert bundles — save 20%
+- **Description:** Associate & AI/ML paths at TechNuggets Academy
+- **CTA:** Learn more
+
+### NVIDIA — "GenAI / Infra / Data Science"
+- **Primary text:** Build the full NVIDIA skill set: Generative AI & LLMs, AI Infrastructure & Operations, or Accelerated Data Science — associate to professional in one bundle, 20% off.
+- **Headline:** NVIDIA cert bundles — save 20%
+- **Description:** GenAI, infra & data-science paths
+- **CTA:** Learn more
+
+### Google Cloud — "Professional / Foundations"
+- **Primary text:** Master Google Cloud: the three Professional exams (Architect, Data Engineer, ML Engineer) or the Foundations path (ACE + GenAI Leader) — bundled, 20% off. Exam-focused prep.
+- **Headline:** Google Cloud bundles — save 20%
+- **Description:** Professional & Foundations paths
+- **CTA:** Learn more
+
+### CompTIA — "Security Path"
+- **Primary text:** A vendor-neutral security progression — Network+, Security+ and AI-security SecAI+ — bundled and 20% off. Practice tests, videos and labs.
+- **Headline:** CompTIA Security bundle — save 20%
+- **Description:** Network+ · Security+ · SecAI+
+- **CTA:** Learn more
+
+## Image assets
+
+Reuse the text-free per-course cards (`exports/course-images/*-notext.png`, 750×422) or the
+TechNuggets brand cards; for a bundle-specific 1080×1080, composite the vendor cards or use the
+brand OG image (`brand/png/og-image.png`). Keep Udemy's no-text rule irrelevant here (these are
+ad platforms, not Udemy course images) but keep them on-brand.

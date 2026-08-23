@@ -1,0 +1,7 @@
+Kinesis, Firehose, MSK, Glue, EMR, Redshift—one wrong answer on the DEA-C01 exam and you're retaking it in ninety days. Sound stressful? It doesn't have to be.
+
+In this course, you'll learn exactly when to choose Kinesis Data Streams versus Firehose versus MSK for any throughput requirement. You'll build and optimize real Glue jobs, crawlers, and DynamicFrames. And you'll design S3 data lakes with the correct storage classes, lifecycle policies, and Redshift distribution keys that actually perform.
+
+This isn't theory. Twelve focused chapters map directly to every exam domain—ingestion, transformation, orchestration, storage, and security—so you're not memorizing random facts, you're learning the decision framework AWS actually tests. Real scenarios, real services, real exam-style questions.
+
+Stop guessing which service fits which use case. Enroll now, master DEA-C01, and walk into that exam room ready to pass.

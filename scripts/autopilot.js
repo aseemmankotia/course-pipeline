@@ -341,9 +341,10 @@ function quarantineLegacyMedia() {
 
   console.log(`\n\n🎉 Autopilot complete. Each course package in exports/<slug>/ now has:`);
   console.log('   videos/ · heygen-src/ · <slug>-card-notext.png · practice-test CSVs · welcome-promo(-short).mp4 · shell-spec.json · qa-report.md');
-  console.log('\n   PHASE B (once the shell is submitted & the course goes LIVE):');
-  console.log('     1) Build the Udemy shell from exports/<slug>/shell-spec.json  (browser pass)');
-  console.log('     2) node scripts/register-course.js --slug=<slug> --udemy=<liveUrl>   # site + promo + reviews');
+  console.log('\n   PHASE B (Udemy publish — after the shell is created & has a course id):');
+  console.log('     1) Build the Udemy shell from exports/<slug>/shell-spec.json  (browser pass) — note the numeric course id');
+  console.log('     1b) node scripts/load-practice-tests.js --slug=<slug> --course=<courseId>   # API: creates+fills+publishes both practice tests (needs UDEMY_COOKIE in .env)');
+  console.log('     2) node scripts/register-course.js --slug=<slug> --udemy=<liveUrl>   # site + promo + reviews (once LIVE)');
   console.log('     3) node scripts/build-practice-site.js --all   # then deploy');
   console.log('     4) node scripts/promo-all.js --slug=<slug> && node scripts/promo-all.js --upload   # YouTube Short');
 })();

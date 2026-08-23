@@ -1,0 +1,3 @@
+Most AI projects fail before they start — because nobody framed the problem right. If you're chasing the PMI-CPMAI certification, guessing your way through won't cut it.
+
+This masterclass gets you exam-ready with scenario-based practice across all five domains. You'll master the Seven Patterns of AI to correctly frame any business problem. You'll build real feasibility assessments and risk documentation instead of proceeding on optimism alone. And you'll draft a complete business case with ROI, TCO, and a resourced adoption plan that

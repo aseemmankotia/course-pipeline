@@ -15,36 +15,63 @@ and every message carries a one-click unsubscribe.
   GDPR, which requires prior consent — purchased/scraped lists are the top fine tier.
 - So: only the website form + lists you already hold **documented opt-in** for.
 
+## Architecture (Brevo-native — current default)
+The site is static (GitHub Pages), so it can't hold an API key. The subscribe form
+POSTs to a tiny **Cloudflare Worker** that adds the contact to a **Brevo** list
+(single opt-in). Newsletters are sent as **Brevo campaigns**, so the contact list,
+unsubscribe handling, suppression, and the address footer all live in Brevo. Two
+triggers: an automatic **new-course announcement** (on `register-course.js`) and the
+recurring **every-3-days digest**.
+
+```
+website form ─POST─▶ Cloudflare Worker ─Brevo Contacts API─▶ Brevo list
+                                                                  ▲
+register-course.js ─▶ announce-course.js ┐                        │
+build-campaign.js (3-day) ───────────────┴─▶ send-campaign.js ─Brevo Campaign API─┘
+```
+
 ## Pieces
 | File | Role |
 |---|---|
-| `store.js` | JSON subscriber DB + consent records + unsubscribe tokens |
-| `subscribers.json` | the database (ships empty) |
-| `server.js` | zero-dep self-hosted `POST /subscribe`, `GET/POST /unsubscribe` (RFC 8058 one-click) |
-| `../../scripts/subscribers.js` | CLI: add / import owned lists / unsubscribe / list / stats / export |
-| `../../scripts/build-campaign.js` | builds the digest (HTML + text + JSON) from the course registry |
-| `../../scripts/send-campaign.js` | emails active subscribers (Resend or SMTP/SES); **dry-run by default** |
+| `brevo.js` | Brevo API helper (contacts + campaigns + list bootstrap) |
+| `subscribe-worker/` | Cloudflare Worker: `POST /subscribe` → Brevo (holds the key server-side) |
+| `../../scripts/brevo-setup.js` | verify key, check sender, create/find the list, print `BREVO_LIST_ID` |
+| `../../scripts/build-campaign.js` | builds the 3-day digest (HTML + text + JSON) from the course registry |
+| `../../scripts/announce-course.js` | builds + sends a single-course launch email; deduped per slug |
+| `../../scripts/send-campaign.js` | sends the campaign — `brevo` (bulk) / `resend` / `smtp`; **dry-run by default** |
 | `../../scripts/send-whatsapp.js` | WhatsApp Cloud API template sender (scaffold, hard-gated off) |
-| `campaigns/` `outbox/` `sent/` | generated digests, dry-run previews, send logs |
+| `announced.json` | which slugs have been announced live (dedupe) |
+| `campaigns/` `outbox/` `sent/` | generated digests/launches, dry-run previews, send logs |
+| `store.js` `subscribers.json` `server.js` | **legacy** self-hosted store + subscribe/unsubscribe server (kept for the resend/smtp path; not used in brevo mode) |
 
-## One-time setup
-1. Fill the marketing vars in `.env` (see `.env.example`): provider + key, `EMAIL_FROM`
-   (on a domain you verified), **`PHYSICAL_ADDRESS`**, **`UNSUBSCRIBE_BASE_URL`**.
-2. Run the subscribe service where it can persist the DB (the Mac, a VPS, a container),
-   behind HTTPS:  `npm run subscribe:server`
-3. Rebuild the site with the endpoint baked in so the form + unsubscribe links resolve:
-   `SUBSCRIBE_ENDPOINT=https://your-host/subscribe node scripts/build-practice-site.js --all`, then deploy.
-4. (Optional) Seed lists you have consent for:
-   `node scripts/subscribers.js import --file=past-students.csv --source=past-students --consent=owned_list_import`
+## One-time setup (Brevo)
+1. Fill `.env` (see `.env.example`): `EMAIL_PROVIDER=brevo`, `BREVO_API_KEY`, `EMAIL_FROM`
+   (a **verified** Brevo sender on your authenticated domain), **`PHYSICAL_ADDRESS`**.
+2. `npm run brevo:setup` — validates the key, checks the sender, creates the newsletter
+   list, and prints the numeric **`BREVO_LIST_ID`**. Put it in `.env` (and the Worker's
+   `wrangler.toml`).
+3. Deploy the subscribe Worker: see `subscribe-worker/README.md` (`wrangler deploy` +
+   `wrangler secret put BREVO_API_KEY`).
+4. Rebuild the site with the Worker URL baked in so the form resolves, then deploy:
+   `SUBSCRIBE_ENDPOINT=https://<worker-url>/subscribe node scripts/build-practice-site.js --all`
 
 ## Every-3-days digest
 ```
 npm run campaign:build          # pick new + popular courses, render the digest
-npm run campaign:send           # DRY RUN -> writes personalized copies to outbox/, sends nothing
-npm run campaign:send:live      # actually email active subscribers
+npm run campaign:send           # DRY RUN -> renders the Brevo campaign HTML to outbox/, sends nothing
+npm run campaign:send:live      # create + send the Brevo campaign to the whole list
 ```
-`marketing:digest` does build + dry-run in one step. The send refuses to go live
-without `PHYSICAL_ADDRESS` + `UNSUBSCRIBE_BASE_URL` set.
+`marketing:digest` does build + dry-run in one step. In `brevo` mode the live send
+refuses without `BREVO_API_KEY` + `BREVO_LIST_ID` + `EMAIL_FROM` + `PHYSICAL_ADDRESS`.
+
+## Automatic new-course announcement
+`register-course.js` fires `announce-course.js` in **dry run** by default (safe against
+re-runs) and prints the live command. Hands-off: `register-course.js … --announce-live`.
+Standalone:
+```
+node scripts/announce-course.js --slug=<slug>          # build + dry-run preview
+node scripts/announce-course.js --slug=<slug> --live   # send to the Brevo list (deduped per slug)
+```
 
 ### Automate the 3-day cadence (Mac, cron)
 ```

@@ -1,0 +1,52 @@
+{
+  "advertised": [
+    {
+      "slug": "nvidia-nca-ads-accelerated-data-science-2026",
+      "title": "NCA-ADS: NVIDIA Accelerated Data Science Exam Prep",
+      "date": "2026-08-07",
+      "platforms": {
+        "meta": "draft created (needs FB Page + image + primary text)",
+        "google": "draft 10208186673 created (needs YouTube video ad)",
+        "tiktok": "skipped - not logged in"
+      },
+      "retired": "2026-08-23 — superseded by bundle promotions (old domain aseemmankotia.github.io; Meta ad ended Aug 16)"
+    }
+  ],
+  "lastRun": "2026-08-23",
+  "retiredCampaigns": [
+    {
+      "platform": "meta",
+      "what": "NCA-ADS Card Image Ad (traffic, $10) + stub Traffic Campaign draft",
+      "status": "ended Aug 16 2026 — delete/archive in Ads Manager",
+      "pageId": "1187947767742236"
+    },
+    {
+      "platform": "google",
+      "what": "draft campaign 10208186673 (never published)",
+      "status": "remove draft"
+    },
+    {
+      "platform": "tiktok",
+      "what": "none",
+      "status": "nothing to delete"
+    }
+  ],
+  "bundlePromotions": {
+    "launched": "2026-08-23",
+    "discount": "20%",
+    "destination": "https://technuggets.academy/#bundles",
+    "creative": "marketing/bundle-ads-2026-08.md",
+    "campaigns": [
+      "generic-bundles",
+      "aws",
+      "nvidia",
+      "google-cloud",
+      "comptia-security"
+    ],
+    "platformStatus": {
+      "meta": "creative ready — create in Ads Manager (or Chrome-drive)",
+      "google": "creative ready — create campaign",
+      "tiktok": "creative ready — create when logged in"
+    }
+  }
+}

@@ -1,0 +1,9 @@
+TechNuggets Academy — new course just launched
+Google Cloud Certified - Professional Data Engineer
+Designing data processing systems, Ingesting and processing the data
+$34.99 (was $129.99), launch code FREETEST33 ends September 16
+Enroll: https://www.udemy.com/course/google-professional-data-engineer-exam-prep/?couponCode=FREETEST33
+Free practice test: https://technuggets.academy/professional-data-engineer.html
+All courses: https://technuggets.academy
+You opted in at TechNuggets Academy. {{physical_address}}
+Unsubscribe: {{unsubscribe_url}}  (sent to {{email}})

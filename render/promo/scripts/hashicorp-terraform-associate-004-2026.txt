@@ -1,0 +1,7 @@
+Manual infrastructure changes are silently wrecking your environments right now, and you don't even know it. Drift is the silent killer of every cloud setup — and the Terraform Associate exam proves you know how to stop it.
+
+In this course, you'll master the exact commands the exam tests: init, validate, and plan, so you preview every change before it happens. You'll configure providers and version constraints, understanding exactly what that lock file is protecting. And you'll confidently read plan output symbols, apply changes safely, and know when destroy or targeting actually makes sense.
+
+This isn't theory — it's twelve exam-focused chapters built around what you'll actually see on test day, from HCL basics to state, modules, and HCP Terraform. Beginner-friendly, certification-ready, zero fluff.
+
+Stop guessing what's on the exam. Enroll now and get certified with confidence.

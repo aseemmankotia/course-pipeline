@@ -1,0 +1,15 @@
+# Cloudflare Worker: TechNuggets Academy subscribe proxy.
+# Deploy with:  cd marketing/email/subscribe-worker && npx wrangler deploy
+# One-time secret:  npx wrangler secret put BREVO_API_KEY
+name = "technuggets-subscribe"
+main = "worker.js"
+compatibility_date = "2026-01-01"
+
+[vars]
+# Numeric Brevo list id for the newsletter (from `node scripts/brevo-setup.js`).
+BREVO_LIST_ID = "5"
+# Comma-separated origins allowed to POST here (CORS lock).
+ALLOWED_ORIGINS = "https://technuggets.academy,https://www.technuggets.academy"
+
+# BREVO_API_KEY is a SECRET — do NOT put it here. Set it with:
+#   npx wrangler secret put BREVO_API_KEY

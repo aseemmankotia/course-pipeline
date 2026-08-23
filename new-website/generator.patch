@@ -1,0 +1,484 @@
+--- /mnt/user-data/uploads/course-pipeline/scripts/build-practice-site.js	2026-08-14 18:48:48.918094512 +0000
++++ gen.js	2026-08-14 18:49:33.390367021 +0000
+@@ -29,7 +29,7 @@
+ 
+ const ROOT = path.join(__dirname, '..');
+ const OUT = path.join(ROOT, 'site');
+-const SITE_URL = 'https://aseemmankotia.github.io';
++const SITE_URL = 'https://technuggets.academy';
+ // Where the static subscribe form POSTs (and where unsubscribe links resolve).
+ // Point this at your running marketing/email/server.js (behind HTTPS). Set at build
+ // time: SUBSCRIBE_ENDPOINT=https://your-host/subscribe node scripts/build-practice-site.js --all
+@@ -271,83 +271,347 @@
+ }
+ 
+ const CSS = `
+-:root{--bg:#ffffff;--card:#f8fafc;--txt:#0f172a;--ink:#0f172a;--dim:#475569;--acc:#0ea5e9;--ok:#16a34a;
+- --bad:#dc2626;--cta:#f97316;--cta-h:#ea580c;--amber:#f59e0b;--line:#e2e8f0;--vendor:#0ea5e9}
++/* ==========================================================================
++   TechNuggets Academy — brand design system
++   Nugget amber #F59E0B · deep #B45309 · light #FBBF24
++   Ink navy #0F172A · slate #475569
++   Drop-in replacement: same class names the site generator emits.
++   ========================================================================== */
++
++:root{
++  /* brand */
++  --amber:#F59E0B;
++  --amber-deep:#B45309;
++  --amber-light:#FBBF24;
++  --amber-50:#FFFBEB;
++  --amber-100:#FEF3C7;
++  --amber-200:#FDE68A;
++  --ember:#7C2D12;
++
++  /* ink */
++  --txt:#0F172A;
++  --ink:#0F172A;
++  --dim:#475569;
++  --muted:#64748B;
++
++  /* surfaces */
++  --bg:#FCFAF6;
++  --card:#FFFFFF;
++  --line:#E7E3DA;
++  --line-soft:#F1EEE7;
++
++  /* roles (kept for backwards compatibility with generated markup) */
++  --acc:#B45309;
++  --cta:#F59E0B;
++  --cta-h:#D97706;
++  --ok:#15803D;
++  --ok-bg:#F0FDF4;
++  --ok-line:#86EFAC;
++  --bad:#B91C1C;
++  --bad-bg:#FEF2F2;
++  --bad-line:#FCA5A5;
++  --vendor:#F59E0B;
++
++  --radius:14px;
++  --radius-sm:10px;
++  --shadow-sm:0 1px 2px rgba(15,23,42,.05);
++  --shadow:0 4px 16px -4px rgba(15,23,42,.10),0 1px 3px rgba(15,23,42,.05);
++  --font:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
++}
++
+ *{box-sizing:border-box;margin:0;padding:0}
+-body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--txt);line-height:1.6}
+-.wrap{max-width:780px;margin:0 auto;padding:0 16px 64px}
+-/* brand bar */
+-.brandbar{display:flex;align-items:center;gap:10px;padding:16px 0 4px}
++html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
++
++body{
++  font-family:var(--font);
++  background:var(--bg);
++  color:var(--txt);
++  line-height:1.65;
++  -webkit-font-smoothing:antialiased;
++}
++
++img{max-width:100%;height:auto}
++a{color:var(--amber-deep)}
++::selection{background:var(--amber-200);color:var(--ink)}
++:focus-visible{outline:3px solid var(--amber);outline-offset:2px;border-radius:6px}
++
++.wrap{max-width:880px;margin:0 auto;padding:0 20px 72px}
++
++/* --------------------------------------------------------------- brand bar */
++
++.brandbar{
++  display:flex;align-items:center;gap:10px;
++  padding:18px 0 14px;margin-bottom:6px;
++  border-bottom:1px solid var(--line-soft);
++}
+ .brandbar a{display:inline-flex;align-items:center;text-decoration:none}
+-.brandbar img{height:34px;width:auto;display:block}
+-h1{font-size:1.55rem;line-height:1.2}h1 a{color:var(--txt);text-decoration:none}
+-.sub{color:var(--dim);margin:6px 0 18px}
+-/* hero (dark navy, logo + facts + above-fold CTA) */
+-.hero{background:linear-gradient(135deg,#0b1220,#111c33);border-radius:16px;padding:26px 24px;margin:14px 0 22px;color:#e2e8f0}
+-.hero .chip{display:inline-block;font-size:.72rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
+- padding:4px 10px;border-radius:99px;background:var(--vendor);color:#fff;margin-bottom:12px}
+-.hero h1{color:#fff;font-size:1.7rem}
+-.hero .sub{color:#cbd5e1;margin:8px 0 16px}
+-.hero .facts{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 4px}
+-.hero .fact{font-size:.8rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);
+- border-radius:8px;padding:6px 11px;color:#e2e8f0}
+-.hero .fact b{color:#fff}
+-.cta-row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:18px}
+-.urgency{font-size:.82rem;font-weight:700;color:#fdba74}
+-/* buttons */
+-.btn{display:inline-block;text-decoration:none;font-weight:700;font-size:.92rem;border-radius:10px;padding:13px 22px;
+- transition:background .15s,border-color .15s,transform .05s}
++.brandbar img{height:44px;width:auto;display:block}
++
++/* page heading — domain sub-pages use <header><h1> */
++h1{font-size:1.75rem;line-height:1.2;letter-spacing:-.025em;font-weight:800}
++h1 a{color:var(--txt);text-decoration:none}
++header{padding:26px 0 6px}
++.sub{color:var(--dim);margin:8px 0 20px}
++
++/* -------------------------------------------------------------------- hero */
++
++.hero{
++  position:relative;overflow:hidden;
++  background:
++    radial-gradient(120% 130% at 88% -10%,rgba(251,191,36,.32) 0%,rgba(251,191,36,0) 58%),
++    linear-gradient(180deg,#FFFDF7 0%,#FFF6E4 100%);
++  border:1px solid var(--amber-200);
++  border-radius:22px;
++  padding:34px 32px 30px;
++  margin:20px 0 22px;
++  color:var(--txt);
++}
++/* nugget mark, watermarked into the hero */
++.hero::after{
++  content:"";position:absolute;right:-58px;top:-48px;width:236px;height:236px;
++  background:url("icon.svg") center/contain no-repeat;
++  opacity:.10;transform:rotate(-12deg);pointer-events:none;
++}
++.hero > *{position:relative}
++
++.hero .chip{
++  display:inline-flex;align-items:center;gap:7px;
++  font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
++  padding:6px 13px;border-radius:99px;
++  background:var(--card);border:1px solid var(--amber-200);
++  color:var(--amber-deep);margin-bottom:14px;box-shadow:var(--shadow-sm);
++}
++.hero .chip::before{
++  content:"";width:9px;height:9px;border-radius:2px;
++  background:var(--vendor);box-shadow:0 0 0 3px rgba(245,158,11,.20);
++}
++.hero h1{color:var(--ink);font-size:clamp(1.6rem,3.8vw,2.25rem);max-width:22ch}
++.hero .sub{color:var(--dim);margin:10px 0 16px;max-width:60ch}
++
++.hero .facts{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 4px}
++.hero .fact{
++  font-size:.8rem;background:var(--card);border:1px solid var(--line);
++  border-radius:9px;padding:7px 12px;color:var(--dim);box-shadow:var(--shadow-sm);
++}
++.hero .fact b{color:var(--ink);font-weight:750}
++
++.cta-row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:20px}
++.urgency{font-size:.82rem;font-weight:750;color:var(--ember)}
++
++/* ----------------------------------------------------------------- buttons */
++
++.btn{
++  display:inline-flex;align-items:center;justify-content:center;
++  text-decoration:none;font-weight:700;font-size:.92rem;
++  border-radius:10px;padding:12px 22px;border:1px solid transparent;
++  cursor:pointer;white-space:nowrap;
++  transition:background .15s,border-color .15s,color .15s,box-shadow .15s,transform .06s;
++}
+ .btn:active{transform:translateY(1px)}
+-.btn.enroll{background:var(--cta);color:#fff;font-size:1.02rem;box-shadow:0 4px 16px rgba(249,115,22,.35)}
+-.btn.enroll:hover{background:var(--cta-h)}
+-.btn.course{background:var(--cta);color:#fff;box-shadow:0 3px 12px rgba(249,115,22,.3)}
+-.btn.course:hover{background:var(--cta-h)}
+-.btn.practice{background:transparent;color:var(--acc);border:1px solid var(--line)}
+-.btn.practice:hover{border-color:var(--acc);background:#f1f5f9}
+-.btn.ghost{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.25)}
+-.btn.ghost:hover{background:rgba(255,255,255,.18)}
+-/* trust band */
+-.trust{display:flex;flex-wrap:wrap;gap:8px 20px;font-size:.82rem;color:var(--dim);margin:2px 0 22px;padding:12px 0;border-bottom:1px solid var(--line)}
+-.trust span{display:inline-flex;align-items:center;gap:6px}
+-.trust b{color:var(--ok)}
+-.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:14px 0}
+-.card h2{font-size:1.05rem;margin-bottom:4px}.card p{color:var(--dim);font-size:.92rem}
+-.card .vchip{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:8px;vertical-align:middle;background:var(--vendor)}
+-.card a.go{display:inline-block;margin-top:10px;color:var(--acc);text-decoration:none;font-weight:600}
+-.card .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+-.q{margin-bottom:8px;font-weight:600}
+-.opt{display:block;width:100%;text-align:left;background:#f8fafc;border:1px solid #cbd5e1;color:var(--txt);
+- border-radius:8px;padding:10px 12px;margin:6px 0;cursor:pointer;font-size:.95rem}
+-.opt:hover{border-color:var(--acc)}
+-.opt.correct{border-color:var(--ok);background:#dcfce7}
+-.opt.wrong{border-color:var(--bad);background:#fee2e2}
+-.expl{display:none;background:#f1f5f9;border-left:3px solid var(--acc);padding:10px 12px;margin-top:8px;
+- border-radius:0 8px 8px 0;font-size:.92rem;color:var(--dim)}
+-.meta{font-size:.78rem;color:var(--dim);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em}
+-.cta{background:linear-gradient(135deg,#0b1220,#1e293b);border-radius:14px;padding:24px;margin:26px 0;text-align:center;color:#e2e8f0}
+-.cta strong{color:#fff;font-size:1.1rem}
+-.cta a{display:inline-block;background:var(--cta);color:#fff;font-weight:700;text-decoration:none;
+- padding:13px 26px;border-radius:10px;margin-top:12px;box-shadow:0 4px 16px rgba(249,115,22,.35)}
+-.cta a:hover{background:var(--cta-h)}
+-.cta p{color:#cbd5e1}
+-.cta .strike{text-decoration:line-through;opacity:.6}
+-.cta .price{color:#86efac;font-weight:800}
+-.cta .code{background:rgba(255,255,255,.14);border:1px dashed #fff;border-radius:6px;padding:2px 8px;font-weight:700;color:#fff}
+-.score{font-size:1.1rem;font-weight:700;margin:18px 0 6px}
+-.gaps{display:none;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:10px 0;color:var(--dim);font-size:.95rem}
++
++.btn.enroll,.btn.course{
++  background:linear-gradient(180deg,var(--amber-light) 0%,var(--amber) 100%);
++  color:#3B2205;border-color:var(--amber-deep);
++  box-shadow:0 2px 0 0 var(--amber-deep),0 6px 16px -6px rgba(180,83,9,.55);
++}
++.btn.enroll{font-size:1rem;padding:13px 24px}
++.btn.enroll:hover,.btn.course:hover{
++  background:linear-gradient(180deg,var(--amber) 0%,#E08C08 100%);color:#2E1A03;
++}
++
++.btn.practice{background:var(--card);color:var(--ink);border-color:var(--line);box-shadow:var(--shadow-sm)}
++.btn.practice:hover{border-color:var(--amber);color:var(--amber-deep);background:var(--amber-50)}
++
++/* .ghost sits inside the (now light) hero — solid ink for contrast */
++.btn.ghost{background:var(--ink);color:#fff;border-color:var(--ink);box-shadow:0 8px 20px -10px rgba(15,23,42,.6)}
++.btn.ghost:hover{background:#1E293B;border-color:#1E293B}
++
++/* -------------------------------------------------------------- trust band */
++
++.trust{
++  display:flex;flex-wrap:wrap;gap:8px;
++  font-size:.83rem;color:var(--dim);
++  margin:2px 0 26px;padding:0;border:0;
++}
++.trust span{
++  display:inline-flex;align-items:center;gap:7px;
++  background:var(--card);border:1px solid var(--line);
++  border-radius:99px;padding:7px 14px;box-shadow:var(--shadow-sm);
++}
++.trust b{color:var(--ink);font-weight:750}
++
++/* ------------------------------------------------------------------- cards */
++
++.card{
++  position:relative;
++  background:var(--card);border:1px solid var(--line);
++  border-radius:var(--radius);padding:20px 22px;margin:14px 0;
++  box-shadow:var(--shadow-sm);
++  transition:box-shadow .18s ease,transform .18s ease,border-color .18s ease;
++}
++.card[style*="--vendor"]{border-top:3px solid var(--vendor)}
++.card[style*="--vendor"]:hover{transform:translateY(-2px);box-shadow:var(--shadow);border-color:var(--amber-200)}
++
++.card h2{font-size:1.05rem;line-height:1.35;font-weight:750;letter-spacing:-.012em;margin-bottom:5px}
++.card p{color:var(--dim);font-size:.92rem}
++.card .vchip{
++  display:inline-block;width:10px;height:10px;border-radius:3px;
++  margin-right:8px;vertical-align:middle;background:var(--vendor);
++}
++.card a.go{display:inline-block;margin-top:10px;color:var(--amber-deep);text-decoration:none;font-weight:700}
++.card a.go:hover{text-decoration:underline}
++.card .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
++
++/* -------------------------------------------------------------------- quiz */
++
++.qcard{padding:22px 24px}
++.q{margin-bottom:12px;font-weight:650;font-size:1.02rem;line-height:1.55}
++
++.opt{
++  display:block;width:100%;text-align:left;
++  background:var(--bg);border:1px solid var(--line);color:var(--txt);
++  border-radius:var(--radius-sm);padding:12px 14px;margin:8px 0;
++  cursor:pointer;font-size:.95rem;font-family:inherit;line-height:1.5;
++  transition:border-color .14s,background .14s,transform .06s;
++}
++.opt:hover{border-color:var(--amber);background:var(--amber-50)}
++.opt:active{transform:translateY(1px)}
++.opt.correct{border-color:var(--ok-line);background:var(--ok-bg);font-weight:650}
++.opt.wrong{border-color:var(--bad-line);background:var(--bad-bg)}
++.opt.correct::after{content:" ✓";color:var(--ok);font-weight:800}
++.opt.wrong::after{content:" ✕";color:var(--bad);font-weight:800}
++
++.expl{
++  display:none;background:var(--amber-50);
++  border:1px solid var(--amber-200);border-left:4px solid var(--amber);
++  padding:13px 15px;margin-top:12px;
++  border-radius:0 var(--radius-sm) var(--radius-sm) 0;
++  font-size:.92rem;color:#57534E;line-height:1.6;
++}
++
++.meta{
++  font-size:.72rem;color:var(--muted);margin-bottom:10px;
++  text-transform:uppercase;letter-spacing:.08em;font-weight:750;
++}
++
++.score{font-size:1.15rem;font-weight:800;margin:26px 0 8px;letter-spacing:-.015em}
++.gaps{
++  display:none;background:var(--card);border:1px solid var(--line);
++  border-radius:var(--radius);padding:18px 22px;margin:10px 0;
++  color:var(--dim);font-size:.95rem;box-shadow:var(--shadow-sm);
++}
+ .gaps strong{color:var(--txt)}
+-/* FAQ + exam facts */
+-.faq{margin:30px 0}
+-.faq h3{font-size:1.15rem;margin-bottom:10px}
+-.faq details{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin:8px 0}
+-.faq summary{font-weight:700;cursor:pointer;font-size:.95rem}
+-.faq p{color:var(--dim);font-size:.92rem;margin-top:8px}
+-.domains{margin:26px 0}.domains a{display:inline-block;margin:4px 8px 4px 0;color:var(--acc);text-decoration:none;font-size:.9rem}
+-footer{color:var(--dim);font-size:.8rem;margin-top:44px;border-top:1px solid var(--line);padding-top:16px}
+-footer a{color:var(--dim)}
+-.badge{display:inline-block;font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:99px;margin-left:8px;vertical-align:middle}
+-.badge.live{background:#dcfce7;color:#166534}.badge.soon{background:#e0f2fe;color:#075985}
+-.badge.deal{background:#ffedd5;color:#9a3412}
++
++/* --------------------------------------------------------- conversion CTA */
++
++.cta{
++  position:relative;overflow:hidden;
++  background:linear-gradient(135deg,#B45309 0%,#D97706 48%,#F59E0B 100%);
++  border-radius:20px;padding:30px 32px;margin:30px 0;
++  text-align:center;color:#FFF7E6;
++  box-shadow:0 18px 40px -18px rgba(180,83,9,.55);
++}
++.cta::after{
++  content:"";position:absolute;left:-42px;bottom:-62px;width:196px;height:196px;
++  background:url("icon.svg") center/contain no-repeat;
++  opacity:.13;transform:rotate(14deg);pointer-events:none;
++}
++.cta > *{position:relative}
++.cta strong{color:#fff;font-size:1.22rem;letter-spacing:-.02em}
++.cta p{color:#FFF7E6;margin:6px auto 0;max-width:58ch}
++.cta a{
++  display:inline-block;background:#fff;color:var(--ember);font-weight:800;
++  text-decoration:none;padding:13px 26px;border-radius:10px;margin-top:14px;
++  box-shadow:0 6px 18px -6px rgba(0,0,0,.4);
++  transition:transform .1s,box-shadow .15s;
++}
++.cta a:hover{transform:translateY(-1px);box-shadow:0 10px 24px -8px rgba(0,0,0,.45)}
++.cta .strike{text-decoration:line-through;opacity:.7}
++.cta .price{color:#fff;font-weight:800}
++.cta .code{
++  background:rgba(255,255,255,.2);border:1px dashed rgba(255,255,255,.85);
++  border-radius:6px;padding:2px 9px;font-weight:800;color:#fff;letter-spacing:.04em;
++}
++
++/* --------------------------------------------------------------------- FAQ */
++
++.faq{margin:34px 0}
++.faq h3{font-size:1.2rem;margin-bottom:12px;letter-spacing:-.02em;font-weight:800}
++.faq details{
++  background:var(--card);border:1px solid var(--line);
++  border-radius:var(--radius-sm);padding:13px 17px;margin:8px 0;
++  box-shadow:var(--shadow-sm);
++}
++.faq details[open]{border-color:var(--amber-200);background:var(--amber-50)}
++.faq summary{font-weight:700;cursor:pointer;font-size:.95rem;list-style:none}
++.faq summary::-webkit-details-marker{display:none}
++.faq summary::before{content:"＋ ";color:var(--amber-deep);font-weight:800}
++.faq details[open] summary::before{content:"− "}
++.faq p{color:var(--dim);font-size:.92rem;margin-top:9px}
++
++/* ---------------------------------------------------------- domain links */
++
++.domains{
++  margin:28px 0;padding:20px 22px;
++  background:var(--card);border:1px solid var(--line);
++  border-radius:var(--radius);box-shadow:var(--shadow-sm);
++}
++.domains .meta{margin-bottom:10px}
++.domains a{
++  display:inline-block;margin:5px 8px 5px 0;
++  color:var(--amber-deep);text-decoration:none;font-size:.89rem;font-weight:600;
++  border-bottom:1px solid transparent;
++}
++.domains a:hover{border-bottom-color:var(--amber)}
++
++/* ------------------------------------------------------------------ badges */
++
++.badge{
++  display:inline-block;font-size:.68rem;font-weight:800;letter-spacing:.03em;
++  padding:3px 9px;border-radius:99px;margin-left:8px;vertical-align:middle;
++  text-transform:uppercase;
++}
++.badge.live{background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok-line)}
++.badge.soon{background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE}
++.badge.deal{background:var(--amber-50);color:var(--amber-deep);border:1px solid var(--amber-200)}
++
++/* ------------------------------------------------------------------ footer */
++
++footer{
++  position:relative;
++  color:var(--muted);font-size:.83rem;line-height:1.7;
++  margin-top:52px;border-top:1px solid var(--line);
++  padding:64px 0 0;
++}
++/* nugget mark above the footer text — no markup change needed */
++footer::before{
++  content:"";position:absolute;left:0;top:22px;width:32px;height:32px;
++  background:url("icon.svg") center/contain no-repeat;
++}
++footer a{color:var(--dim);text-decoration:none;border-bottom:1px solid var(--line)}
++footer a:hover{color:var(--amber-deep);border-bottom-color:var(--amber)}
++
++/* -------------------------------------------------------------- responsive */
++
++@media (max-width:640px){
++  .wrap{padding:0 16px 56px}
++  .hero{padding:26px 20px 24px;border-radius:18px}
++  .hero::after{width:152px;height:152px;right:-40px;top:-32px}
++  .brandbar img{height:36px}
++  .card,.qcard{padding:18px}
++  .cta{padding:24px 20px}
++  .cta-row .btn{flex:1 1 100%}
++}
++
++@media (prefers-reduced-motion:reduce){
++  *{transition:none!important;animation:none!important;scroll-behavior:auto!important}
++}
++
++@media print{
++  .cta,.trust,.hero::after,.cta::after{display:none}
++  body{background:#fff}
++  .expl{display:block!important}
++}
+ `;
+ 
+ // shared quiz behavior: per-domain miss tracking + score-gated gap/coupon reveal
+@@ -396,19 +660,24 @@
+ <meta name="description" content="${desc}">
+ <link rel="canonical" href="${SITE_URL}/${canonicalPath}">
+ <link rel="icon" href="favicon.ico" sizes="any">
+-<link rel="icon" type="image/png" href="icon-192.png">
++<link rel="icon" type="image/svg+xml" href="icon.svg">
++<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+ <link rel="apple-touch-icon" href="apple-touch-icon.png">
++<meta name="theme-color" content="#F59E0B">
++<meta property="og:site_name" content="TechNuggets Academy">
+ <meta property="og:title" content="${title}">
+ <meta property="og:description" content="${desc}">
+ <meta property="og:type" content="website">
+-<meta property="og:image" content="${SITE_URL}/icon-512.png">
+-<meta name="theme-color" content="#0f172a">
++<meta property="og:url" content="${SITE_URL}/${canonicalPath}">
++<meta property="og:image" content="${SITE_URL}/og-image.png">
++<meta name="twitter:card" content="summary_large_image">
++<meta name="twitter:image" content="${SITE_URL}/og-image.png">
+ <link rel="stylesheet" href="style.css">${accentVar}</head><body><div class="wrap">`;
+ }
+ 
+ // Brand bar (logo → home) shown at the top of every page.
+ function brandbar() {
+-  return `<div class="brandbar"><a href="index.html"><img src="logo.png" alt="TechNuggets Academy" width="200" height="34"></a></div>`;
++  return `<div class="brandbar"><a href="index.html"><img src="logo.png" alt="TechNuggets Academy" width="200" height="50"></a></div>`;
+ }
+ 
+ function ctaBlock(course) {
+@@ -599,6 +868,11 @@
+     ['png/technuggets-icon-512.png', 'icon-512.png'],
+     ['png/technuggets-logo-horizontal-600.png', 'logo.png'],
+     ['png/technuggets-logo-horizontal-dark-600.png', 'logo-dark.png'],
++    // SVGs: icon.svg is REQUIRED — style.css uses it for the hero/CTA/footer marks
++    ['technuggets-icon.svg', 'icon.svg'],
++    ['technuggets-logo-horizontal.svg', 'logo.svg'],
++    ['technuggets-logo-horizontal-dark.svg', 'logo-dark.svg'],
++    ['png/og-image.png', 'og-image.png'],
+   ];
+   let n = 0;
+   for (const [src, dst] of copies) {
+@@ -666,6 +940,10 @@
+   sitemapPaths.map(p => `  <url><loc>${SITE_URL}/${p}</loc><changefreq>weekly</changefreq><priority>${p === '' ? '1.0' : p.includes('-') && !COURSES.some(c => p === c.page + '.html') ? '0.7' : '0.9'}</priority></url>`).join('\n') +
+   `\n</urlset>\n`);
+ fs.writeFileSync(path.join(OUT, 'robots.txt'), `User-agent: *\nAllow: /\nSitemap: ${SITE_URL}/sitemap.xml\n`);
++
++// Custom domain for GitHub Pages. NOTE: DNS for technuggets.academy must resolve
++// BEFORE this file is published, or the old github.io URL redirects into a void.
++fs.writeFileSync(path.join(OUT, 'CNAME'), new URL(SITE_URL).hostname + '\n');
+ console.log(`✅ index.html (${cards.length} certs) + sitemap.xml + robots.txt\n→ ${OUT}`);
+ }
+ 

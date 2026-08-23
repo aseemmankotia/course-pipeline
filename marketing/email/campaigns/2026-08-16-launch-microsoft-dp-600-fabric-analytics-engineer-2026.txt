@@ -1,0 +1,9 @@
+TechNuggets Academy — new course just launched
+Microsoft Certified: Fabric Analytics Engineer Associate
+Maintain a data analytics solution, Prepare data
+$34.99 (was $109.99), launch code FREETEST33 ends September 16
+Enroll: https://www.udemy.com/course/dp-600-fabric-analytics-engineer-certification-prep/?couponCode=FREETEST33
+Free practice test: https://technuggets.academy/dp-600.html
+All courses: https://technuggets.academy
+You opted in at TechNuggets Academy. {{physical_address}}
+Unsubscribe: {{unsubscribe_url}}  (sent to {{email}})

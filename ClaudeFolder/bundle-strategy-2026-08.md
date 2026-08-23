@@ -87,12 +87,23 @@ Developer" path once there are 2–3 tightly matched titles).
    Path Bundles — save 20%" section (combined list, 20%-off price, savings, member
    courses). Each bundle has an optional `udemyBundleUrl`; until it's filled, the card
    links members to their individual course pages.
-2. **Create the native bundles on Udemy.** Tools → Course Bundling → Get Started, for
-   each of the 13. Enter title + description (reuse the blurb from the code), pick the
-   2–3 courses, publish. Copy each bundle's public URL into the matching `BUNDLES` entry
-   `udemyBundleUrl` in `build-practice-site.js`.
-3. **Rebuild + deploy the site** (`node scripts/build-practice-site.js --all`), then
-   rsync `site/` → the Pages repo and push (same publish order as before).
+2. **Create the native bundles on Udemy — automated.** `scripts/create-bundles.js`
+   reads the 13 `BUNDLES`, resolves each member's Udemy course id, creates + publishes
+   the bundle, pulls its public URL back into `BUNDLES[].udemyBundleUrl`, logs
+   `exports/bundles-log.json`, and rebuilds the site. Idempotent.
+   ```
+   npm run bundles:plan     # dry run — prints every API call, no changes
+   npm run bundles:create   # create + publish all, sync URLs, rebuild site
+   ```
+   First time only: the bundle create/publish endpoint is `[VERIFY]` (Udemy's Course
+   Bundling API is undocumented). Run `bundles:plan`, then one `--only=<id>` live run; if
+   it 404s, confirm the endpoint with a single DevTools capture and correct `BUNDLE_API`
+   in `scripts/udemy/bundles.js` (see its header / `scripts/udemy/README.md`). Then
+   re-run for the rest. Manual fallback: Tools → Course Bundling → Get Started per bundle,
+   then paste each URL into the matching `udemyBundleUrl`.
+3. **Deploy the site** — `bundles:create` already rebuilds `site/`; rsync `site/` → the
+   Pages repo and push (same publish order as before). To rebuild without creating,
+   `npm run bundles:sync`.
 4. **Ensure the Deals Program is on** so native-bundle special pricing applies.
 
 ## What changed in code (this commit)

@@ -1,0 +1,3 @@
+Most engineers can write code. Almost none can walk into a client meeting, untangle chaos, and ship something that actually works. That gap is where Forward Deployed Engineers live.
+
+This course gets you there. You'll structure ambiguous client problems using first-principles and MECE thinking, before touching any technology. You'll build production-grade Python with type hints, logging, and real pytest coverage. And you'll ship REST APIs with FastA

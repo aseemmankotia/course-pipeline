@@ -1,0 +1,8 @@
+TechNuggets Academy — new course just launched
+CompTIA A+ (Core 1)
+Mobile Devices, Networking
+Enroll: https://www.udemy.com/course/comptia-a-core-1-220-1201-exam-prep-w/?referralCode=E9C2F71E84C4F4779984
+Free practice test: https://technuggets.academy/220-1201.html
+All courses: https://technuggets.academy
+You opted in at TechNuggets Academy. {{physical_address}}
+Unsubscribe: {{unsubscribe_url}}  (sent to {{email}})

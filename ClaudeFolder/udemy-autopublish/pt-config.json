@@ -1,0 +1,11 @@
+{
+  "csvDir": "../../exports/practice-test-csvs",
+  "courses": [
+    { "courseId": 7305503, "slug": "aws-certified-sysops-administrator-associate-soa-c02-2026", "titlePrefix": "SOA-C02 Practice Test", "duration": 130, "passPercent": 72 },
+    { "courseId": 7305515, "slug": "comptia-network-plus-n10-009-2026", "titlePrefix": "CompTIA Network+ Practice Test", "duration": 90, "passPercent": 72 },
+    { "courseId": 7303531, "slug": "aws-certified-developer-associate-dva-c02-2026", "titlePrefix": "DVA-C02 Practice Test", "duration": 130, "passPercent": 72 },
+    { "courseId": 7303525, "slug": "microsoft-az-305-azure-solutions-architect-2026", "titlePrefix": "AZ-305 Practice Test", "duration": 120, "passPercent": 70 },
+    { "courseId": 7301147, "slug": "hashicorp-terraform-associate-004-2026", "titlePrefix": "Terraform Associate Practice Test", "duration": 60, "passPercent": 70 },
+    { "courseId": 7301139, "slug": "google-cloud-professional-cloud-architect-2026", "titlePrefix": "Google PCA Practice Test", "duration": 120, "passPercent": 70 }
+  ]
+}

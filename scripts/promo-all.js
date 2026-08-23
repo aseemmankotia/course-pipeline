@@ -119,6 +119,63 @@ const COURSES = [
     title: 'AI-103: build Azure AI apps & agents — the new dev cert #Shorts',
     tags: 'microsoft,azure,ai-103,ai agents,certification,exam prep',
     udemy: 'https://www.udemy.com/course/ai-103-azure-ai-apps-agents-developer-certification/?referralCode=A5946EF37692CED37B08', live: true },
+  { slug: 'microsoft-dp-600-fabric-analytics-engineer-2026', short: "Microsoft Certified: Fabric Analytics En",
+    title: "Microsoft Certified: Fabric Analytics Engineer Associate: exam-prep in 60 seconds #Shorts",
+    tags: "microsoft,dp-600,certification,exam prep",
+    udemy: 'https://www.udemy.com/course/dp-600-fabric-analytics-engineer-certification-prep/?referralCode=D1EC0EE91860A6A58FA3', live: true },
+  { slug: 'google-cloud-professional-data-engineer-2026', short: "Google Cloud Certified - Professional Da",
+    title: "Google Cloud Certified - Professional Data Engineer: exam-prep in 60 seconds #Shorts",
+    tags: "google cloud,professional data engineer,certification,exam prep",
+    udemy: 'https://www.udemy.com/course/google-professional-data-engineer-exam-prep/?referralCode=B9FC71138A6ABD41E3D3', live: true },
+  { slug: 'microsoft-ab-730-ai-business-professional-2026', short: "Microsoft Certified: AI Business Profess",
+    title: "Microsoft Certified: AI Business Professional: exam-prep in 60 seconds #Shorts",
+    tags: "microsoft,ab-730,certification,exam prep",
+    udemy: 'https://www.udemy.com/course/ab-730-microsoft-ai-business-professional-exam-prep-k/?referralCode=412BE0E98C4D8C930FDD', live: true },
+  { slug: 'microsoft-ab-731-ai-transformation-leader-2026', short: "Microsoft Certified: AI Transformation L",
+    title: "Microsoft Certified: AI Transformation Leader: exam-prep in 60 seconds #Shorts",
+    tags: "microsoft,ab-731,certification,exam prep",
+    udemy: 'https://www.udemy.com/course/ab-731-ai-transformation-leader-exam-prep/?referralCode=FF397BBD3797643B41D5', live: true },
+  { slug: 'aws-certified-developer-associate-dva-c02-2026', short: "AWS Certified Developer - Associate",
+    title: "AWS Certified Developer - Associate: exam-prep in 60 seconds #Shorts",
+    tags: "amazon web services,dva-c02,certification,exam prep",
+    udemy: 'https://www.udemy.com/course/aws-certified-developer-associate-dva-c02-prep/?referralCode=DD7CB49F86F4BB472122', live: true },
+  { slug: 'google-cloud-professional-cloud-architect-2026', short: "Google Cloud Certified - Professional Cl",
+    title: "Google Cloud Certified - Professional Cloud Architect: exam-prep in 60 seconds #Shorts",
+    tags: "google cloud,professional cloud architect,certification,exam prep",
+    udemy: 'https://www.udemy.com/course/google-cloud-professional-cloud-architect-pca-prep/', live: true },
+  { slug: 'hashicorp-terraform-associate-004-2026', short: "HashiCorp Certified: Terraform Associate",
+    title: "HashiCorp Certified: Terraform Associate (004): exam-prep in 60 seconds #Shorts",
+    tags: "hashicorp,ta-004,certification,exam prep",
+    udemy: 'https://www.udemy.com/course/terraform-associate-004-certification-prep/', live: true },
+  { slug: 'microsoft-az-305-azure-solutions-architect-2026', short: "Microsoft Certified: Azure Solutions Arc",
+    title: "Microsoft Certified: Azure Solutions Architect Expert: exam-prep in 60 seconds #Shorts",
+    tags: "microsoft,az-305,certification,exam prep",
+    udemy: 'https://www.udemy.com/course/az-305-azure-solutions-architect-expert-prep/', live: true },
+  { slug: 'aws-certified-sysops-administrator-associate-soa-c02-2026', short: "AWS Certified SysOps Administrator - Ass",
+    title: "AWS Certified SysOps Administrator - Associate: exam-prep in 60 seconds #Shorts",
+    tags: "amazon web services,soa-c02,certification,exam prep",
+    udemy: 'https://www.udemy.com/course/aws-sysops-administrator-soa-c02-exam-prep/', live: true },
+  { slug: 'comptia-network-plus-n10-009-2026', short: "CompTIA Network+",
+    title: "CompTIA Network+: exam-prep in 60 seconds #Shorts",
+    tags: "comptia,n10-009,certification,exam prep",
+    udemy: 'https://www.udemy.com/course/comptia-network-n10-009-exam-focused-prep/', live: true },
+  { slug: 'comptia-a-plus-core-1-220-1201-2026', short: "CompTIA A+ (Core 1)",
+    title: "CompTIA A+ (Core 1): exam-prep in 60 seconds #Shorts",
+    tags: "comptia,220-1201,certification,exam prep",
+    udemy: 'https://www.udemy.com/course/comptia-a-core-1-220-1201-exam-prep-w/?referralCode=E9C2F71E84C4F4779984', live: true },
+  { slug: 'comptia-a-plus-core-2-220-1202-2026', short: "CompTIA A+ (Core 2)",
+    title: "CompTIA A+ (Core 2): exam-prep in 60 seconds #Shorts",
+    tags: "comptia,220-1202,certification,exam prep",
+    udemy: 'https://www.udemy.com/course/comptia-a-core-2-220-1202-exam-prep-course/?referralCode=A5AE61D1C709A7886458', live: true },
+  { slug: 'microsoft-az-104-azure-administrator-2026', short: "Microsoft Certified: Azure Administrator",
+    title: "Microsoft Certified: Azure Administrator Associate: exam-prep in 60 seconds #Shorts",
+    tags: "microsoft,az-104,certification,exam prep",
+    udemy: 'https://www.udemy.com/course/az-104-azure-administrator-associate-exam-prep-g/?referralCode=D00137EB1DCF6F4CB465', live: true },
+  { slug: 'microsoft-az-204-azure-developer-2026', short: "Microsoft Certified: Azure Developer Ass",
+    title: "Microsoft Certified: Azure Developer Associate: exam-prep in 60 seconds #Shorts",
+    tags: "microsoft,az-204,certification,exam prep",
+    udemy: 'https://www.udemy.com/course/az-204-azure-developer-associate-exam-focused-prep/?referralCode=C963B2384D070A86FD31', live: true },
+  // __PROMO_COURSES_END__ (register-course.js inserts new course objects immediately above this line)
 ];
 
 // EU AI Act urgency short — pre-written script, rides on the AIGP course data.
@@ -127,7 +184,13 @@ const SPECIALS = [
     scriptFile: 'marketing/eu-ai-act-short-script.txt', short: 'EU AI Act deadline (AIGP)',
     title: '11 days until the EU AI Act deadline. Most companies aren\'t ready. #Shorts',
     tags: 'eu ai act,ai governance,aigp,compliance,august 2',
-    udemy: 'https://www.udemy.com/course/iapp-aigp-certification-eu-ai-act/?referralCode=0B6A80F71D9FCB827C55', live: true },  { slug: 'nvidia-ncp-aii-ai-infrastructure-professional-2026', short: "NVIDIA-Certified Professional: AI Infras",
+    udemy: 'https://www.udemy.com/course/iapp-aigp-certification-eu-ai-act/?referralCode=0B6A80F71D9FCB827C55', live: true },
+];
+
+// moved out of SPECIALS (register-course.js had appended them to the wrong
+// array, breaking --slug lookup; fixed 2026-08-08)
+COURSES.push(
+  { slug: 'nvidia-ncp-aii-ai-infrastructure-professional-2026', short: "NVIDIA-Certified Professional: AI Infras",
     title: "NVIDIA-Certified Professional: AI Infrastructure: exam-prep in 60 seconds #Shorts",
     tags: "nvidia,ncp-aii,certification,exam prep",
     udemy: 'https://www.udemy.com/course/ncp-aii-nvidia-ai-infrastructure-professional-prep/?referralCode=EEC8729A0880EB8DA3B9', live: true },
@@ -155,12 +218,6 @@ const SPECIALS = [
     title: "Google Cloud Certified - Associate Cloud Engineer: exam-prep in 60 seconds #Shorts",
     tags: "google cloud,associate cloud engineer,certification,exam prep",
     udemy: 'https://www.udemy.com/course/google-cloud-ace-associate-cloud-engineer-exam-prep/', live: true },
-
-];
-
-// moved out of SPECIALS (register-course.js had appended them to the wrong
-// array, breaking --slug lookup; fixed 2026-08-08)
-COURSES.push(
   { slug: 'nvidia-nca-ads-accelerated-data-science-2026', short: "NVIDIA-Certified Associate: Accelerated ",
     title: "NVIDIA-Certified Associate: Accelerated Data Science: exam-prep in 60 seconds #Shorts",
     tags: "nvidia,nca-ads,certification,exam prep",

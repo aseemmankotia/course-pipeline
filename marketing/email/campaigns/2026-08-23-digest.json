@@ -1,0 +1,18 @@
+{
+  "date": "2026-08-23",
+  "subject": "New on TechNuggets Academy: CompTIA Network+ + 3 more",
+  "preheader": "New certification courses and this week's discounted picks — with free practice tests.",
+  "new": [
+    "comptia-network-plus-n10-009-2026",
+    "aws-certified-sysops-administrator-associate-soa-c02-2026",
+    "microsoft-az-305-azure-solutions-architect-2026",
+    "hashicorp-terraform-associate-004-2026"
+  ],
+  "popular": [
+    "isaca-aair-ai-risk",
+    "databricks-genai-engineer-associate",
+    "nvidia-nca-genl-generative-ai-llms"
+  ],
+  "htmlFile": "marketing/email/campaigns/2026-08-23-digest.html",
+  "textFile": "marketing/email/campaigns/2026-08-23-digest.txt"
+}

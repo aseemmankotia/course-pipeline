@@ -1,0 +1,39 @@
+TechNuggets Academy — new & popular exam-prep courses
+
+NEW: Google Cloud Certified - Professional Data Engineer
+  Designing data processing systems, Ingesting and processing the data
+  $34.99 (was $129.99), code FREETEST33 ends September 16
+  Enroll: https://www.udemy.com/course/google-professional-data-engineer-exam-prep/?couponCode=FREETEST33
+  Free practice test: https://technuggets.academy/professional-data-engineer.html
+NEW: Microsoft Certified: Fabric Analytics Engineer Associate
+  Maintain a data analytics solution, Prepare data
+  $34.99 (was $109.99), code FREETEST33 ends September 16
+  Enroll: https://www.udemy.com/course/dp-600-fabric-analytics-engineer-certification-prep/?couponCode=FREETEST33
+  Free practice test: https://technuggets.academy/dp-600.html
+NEW: Google Cloud Certified - Associate Cloud Engineer
+  Setting Up a Cloud Solution Environment, Planning and Configuring a Cloud Solution
+  $34.99 (was $99.99), code FREETEST33 ends September 14
+  Enroll: https://www.udemy.com/course/google-cloud-ace-associate-cloud-engineer-exam-prep/?couponCode=FREETEST33
+  Free practice test: https://technuggets.academy/associate-cloud-engineer.html
+NEW: AWS Certified Data Engineer - Associate
+  Data Ingestion and Transformation, Data Store Management
+  $34.99 (was $109.99), code FREETEST33 ends September 14
+  Enroll: https://www.udemy.com/course/aws-certified-data-engineer-associate-dea-c01-prep/?couponCode=FREETEST33
+  Free practice test: https://technuggets.academy/dea-c01.html
+POPULAR: ISACA Advanced in AI Risk (AAIR)
+  Enterprise AI risk programs and governance
+  Enroll: https://www.udemy.com/course/isaca-aair-advanced-ai-risk-certification-prep/?couponCode=FREETEST33B
+  Free practice test: https://technuggets.academy/isaca-aair.html
+POPULAR: Databricks Certified GenAI Engineer Associate
+  Vector Search, MLflow, Model Serving and RAG
+  Enroll: https://www.udemy.com/course/databricks-genai-engineer-associate-exam-prep/?couponCode=FREETEST33B
+  Free practice test: https://technuggets.academy/databricks-genai.html
+POPULAR: NVIDIA Generative AI & LLMs (NCA-GENL)
+  Transformers, prompt engineering and the NVIDIA stack
+  Enroll: https://www.udemy.com/course/nvidia-nca-genl-generative-ai-llm-certification-prep/?couponCode=FREETEST33B
+  Free practice test: https://technuggets.academy/nvidia-nca-genl.html
+
+All courses: https://technuggets.academy
+
+You opted in at TechNuggets Academy. {{physical_address}}
+Unsubscribe: {{unsubscribe_url}}  (sent to {{email}})

@@ -1,0 +1,138 @@
+#!/usr/bin/env node
+/**
+ * bundle-campaign.js — retire old Brevo email campaigns and send ONE bundle-promotion
+ * digest for the 13 new learning-path bundles (Udemy applies the bundle discount at checkout).
+ *
+ * Replaces the old per-course / free-coupon digests. Content is driven by the single
+ * source of truth (BUNDLES + COURSES) in build-practice-site.js, and links to the
+ * bundle section on the site (Udemy doesn't expose public bundle URLs until the ~24h
+ * propagation — swap in real bundle URLs later if desired).
+ *
+ *   node scripts/bundle-campaign.js                 # DRY RUN: lists existing Brevo campaigns,
+ *                                                     writes the digest HTML to campaigns/ + outbox/, sends nothing
+ *   node scripts/bundle-campaign.js --live          # DELETE draft/scheduled Brevo campaigns, then create + SEND the digest
+ *   node scripts/bundle-campaign.js --live --no-purge   # send only, keep existing campaigns
+ *   node scripts/bundle-campaign.js --purge         # (dry) show which campaigns WOULD be deleted
+ *
+ * Auth/compliance (.env): EMAIL_PROVIDER=brevo, BREVO_API_KEY, BREVO_LIST_ID, EMAIL_FROM
+ * (a VERIFIED Brevo sender), PHYSICAL_ADDRESS. Brevo owns unsubscribe ({{ unsubscribe }})
+ * + suppression. Sent campaigns can't be deleted (Brevo) — only drafts/scheduled/queued.
+ */
+'use strict';
+require('dotenv').config();
+const fs = require('fs');
+const path = require('path');
+const brevo = require('../marketing/email/brevo.js');
+const { BUNDLES, COURSES, SITE_URL, BUNDLE_DISCOUNT } = require('./build-practice-site.js');
+
+const ROOT = path.join(__dirname, '..');
+const LIVE = process.argv.includes('--live');
+const NO_PURGE = process.argv.includes('--no-purge');
+const PURGE = process.argv.includes('--purge') || (LIVE && !NO_PURGE);
+const {
+  EMAIL_PROVIDER = 'brevo', EMAIL_FROM, EMAIL_FROM_NAME = 'TechNuggets Academy',
+  PHYSICAL_ADDRESS, BREVO_API_KEY, BREVO_LIST_ID,
+} = process.env;
+
+const priceNum = (s) => parseFloat(String(s || '').replace(/[^0-9.]/g, '')) || 0;
+const money = (n) => '$' + n.toFixed(2);
+const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const byPage = Object.fromEntries(COURSES.map((c) => [c.page, c]));
+const pct = Math.round(BUNDLE_DISCOUNT * 100);
+
+function pricing(b) {
+  const members = b.pages.map((pg) => byPage[pg]).filter(Boolean);
+  const list = members.reduce((s, c) => s + priceNum(c.list), 0);
+  // NOTE: Udemy auto-prices bundles at checkout — we do NOT advertise a specific % off.
+  return { members, list };
+}
+
+// ---- digest HTML -----------------------------------------------------------
+const bundlesUrl = `${SITE_URL}/#bundles`;
+function bundleRow(b) {
+  const { members, list } = pricing(b);
+  const url = b.udemyBundleUrl || bundlesUrl;
+  return `<tr><td style="padding:14px 0;border-bottom:1px solid #E7E3DA">
+    <a href="${url}" style="color:#0F172A;text-decoration:none;font-weight:700;font-size:16px">${esc(b.title)}</a>
+    <div style="color:#475569;font-size:13px;margin:4px 0 6px">${esc(b.blurb)}</div>
+    <div style="font-size:14px;color:#475569">${members.length} courses · <span style="text-decoration:line-through;color:#94A3B8">${money(list)}</span> separately
+      &nbsp;·&nbsp; <a href="${url}" style="color:#B45309;font-weight:700;text-decoration:none">Bundle &amp; save →</a></div>
+  </td></tr>`;
+}
+const html = `<!doctype html><html><body style="margin:0;background:#FCFAF6;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#0F172A">
+<div style="max-width:640px;margin:0 auto;padding:24px">
+  <h1 style="font-size:22px;margin:0 0 6px">New: learning-path bundles — save ${pct}%</h1>
+  <p style="color:#475569;font-size:15px;margin:0 0 18px">We grouped our certification courses into ${BUNDLES.length} focused learning paths by technology and role. Buy a whole path together and save ${pct}% off the combined price.</p>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse">${BUNDLES.map(bundleRow).join('')}</table>
+  <p style="margin:22px 0 0"><a href="${bundlesUrl}" style="background:#F59E0B;color:#3B2205;font-weight:800;text-decoration:none;padding:12px 22px;border-radius:10px;display:inline-block">See all ${BUNDLES.length} bundles →</a></p>
+  <p style="font-size:13px;color:#64748B;margin:18px 0 0">Browse every certification and free practice test at <a href="${SITE_URL}" style="color:#B45309">${SITE_URL.replace('https://', '')}</a>.</p>
+  <hr style="border:none;border-top:1px solid #E7E3DA;margin:24px 0 12px">
+  <p style="font-size:12px;color:#94A3B8;line-height:1.6">
+    You're receiving this because you subscribed at ${SITE_URL.replace('https://', '')}.
+    <a href="{{ unsubscribe }}" style="color:#94A3B8">Unsubscribe</a>.<br>
+    ${esc(PHYSICAL_ADDRESS || 'TechNuggets Academy')}
+  </p>
+</div></body></html>`;
+
+const subject = `New learning-path bundles — save ${pct}% on ${BUNDLES.length} cert tracks`;
+const date = new Date().toISOString().slice(0, 10);
+
+// write a preview artifact always
+const outDir = path.join(ROOT, 'marketing', 'email', 'campaigns');
+fs.mkdirSync(outDir, { recursive: true });
+const htmlPath = path.join(outDir, `${date}-bundles-digest.html`);
+fs.writeFileSync(htmlPath, html);
+
+(async () => {
+  console.log(`Bundle campaign — ${BUNDLES.length} bundles, ${pct}% off\nSubject: ${subject}\nPreview: ${htmlPath}\n`);
+
+  // 1) existing campaigns (list always; delete only when purging + live)
+  let deletable = [];
+  if (EMAIL_PROVIDER === 'brevo' && BREVO_API_KEY) {
+    try {
+      const all = await brevo.listCampaigns({});
+      const camps = (all && all.campaigns) || [];
+      console.log(`Existing Brevo campaigns: ${camps.length}`);
+      for (const c of camps) console.log(`  [${c.status}] #${c.id} ${JSON.stringify(c.name)}`);
+      deletable = camps.filter((c) => ['draft', 'scheduled', 'queued', 'suspended'].includes(c.status));
+      const sent = camps.filter((c) => c.status === 'sent');
+      if (sent.length) console.log(`  (note: ${sent.length} already-SENT campaign(s) cannot be deleted)`);
+      console.log(`Deletable (draft/scheduled/queued): ${deletable.length}${deletable.length ? ' → ' + deletable.map((c) => '#' + c.id).join(', ') : ''}`);
+    } catch (e) {
+      console.warn('Could not list Brevo campaigns:', e.message);
+      if (!LIVE) console.warn('(dry run — continuing to render the digest anyway)');
+    }
+  } else {
+    console.log('(EMAIL_PROVIDER is not brevo or BREVO_API_KEY missing — skipping Brevo campaign listing)');
+  }
+
+  if (!LIVE) {
+    if (PURGE) console.log('\n[dry] would DELETE the deletable campaigns above.');
+    console.log('\nDry run — nothing deleted or sent. Re-run with --live to purge draft/scheduled campaigns and send the digest.');
+    return;
+  }
+
+  // live: compliance gate
+  const missing = ['BREVO_API_KEY', 'BREVO_LIST_ID', 'EMAIL_FROM', 'PHYSICAL_ADDRESS'].filter((k) => !process.env[k]);
+  if (missing.length) { console.error('Cannot send live — missing .env:', missing.join(', ')); process.exit(1); }
+
+  // 2) purge
+  if (PURGE && deletable.length) {
+    console.log(`\nDeleting ${deletable.length} draft/scheduled campaign(s)…`);
+    for (const c of deletable) {
+      try { await brevo.deleteCampaign(c.id); console.log(`  ✓ deleted #${c.id}`); }
+      catch (e) { console.warn(`  ! could not delete #${c.id}: ${e.message}`); }
+    }
+  }
+
+  // 3) create + send
+  console.log('\nCreating + sending the bundle digest…');
+  const { id } = await brevo.createAndSendCampaign({
+    name: `${date} bundles digest`,
+    subject,
+    sender: { name: EMAIL_FROM_NAME, email: EMAIL_FROM },
+    htmlContent: html,
+    listIds: [Number(BREVO_LIST_ID)],
+  });
+  console.log(`✅ Sent bundle digest — Brevo campaign #${id} to list ${BREVO_LIST_ID}.`);
+})().catch((e) => { console.error('FAILED:', e.message); process.exit(1); });

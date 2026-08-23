@@ -6,20 +6,27 @@
  *   node scripts/send-campaign.js --live          # actually send
  *   node scripts/send-campaign.js --campaign=marketing/email/campaigns/2026-08-10-digest.json --live
  *
- * Providers (EMAIL_PROVIDER in .env): "resend" (REST, no extra deps) or "smtp"
- * (works with Amazon SES SMTP or any SMTP host — lazy-loads nodemailer; run
- * `npm i nodemailer` if you pick smtp).
+ * Providers (EMAIL_PROVIDER in .env):
+ *   - "brevo"  → Brevo-native BULK campaign to your Brevo list (RECOMMENDED).
+ *                The contact list lives in Brevo (filled by the website Worker), and
+ *                Brevo manages unsubscribe + the address footer for you. One API call
+ *                sends to the whole list; subscribers.json is NOT used in this mode.
+ *   - "resend" → per-recipient REST send from subscribers.json (no extra deps).
+ *   - "smtp"   → per-recipient SMTP from subscribers.json (lazy-loads nodemailer;
+ *                works with Brevo SMTP relay, Amazon SES, or any host).
  *
  * Compliance guardrails (send refuses without these, per CAN-SPAM / 2026 one-click rules):
  *   - PHYSICAL_ADDRESS           postal address in the footer
- *   - UNSUBSCRIBE_BASE_URL       e.g. https://your-host/unsubscribe  (token appended)
- * Every message carries a List-Unsubscribe + List-Unsubscribe-Post header (RFC 8058
- * one-click) and only goes to subscribers with status "active" + email channel on.
+ *   - UNSUBSCRIBE_BASE_URL       (resend/smtp only) e.g. https://your-host/unsubscribe
+ * resend/smtp messages carry a List-Unsubscribe + List-Unsubscribe-Post header (RFC 8058
+ * one-click) and only go to subscribers with status "active" + email channel on. The
+ * brevo path uses Brevo's built-in {{ unsubscribe }} + suppression list.
  */
 require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 const store = require('../marketing/email/store.js');
+const brevo = require('../marketing/email/brevo.js');
 
 const ROOT = path.join(__dirname, '..');
 const flag = (k, d) => { const a = process.argv.find((x) => x.startsWith(`--${k}=`)); return a ? a.split('=')[1] : d; };
@@ -30,7 +37,52 @@ const {
   EMAIL_PROVIDER = 'resend', RESEND_API_KEY, EMAIL_FROM, EMAIL_FROM_NAME = 'TechNuggets Academy',
   PHYSICAL_ADDRESS, UNSUBSCRIBE_BASE_URL,
   SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS,
+  BREVO_API_KEY, BREVO_LIST_ID,
 } = process.env;
+
+/**
+ * Rewrite our per-recipient placeholders into Brevo's own merge tags so a single
+ * bulk campaign personalizes correctly and Brevo owns unsubscribe + the address.
+ */
+function toBrevoHtml(tpl) {
+  return tpl
+    .replace(/\{\{name_or_there\}\}/g, ' {{ contact.FIRSTNAME | default : "there" }}')
+    .replace(/\{\{unsubscribe_url\}\}/g, '{{ unsubscribe }}')
+    .replace(/\{\{email\}\}/g, '{{ contact.EMAIL }}')
+    .replace(/\{\{physical_address\}\}/g, PHYSICAL_ADDRESS || '');
+}
+
+/**
+ * Brevo-native bulk send: create + send ONE campaign to the whole Brevo list.
+ * Dry run reports the list size and writes the rendered HTML to outbox instead.
+ */
+async function runBrevo({ camp, html, outbox }) {
+  const listId = Number(BREVO_LIST_ID);
+  const rendered = toBrevoHtml(html);
+  let count = null;
+  try { count = await brevo.listContactCount(listId, BREVO_API_KEY); } catch (e) { count = `?(${e.message})`; }
+  console.log(`Provider: brevo (bulk campaign)  ·  list ${listId} (${count} contacts)  ·  mode: ${LIVE ? 'LIVE' : 'DRY RUN'}`);
+
+  if (!LIVE) {
+    fs.mkdirSync(outbox, { recursive: true });
+    const p = path.join(outbox, `brevo-campaign-${camp.date}.html`);
+    fs.writeFileSync(p, rendered);
+    console.log(`Dry run: rendered Brevo campaign HTML → ${p}\nRe-run with --live to create + send the campaign to the list.`);
+    return { mode: 'dry-run', list: listId, contacts: count };
+  }
+  const name = `${camp.date} · ${camp.subject}`.slice(0, 128);
+  const { id } = await brevo.createAndSendCampaign({
+    key: BREVO_API_KEY,
+    name,
+    subject: camp.subject,
+    previewText: camp.preheader,
+    htmlContent: rendered,
+    sender: { name: EMAIL_FROM_NAME, email: EMAIL_FROM },
+    listIds: [listId],
+  });
+  console.log(`\nBrevo campaign ${id} created + sent to list ${listId}.`);
+  return { mode: 'live', campaignId: id, list: listId };
+}
 
 function latestCampaign() {
   const explicit = flag('campaign');
@@ -94,10 +146,31 @@ async function main() {
   };
   const html = fs.readFileSync(resolveCampFile(camp.htmlFile), 'utf8');
   const text = fs.readFileSync(resolveCampFile(camp.textFile), 'utf8');
+  const outbox = path.join(ROOT, 'marketing/email/outbox', camp.date);
+
+  console.log(`Campaign: ${camp.date}${camp.kind === 'launch' ? ' launch' : '-digest'}  ·  "${camp.subject}"`);
+
+  // --- Brevo-native bulk path: list lives in Brevo, not subscribers.json ---
+  if (EMAIL_PROVIDER === 'brevo') {
+    if (LIVE) {
+      const missing = [];
+      if (!BREVO_API_KEY) missing.push('BREVO_API_KEY');
+      if (!BREVO_LIST_ID) missing.push('BREVO_LIST_ID');
+      if (!EMAIL_FROM) missing.push('EMAIL_FROM');
+      if (!PHYSICAL_ADDRESS) missing.push('PHYSICAL_ADDRESS');
+      if (missing.length) { console.error(`Refusing to send — missing .env: ${missing.join(', ')}`); process.exit(1); }
+    }
+    const res = await runBrevo({ camp, html, outbox });
+    const sentDir = path.join(ROOT, 'marketing/email/sent');
+    fs.mkdirSync(sentDir, { recursive: true });
+    fs.writeFileSync(path.join(sentDir, `${camp.date}-${LIVE ? 'live' : 'dryrun'}.json`),
+      JSON.stringify({ campaign: camp.date, provider: 'brevo', at: new Date().toISOString(), ...res }, null, 2) + '\n');
+    return;
+  }
+
+  // --- per-recipient path (resend / smtp) from subscribers.json ---
   const db = store.loadDB();
   const recipients = store.activeEmail(db);
-
-  console.log(`Campaign: ${camp.date}-digest  ·  "${camp.subject}"`);
   console.log(`Recipients (active email): ${recipients.length}  ·  provider: ${EMAIL_PROVIDER}  ·  mode: ${LIVE ? 'LIVE' : 'DRY RUN'}`);
 
   if (LIVE) {
@@ -111,7 +184,6 @@ async function main() {
   }
   if (!recipients.length) { console.log('Nothing to send (no active email subscribers). Add some via scripts/subscribers.js or the website form.'); return; }
 
-  const outbox = path.join(ROOT, 'marketing/email/outbox', camp.date);
   const send = EMAIL_PROVIDER === 'smtp' ? sendSMTP : sendResend;
   const log = [];
   for (const sub of recipients) {

@@ -429,3 +429,225 @@ wheel), so same-vendor courses get clearly distinct cards automatically. Overrid
 available: `python3 scripts/make-card.py --slug=<slug> --color=#RRGGBB`. If a pair still
 looks close, pass distinct `--color` values. Re-upload the new card, click "Mark as
 fixed" on the feedback item, and resubmit.
+
+## Practice-site rebrand + domain move (2026-08-14) — NEW DESIGN IS NOW THE DEFAULT
+`scripts/build-practice-site.js` is the single source of truth for the website and has
+been rebranded around the TechNuggets amber system; every run regenerates `site/` to
+match, so this is the design going forward (no manual site edits — `fs.rmSync(OUT)` wipes
+`site/` each run). Key facts:
+- `SITE_URL = https://technuggets.academy` (was aseemmankotia.github.io). The generator
+  writes a `CNAME` file (technuggets.academy) next to robots.txt, and all canonical/og
+  URLs use the new domain. `aseemmankotia.github.io` is now only a stale publish TARGET.
+- The `const CSS` block is the amber token system (warm neutrals `--bg #FCFAF6` /
+  `--line #E7E3DA`, amber `#F59E0B` CTAs, ink-navy text, Inter font). It keeps EVERY class
+  the generator emits, and retains legacy compat vars (`--acc --cta --cta-h --txt --dim
+  --vendor`) because pages contain inline `style="var(--acc)"` and per-vendor
+  `<style>:root{--vendor:#RRGGBB}</style>` — do not delete them. The hero is LIGHT amber
+  (not dark navy); `.btn.ghost` is solid ink-navy and `.urgency` is ember `#7C2D12` to be
+  visible on it — revert those together if the hero ever goes dark again.
+- Logos are placed via CSS only (`.hero::after`, `.cta::after` watermarks, `footer::before`
+  32px mark) so they survive regeneration; this REQUIRES `icon.svg` in the published root.
+  `copyBrand()` copies `technuggets-icon.svg→icon.svg`, both horizontal SVG lockups, and
+  `png/og-image.png→og-image.png` (1200×630 social card) into `site/`.
+- `head()` emits an SVG favicon, `theme-color #F59E0B`, `og:site_name/og:url`, `og:image`
+  = og-image.png, and twitter card/image. `brandbar()` logo box is `height="50"` (logo is
+  600×150, 4:1 — the old 34 caused layout shift).
+- Verified generator run = **176 pages, 0 broken links, 0 missing assets, 0 stale-domain
+  refs, 176/176 amber theme-color**. Rollback: `new-website/build-practice-site.js.ORIGINAL.bak`.
+- PUBLISH ORDER (Mac): set DNS first (apex A → 185.199.108-111.153; `www` CNAME →
+  aseemmankotia.github.io; repo Settings→Pages custom domain → technuggets.academy + HTTPS),
+  THEN rsync `site/`→ the pages repo and push. The `CNAME` redirects the old github.io host,
+  so the domain must resolve before publishing or the site goes dark.
+- Handoff docs + assets: `new-website/` (README, generator.patch, style.css, LINK-AUDIT.md).
+
+## Course-card logo branding (added 2026-08-14)
+`make-card.py` now composites the TechNuggets gold-nugget logo (dark-bg horizontal
+lockup from `brand/png/technuggets-logo-horizontal-dark-*.png`) onto every card,
+centered on a subtle translucent panel near the top. This is Udemy-compliant: a LOGO is
+the sole allowed exception to the "no text on course images" rule (rule 2 above), so the
+wordmark is fine — do NOT add any other text. Default ON; pass `--no-logo` to disable.
+Filename stays `<slug>-card-notext.png` (pipeline/shell-spec references unchanged). Older
+published courses keep their pre-2026-08-14 unbranded cards unless regenerated; new + any
+regenerated courses get the logo automatically.
+
+## Website newsletter — Brevo-native subscribe + auto-publish (added 2026-08-15)
+The static site (GitHub Pages) can't hold an API key, so the subscribe flow is now
+Brevo-native and serverless. `EMAIL_PROVIDER=brevo` is the default. Pieces:
+- `marketing/email/brevo.js` — zero-dep Brevo API helper (contacts + campaigns + list
+  bootstrap); single `api-key` header; uses global fetch (Node 18+) else node-fetch.
+- `marketing/email/subscribe-worker/` — Cloudflare Worker (`worker.js` + `wrangler.toml` +
+  README). The website subscribe form POSTs here; the Worker holds `BREVO_API_KEY` as a
+  Worker SECRET and calls Brevo Contacts API (single opt-in, `updateEnabled:true` so it's
+  idempotent). CORS locked to `ALLOWED_ORIGINS`; a hidden `company` honeypot drops bots.
+  Deploy: `wrangler deploy` + `wrangler secret put BREVO_API_KEY`; set `BREVO_LIST_ID` in
+  wrangler.toml `[vars]`.
+- `scripts/brevo-setup.js` (`npm run brevo:setup`) — validates the key, checks that
+  `EMAIL_FROM` is a VERIFIED Brevo sender (campaigns fail otherwise — verify the domain
+  SPF/DKIM you already applied via Porkbun), creates/finds the "TechNuggets Newsletter"
+  list, and prints the numeric `BREVO_LIST_ID` to paste into `.env` + wrangler.toml.
+- `scripts/send-campaign.js` — added an `EMAIL_PROVIDER=brevo` path: instead of
+  per-recipient SMTP/Resend from subscribers.json, it creates + sends ONE Brevo *campaign*
+  to `BREVO_LIST_ID`. `toBrevoHtml()` rewrites our placeholders to Brevo merge tags
+  (`{{ contact.FIRSTNAME | default : "there" }}`, `{{ unsubscribe }}`, `{{ contact.EMAIL }}`)
+  and injects the static `PHYSICAL_ADDRESS`; Brevo owns unsubscribe + suppression. DRY RUN
+  by default (renders the campaign HTML to `outbox/`); `--live` creates+sends. Live refuses
+  without `BREVO_API_KEY`+`BREVO_LIST_ID`+`EMAIL_FROM`+`PHYSICAL_ADDRESS`. The old
+  resend/smtp per-recipient path (and `store.js`/`server.js`) is untouched for that mode.
+- `scripts/announce-course.js` (`npm run announce -- --slug=<slug> [--live] [--force]`) —
+  builds a single-course "just launched" email (same placeholders, so any provider works)
+  into `campaigns/<date>-launch-<slug>.*` and hands it to send-campaign.js. Deduped per slug
+  via `marketing/email/announced.json` — a course is never blasted to the list twice unless
+  `--force`. DRY RUN by default; `--live` sends.
+- `scripts/register-course.js` — now auto-fires `announce-course.js` after registering a
+  course: DRY RUN by default (safe against register re-runs), `--announce-live` to send
+  hands-off, `--no-announce` to skip. Dedupe makes even repeated `--announce-live` safe.
+- `scripts/build-practice-site.js` — the subscribe `<section>` renders only when
+  `SUBSCRIBE_ENDPOINT` is set to the real Worker URL at build time (bake it in:
+  `SUBSCRIBE_ENDPOINT=https://<worker>/subscribe node scripts/build-practice-site.js --all`).
+  Form now includes the hidden `company` honeypot and posts `{email,name,company}`.
+- `.env`/`.env.example`: `EMAIL_PROVIDER=brevo`, `BREVO_API_KEY`, `BREVO_LIST_ID`,
+  `BREVO_LIST_NAME`. `.env` already had Brevo SMTP relay configured (smtp-relay.brevo.com)
+  for the legacy smtp path; the API key is what the new path needs.
+ONE-TIME BRINGUP ORDER: `npm run brevo:setup` → paste `BREVO_LIST_ID` → deploy Worker
+(secret + var) → rebuild site with `SUBSCRIBE_ENDPOINT` → `npm run campaign:build && npm run
+campaign:send` (dry run) to sanity-check, then `campaign:send:live`. Two triggers now exist:
+per-course launch (register-course auto-announce) + the recurring 3-day digest (unchanged
+`build-campaign.js`; cron in `marketing/email/README.md`).
+
+## Course-card logo REJECTED by review — root cause + fix (2026-08-16)
+Google PCA (7301139) + Terraform 004 (7301147) both bounced "Needs fixes: Course Image …
+eliminate text." Per Udemy's Course Image Quality Standards, logos ARE allowed — the
+rejection was HOW make-card.py composited it: a centered wordmark on a translucent rounded
+PANEL, OVERLAID on the busy abstract motif. That violates two written rules: "Logos should
+not overlay the photo or make the layout muddy" and "adequate negative space … do NOT add
+any frames, borders, strokes or letterboxing" (the translucent panel = a box/letterbox).
+FIX (make-card.py): logo is now OFF BY DEFAULT — gated on an opt-in `--logo` flag (was
+opt-out `--no-logo`). No flag → pure text-free abstract card, the look that passed review
+for every pre-2026-08-14 course. autopilot.js calls make-card with no flag, so new cards are
+text-free automatically. To fix a bounced card: `python3 scripts/make-card.py --slug=<slug>`
+(no --logo) → re-upload `-card-notext.png` → "Mark as fixed" → resubmit. A COMPLIANT logo is
+still possible (small, corner, real negative space, NO panel/box) if `--logo` is later
+reworked to match Udemy's examples. NOTE: in-VIDEO logo branding (intro/outro/footers) is
+UNAFFECTED — Udemy only flags the static card image, not the video frames.
+
+## Practice-test loading — automated API step (added 2026-08-21)
+
+Practice tests are now loaded into Udemy **via the instructor API**, not by hand and NOT
+by the video Bulk Uploader (that only handles videos — the practice-test CSVs never went
+in that way, which is why early courses shipped without them). New pipeline step:
+
+```
+node scripts/load-practice-tests.js --slug=<slug> --course=<udemyCourseId>   # create+fill+publish
+node scripts/load-practice-tests.js --slug=<slug> --course=<id> --dry-run     # plan only
+npm run pt:load -- --slug=<slug> --course=<id>
+```
+
+Driven entirely by `exports/<slug>/shell-spec.json` (`practiceTests[]` gives title/
+durationMin/passPercent/csv; `courseId` is persisted back on first run). Idempotent:
+skips already-complete tests, cleans partials, writes `exports/<slug>/practice-tests-log.json`.
+Runs in **Phase B** after the shell exists and you have its numeric course id
+(autopilot now prints it as step 1b). Auth = `UDEMY_COOKIE` in `.env` (capture per
+`scripts/udemy/README.md`; lasts ~weeks, re-capture on an AUTH FAILED error).
+
+Code: `scripts/udemy/client.js` (auth + request helper) and `scripts/udemy/practice-tests.js`
+(CSV→assessment + `loadCourseTests`). Both validated live 2026-08-21 (536 questions across
+8 courses). HARD-WON API DETAILS baked in — do not "simplify":
+- Create quiz: `POST /api-2.0/courses/{cid}/quizzes/` `{title,type:'practice-test',
+  description,duration,pass_percent}`. **It returns is_published:true**, which BLOCKS adding
+  questions ("You can only create assessments for drafts of practice tests"). Must PATCH
+  `is_published:false` before inserting, then PATCH `is_published:true` to publish.
+- Add question: `POST /api-2.0/quizzes/{qid}/assessments/` with
+  `{assessment_type:'multiple-choice'|'multiple-select', question_plain,
+  correct_response:['a'|'b'|..]  // a LETTER, not an index/text,
+  prompt:{question:'<p>..</p>', answers:['<p>..</p>'], feedbacks:['<p>..</p>'],
+  relatedLectureIds:[], links:[]}}`. Answers/feedbacks are HTML-wrapped; `&<>` escaped.
+- Publish/list: `PATCH`/`GET /api-2.0/courses/{cid}/quizzes/`.
+- Udemy caps a regular course at **2 practice tests**; DELETE is **eventually consistent**
+  (count lags ~1–2 s), so the loader deletes, WAITS for the count to drop, then creates
+  (re-checking the cap) — otherwise creates 400 with "maximum of 2 practice tests".
+
+This is the first API-only step of a broader hands-off Udemy publish path (client/auth +
+practice-tests already validated; course-create/upload/submit modules drafted in the
+separate `udemy-autopublish` project pending review). `.env.example` gained `UDEMY_COOKIE`/
+`UDEMY_BASE`.
+
+## Lit-star logo (2026-08-21)
+The 4-point star in the nugget mark is now rendered as an EMITTING LIGHT rather than
+flat `#FFFFFF`. Implemented purely as colour/gradient changes in the SVG sources — the
+geometry (hexagon points, star path) is unchanged, so every existing layout still fits.
+Three gradients do the work: `tnHex` (hexagon lit from centre, #FDE68A→#FBBF24→#D97706),
+`tnBloom` (white→warm halo, alpha to 0) and `tnStar` (white-hot core → #FFD97A tips),
+plus a `feGaussianBlur` bloom circle behind the star.
+
+SIZE RULE — the bloom does NOT survive small sizes. At 16px the blur swallows the star
+and the mark reads as an amber blob. So:
+  - `technuggets-icon.svg`   → blur 2.2, bloom r=34. This file doubles as the FAVICON and
+    as the large `.hero::after` / `.cta::after` CSS watermark, so it is deliberately
+    restrained to stay legible at 16–32px while still reading as lit when scaled up.
+  - `technuggets-icon-lit.svg` (new) → blur 6, bloom r=46. Full glow, LARGE DISPLAY ONLY
+    (avatars, banners, covers). Do not use as a favicon.
+  - `png/technuggets-icon-16.png` and `-32.png` are rendered from the ORIGINAL FLAT mark
+    on purpose. Everything ≥48px is rendered from the lit icon. If you regenerate the PNG
+    set, preserve that split or the favicon turns to mush.
+  - Horizontal lockups use blur 4 / r=40 (they render at ≥600px wide).
+
+`png/og-image.png` was rebuilt at the same time — it now uses the lit lockup AND says
+"36 AI & cloud certs" (was a stale "31"). It is the thumbnail for every shared link, so
+re-render it whenever the course count changes.
+
+Social art generated from these sources: `png/youtube-banner-2048x1152.png` (content kept
+inside YouTube's 1235×338 safe area) and `png/facebook-cover-1640x624.png` (content inside
+the centre 1000px so Facebook's mobile crop doesn't cut the tagline).
+
+NOT rolled out to course cards (`make-card.py`) or video renders — those still composite
+the pre-2026-08-21 flat lockup. Regenerating cards would mean re-uploading 36 images to
+Udemy, so it was deliberately left out of scope.
+
+## Short-form question clips — `make-question-clip.py` (2026-08-21)
+
+Vertical 1080x1920 clips for TikTok / YouTube Shorts / Instagram Reels / Facebook Reels,
+rendered from the EXISTING question banks. Do NOT try to repurpose `exports/<slug>/videos/`
+for this — those are 1280x720 landscape and ~16 min, so cropping to 9:16 either letterboxes
+or crops the slide content out. The question banks are the right source: ~9,800 four-option
+questions across 48 courses, each already tagged with its exam domain.
+
+```
+python3 scripts/make-question-clip.py --slug=<slug> --list        # show clip-ready candidates
+python3 scripts/make-question-clip.py --slug=<slug> --count=5     # render 5
+python3 scripts/make-question-clip.py --all --count=1             # 1 per course
+node scripts/clip-queue.js next --platform=tiktok --count=3       # what to post next
+node scripts/clip-queue.js mark --platform=tiktok --clip='<slug>#45'
+node scripts/clip-queue.js status
+```
+
+CLIP-READY FILTER: question <=170 chars AND every option <=70 chars, so it stays legible on
+a phone. That is only ~9% of the bank (915 of 9,826) — the rest are multi-sentence scenario
+questions that do not fit a card. 915 is still 2.5 years at 1/day. Ranking prefers
+`commonly_missed: true` questions because they have a real trap and make better hooks.
+
+FORMAT (5 beats, 30s): hook 3s -> question 9s -> countdown 3-2-1 -> reveal 3s -> answer +
+`why_correct` 7s -> CTA 5s. The countdown is the engagement mechanic: it makes viewers
+comment their guess and rewatch, which are the two strongest ranking signals.
+
+UI SAFE AREA — `SAFE_TOP/SAFE_BOTTOM/SAFE_L/SAFE_R` in the script. Bottom 400px is the
+caption+nav band and the right 200px is the like/comment/share rail. ALL content including
+the brandmark must stay inside, or it gets covered on at least one of the four platforms.
+The brandmark is bottom-LEFT for exactly this reason. Verified by rendering frames and
+overlaying the UI zones — re-check this if the layout is ever changed.
+
+COMPLIANCE: `assert_clean()` hard-fails the render (exit 1) if any beat copy contains
+guarantee / pass the exam / first attempt / 100% pass. Same rule as course listings and
+social posts — never promise an exam outcome. Verified by injecting a banned phrase into a
+copy of a state.json and confirming a non-zero exit.
+
+Colour: reuses make-card.py's per-slug hue rotation, so same-vendor courses render visually
+distinct clips (CompTIA red rotates to green on one slug, etc).
+
+DEDUPE: `marketing/clips/published.json` keyed `<slug>#<questionIndex>` -> per-platform
+record. Dedupe is per (clip, platform), NOT per clip — the whole point is that one render
+feeds all four surfaces. `next` also spreads across courses so the feed does not show four
+Terraform questions in a row.
+
+SANDBOX NOTE: the sandbox cannot delete inside the mounted repo, so `shutil.rmtree` of the
+temp `.frames-*` dirs silently fails there (it works fine on the Mac). If you see stray
+`exports/clips/*/.frames-*` dirs after a sandbox run, they are safe to delete.

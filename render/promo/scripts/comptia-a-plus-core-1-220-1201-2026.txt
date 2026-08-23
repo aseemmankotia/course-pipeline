@@ -1,0 +1,3 @@
+Port 443 or 21? One wrong answer, one failed exam. Sound familiar? Stop guessing on CompTIA A+ Core 1.
+
+This course gets you exam-ready fast. You'll master every TCP and UDP port and protocol you need memorized cold, from FTP to RDP to DNS. You'll identify laptop and mobile hardware instantly, choosing the right component for real repair scenarios. And you'll

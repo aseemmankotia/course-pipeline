@@ -67,7 +67,10 @@ patch('scripts/build-practice-site.js', '  // __COURSES_END__ (register-course.j
 `, s => s.includes(`slug: '${slug}'`));
 
 // 2. promo-all registry
-patch('scripts/promo-all.js', '\n];', `  { slug: '${slug}', short: ${JSON.stringify(name.slice(0, 40))},
+// NOTE: anchor on the COURSES sentinel, NOT the generic '\n];' — promo-all.js has a later
+// SPECIALS array whose close would otherwise capture the insert, breaking --slug lookup
+// ("Unknown slug"). Same class of bug as build-practice-site.js (2026-08-14 fix).
+patch('scripts/promo-all.js', '  // __PROMO_COURSES_END__ (register-course.js inserts new course objects immediately above this line)\n', `  { slug: '${slug}', short: ${JSON.stringify(name.slice(0, 40))},
     title: ${JSON.stringify(shortTitle)},
     tags: ${JSON.stringify(tags)},
     udemy: '${args.udemy}', live: true },
@@ -87,3 +90,21 @@ if (fs.existsSync(rc)) {
 console.log(`Registered ${slug}:`);
 done.forEach(d => console.log('  • ' + d));
 console.log('\nNext: node scripts/build-practice-site.js --all  (then deploy) · node scripts/promo-all.js --slug=' + slug + ' && node scripts/promo-all.js --upload');
+
+// 4. Auto new-course newsletter. DRY RUN by default (safe against re-runs); pass
+//    --announce-live to actually email the Brevo list, or --no-announce to skip.
+//    announce-course.js dedupes per slug, so even --announce-live won't double-send.
+if (!args['no-announce']) {
+  const { execFileSync } = require('child_process');
+  const live = !!args['announce-live'];
+  try {
+    console.log(`\n📣 New-course newsletter (${live ? 'LIVE' : 'dry run'}) …`);
+    const out = execFileSync('node', ['scripts/announce-course.js', `--slug=${slug}`, ...(live ? ['--live'] : [])],
+      { cwd: ROOT, encoding: 'utf8' });
+    process.stdout.write(out);
+    if (!live) console.log(`To send it to subscribers: node scripts/announce-course.js --slug=${slug} --live`);
+  } catch (e) {
+    console.error(`  ⚠ announcement step failed (non-fatal): ${e.message}`);
+    console.error(`     Run manually: node scripts/announce-course.js --slug=${slug} --live`);
+  }
+}

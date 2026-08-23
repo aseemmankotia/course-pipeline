@@ -17,12 +17,13 @@
  * Conversion features:
  *   - referral CTA to the full Udemy course on live-cert pages
  *   - score-gated reveal: on completion, shows missed-domain gaps
- *   - Learning Path Bundles: related certs grouped by technology at 20% off the
- *     combined price (see BUNDLES). Replaces the retired weekly single-course
- *     free/near-free coupon campaign. Rationale: ClaudeFolder/bundle-strategy-2026-08.md
+ *   - Learning Path Bundles: related certs grouped by technology (see BUNDLES).
+ *     Udemy sets the bundle PRICE itself (market rate), so the site only promotes the
+ *     bundle option generically ("buy the set, save more") — it does NOT claim a fixed
+ *     % or a computed savings amount. Rationale: ClaudeFolder/bundle-strategy-2026-08.md
  *
- * PRICING: each course carries a plain `list` field (its Udemy list price). Bundle
- * prices are computed from it at build time (BUNDLE_DISCOUNT). To wire a native Udemy
+ * PRICING: each course carries a plain `list` field (its Udemy list price), used for
+ * display only. The site does not compute bundle prices. To wire a native Udemy
  * bundle's single-checkout link, set its `udemyBundleUrl` in BUNDLES and rebuild.
  *
  * Usage: node scripts/build-practice-site.js
@@ -187,6 +188,22 @@ const COURSES = [
   // __COURSES_END__ (register-course.js inserts new course objects immediately above this line)
 ];
 
+// Merge active Udemy coupons (written by scripts/sync-coupons.js) onto COURSES by
+// `page`, so each discounted course shows a price badge + deal-link CTA. Optional
+// file — absent means no coupons shown (bundles remain the standing discount). Keeps
+// per-course pricing/coupon codes out of source control (marketing/coupons.json is
+// git-ignored) while the module.exports below still carries them for the email pipeline.
+(function attachCoupons() {
+  try {
+    const p = path.join(ROOT, 'marketing', 'coupons.json');
+    if (!fs.existsSync(p)) return;
+    const map = JSON.parse(fs.readFileSync(p, 'utf8'));
+    let n = 0;
+    for (const c of COURSES) if (map[c.page]) { c.coupon = map[c.page]; n++; }
+    if (require.main === module) console.log(`✅ merged ${n} coupons from marketing/coupons.json`);
+  } catch (e) { console.warn('  ⚠ coupons.json merge skipped:', String(e).slice(0, 120)); }
+})();
+
 // --------------------------------------------------------------- bundles ----
 // Learning-path bundles: courses grouped by shared domain / base technology and
 // sold at BUNDLE_DISCOUNT off the combined original (list) price. This replaces the
@@ -312,6 +329,82 @@ function configForSlug(slug) {
     }
   }
   return _cfgCache[slug] || null;
+}
+
+// -------------------------------------------------- taxonomy: category + vendor ----
+// The site lets visitors filter courses by TOPIC (6 groups) and by COMPANY (vendor).
+// Neither is a stored field — both are derived from the course name/tagline/slug plus
+// the matching course-config (topic + domain names), so new courses classify
+// automatically. Fix any miscategorized course with CATEGORY_OVERRIDE (by slug).
+//
+// Priority matters: a course is assigned the FIRST category whose regex matches, in
+// this order, so e.g. "AI-300 MLOps" lands in ML & Data (checked before AI) and
+// "Azure Administrator" falls through to Cloud.
+const CATEGORIES = [
+  { key: 'governance', label: 'Governance & Risk',
+    re: /ai governance|governance professional|\bai risk\b|managing ai|responsible ai|\baigp\b|\baair\b|cpmai|\bgrc\b/i },
+  { key: 'product', label: 'Product & Business',
+    re: /product manager|product management|\bcdpm\b|\bcpm\b|ai business|business leader|\bab-7\d\b|leadership|go-to-market/i },
+  { key: 'security', label: 'Security',
+    re: /security|secai|\bsy0-|\bscs-|network\+|\bn10-|cyber|threat|secops|pentest/i },
+  { key: 'ml-data', label: 'ML & Data',
+    re: /\bmlops\b|machine learning|\bml engineer\b|data engineer|data science|databricks|\bdea-|\bmla-|accelerated data science|genaiops|\bdp-\d|analytics engineer|fabric/i },
+  { key: 'ai', label: 'AI & GenAI',
+    re: /\bai\b|\bgenai\b|generative|\bllm\b|agentforce|claude|copilot|bedrock|ai practitioner|ai apps|ai operations|ai infrastructure|ai leader|nc[ap]-ai|openusd|prompt/i },
+  { key: 'cloud', label: 'Cloud',
+    re: /cloud|architect|associate|sysops|developer associate|\baz-\d|\baws\b|terraform|kubernetes|infrastructure|solutions architect/i },
+];
+// Per-slug overrides for courses the keyword rules would mis-file. Extend as needed.
+// CompTIA A+ is IT-support fundamentals (outside the AI/Cloud taxonomy); Core 2 is
+// security-heavy, so both A+ exams are grouped under Security to keep the pair together.
+const CATEGORY_OVERRIDE = {
+  'comptia-a-plus-core-1-220-1201-2026': 'security',
+  'comptia-a-plus-core-2-220-1202-2026': 'security',
+};
+const CATEGORY_FALLBACK = { key: 'cloud', label: 'Cloud' };
+function courseCategory(c) {
+  if (CATEGORY_OVERRIDE[c.slug]) {
+    return CATEGORIES.find(x => x.key === CATEGORY_OVERRIDE[c.slug]) || CATEGORY_FALLBACK;
+  }
+  // Classify on the cert NAME + slug only. Taglines are comma-joined domain names
+  // ("...Security", "...governance...") that badly pollute the match, and the config
+  // domain notes are worse — both are excluded. Use CATEGORY_OVERRIDE for exceptions.
+  const hay = `${c.name} ${c.slug} ${c.page}`;
+  for (const cat of CATEGORIES) if (cat.re.test(hay)) return cat;
+  return CATEGORY_FALLBACK;
+}
+
+// Company/vendor for the "filter by company" row + the coloured accent chip.
+const VENDORS = [
+  { key: 'aws', label: 'AWS', re: /\baws\b|amazon/i },
+  { key: 'microsoft', label: 'Microsoft', re: /microsoft|azure|\baz-\d|\bai-1\d\d|\bai-300|\bab-7|\bdp-\d|copilot/i },
+  { key: 'google', label: 'Google Cloud', re: /google/i },
+  { key: 'nvidia', label: 'NVIDIA', re: /nvidia|\bnc[ap]-/i },
+  { key: 'comptia', label: 'CompTIA', re: /comptia|secai|\bsy0-|\bn10-|a-plus|220-1\d/i },
+  { key: 'databricks', label: 'Databricks', re: /databricks/i },
+  { key: 'salesforce', label: 'Salesforce', re: /salesforce|agentforce/i },
+  { key: 'anthropic', label: 'Anthropic', re: /anthropic|claude|ccdv/i },
+  { key: 'hashicorp', label: 'HashiCorp', re: /hashicorp|terraform/i },
+  { key: 'iapp', label: 'IAPP', re: /iapp|aigp/i },
+  { key: 'isaca', label: 'ISACA', re: /isaca|aair/i },
+  { key: 'aipmm', label: 'AIPMM', re: /aipmm|\bcpm\b|\bcdpm\b/i },
+  { key: 'pmi', label: 'PMI', re: /\bpmi\b|cpmai/i },
+];
+function courseVendor(c) {
+  const hay = `${c.slug} ${c.name} ${c.page}`;
+  for (const v of VENDORS) if (v.re.test(hay)) return v;
+  return { key: 'other', label: 'Other' };
+}
+
+// Which learning-path bundle (if any) a course belongs to — powers the per-card
+// "save X% in a bundle" badge that links to the bundle. First match wins.
+let _pageBundle = null;
+function bundleForPage(page) {
+  if (!_pageBundle) {
+    _pageBundle = {};
+    for (const b of BUNDLES) for (const pg of b.pages) if (!_pageBundle[pg]) _pageBundle[pg] = b;
+  }
+  return _pageBundle[page] || null;
 }
 
 const CSS = `
@@ -670,10 +763,32 @@ footer a:hover{color:var(--amber-deep);border-bottom-color:var(--amber)}
 .card.bundle .bundle-list a{color:var(--ink);text-decoration:none;font-weight:600}
 .card.bundle .bundle-list a:hover{color:var(--amber-deep);text-decoration:underline}
 .card.bundle .bp{color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
-.bundle-price{margin:14px 0 2px;font-size:1rem;display:flex;flex-wrap:wrap;align-items:baseline;gap:8px}
-.bundle-price .strike{text-decoration:line-through;color:var(--muted)}
-.bundle-price .now{font-weight:800;color:var(--ink);font-size:1.25rem}
-.bundle-price .save{color:var(--ok);font-weight:750;font-size:.9rem}
+.bundle-note{margin:14px 0 2px;font-size:.86rem;color:var(--muted);font-weight:600}
+
+/* ---- bundles grid + filter bar + course grid (index) ---- */
+.bundle-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;margin-top:6px}
+.bundle-grid .card.bundle{margin:0}
+.filters{margin:28px 0 4px}
+.filter-head{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+#courseSearch{flex:1 1 220px;max-width:340px;padding:9px 13px;border:1px solid var(--line);border-radius:10px;font-size:.95rem;background:var(--card);color:var(--ink)}
+#courseSearch:focus{outline:none;border-color:var(--amber);box-shadow:0 0 0 3px var(--amber-100)}
+.frow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px}
+.flabel{font-size:.7rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);min-width:66px}
+.fchip{cursor:pointer;font:inherit;font-size:.85rem;font-weight:650;padding:6px 13px;border-radius:99px;border:1px solid var(--line);background:var(--card);color:var(--ink);display:inline-flex;align-items:center;gap:6px;transition:background .15s ease,color .15s ease,border-color .15s ease}
+.fchip:hover{border-color:var(--amber);color:var(--amber-deep);background:var(--amber-50)}
+.fchip.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.fchip .fc{font-size:.72rem;font-weight:700;opacity:.65}
+.fchip.active .fc{opacity:.9}
+.filter-count{color:var(--muted);font-size:.85rem;margin:14px 0 0}
+.course-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin-top:10px}
+.course-grid .card{margin:0}
+.no-results{text-align:center;color:var(--dim);padding:30px 0;font-size:.95rem}
+.meta-row{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 8px}
+.pill{font-size:.7rem;font-weight:700;letter-spacing:.02em;padding:3px 9px;border-radius:99px;border:1px solid var(--line);color:var(--muted);background:var(--line-soft)}
+.pill.vendor-pill{color:var(--ink);border-color:var(--amber-200);background:var(--amber-50)}
+.badge.bundle-tag{cursor:pointer;text-decoration:none;background:var(--amber);color:#3B2205;border:1px solid var(--amber-deep)}
+.badge.bundle-tag:hover{background:var(--amber-light)}
+@media (max-width:640px){.course-grid,.bundle-grid{grid-template-columns:1fr}.flabel{min-width:auto;width:100%}}
 `;
 
 // shared quiz behavior: per-domain miss tracking + score-gated gap/coupon reveal
@@ -734,6 +849,7 @@ function head(title, desc, canonicalPath, accent) {
 <meta property="og:image" content="${SITE_URL}/og-image.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="${SITE_URL}/og-image.png">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8296329880252390" crossorigin="anonymous"></script>
 <link rel="stylesheet" href="style.css">${accentVar}</head><body><div class="wrap">`;
 }
 
@@ -874,39 +990,61 @@ const money = n => '$' + n.toFixed(2);
 function bundleMembers(bundle) {
   return bundle.pages.map(pg => COURSES.find(c => c.page === pg)).filter(Boolean);
 }
-function bundlePricing(bundle) {
-  const members = bundleMembers(bundle);
-  const listTotal = members.reduce((s, c) => s + priceNum(c.list), 0);
-  const price = Math.round(listTotal * (1 - BUNDLE_DISCOUNT) * 100) / 100;
-  const save = Math.round((listTotal - price) * 100) / 100;
-  return { members, listTotal, price, save, pct: Math.round(BUNDLE_DISCOUNT * 100) };
-}
 function bundleCard(bundle) {
-  const { members, listTotal, price, save, pct } = bundlePricing(bundle);
+  const members = bundleMembers(bundle);
   if (members.length < 2) return ''; // never show a 1-course "bundle"
   const items = members.map(m =>
-    `<li><a href="${m.page}.html">${esc(m.name)}</a> <span class="bp">${esc(m.list)}</span></li>`).join('');
-  // Once the native Udemy bundle URL is set, the button is a single-checkout link;
-  // until then it scrolls to the individual courses below.
+    `<li><a href="${m.page}.html">${esc(m.name)}</a></li>`).join('');
+  // NOTE: Udemy sets the bundle price itself (market rate) — we do NOT compute or
+  // claim a fixed % or savings amount. When a native Udemy bundle checkout URL is
+  // set, the button links straight to it; otherwise it points to the member courses.
+  // Udemy's instructor course-bundles have NO standalone public bundle URL — the
+  // "buy as a bundle" offer appears ON each member course's page + in the cart. So
+  // unless a real `udemyBundleUrl` is set, the CTA opens the FIRST member course on
+  // Udemy, where the bundle offer is shown.
   const cta = bundle.udemyBundleUrl
-    ? `<a class="btn course" href="${bundle.udemyBundleUrl}" rel="sponsored" target="_blank">Get the bundle — ${money(price)} →</a>`
-    : `<a class="btn practice" href="#courses">Browse the ${members.length} courses ↓</a>`;
-  return `<div class="card bundle" style="--vendor:var(--amber)">
-  <h2><span class="vchip"></span>${esc(bundle.title)}<span class="badge deal">Save ${pct}%</span></h2>
+    ? `<a class="btn course" href="${bundle.udemyBundleUrl}" rel="sponsored" target="_blank">Get the bundle →</a>`
+    : `<a class="btn course" href="${members[0].udemy}" rel="sponsored" target="_blank">See the bundle on Udemy →</a>`;
+  return `<div class="card bundle" id="bundle-${bundle.id}" style="--vendor:var(--amber)">
+  <h2><span class="vchip"></span>${esc(bundle.title)}<span class="badge deal">Bundle &amp; save</span></h2>
   <p>${esc(bundle.blurb)}</p>
   <ul class="bundle-list">${items}</ul>
-  <p class="bundle-price"><span class="strike">${money(listTotal)}</span> <span class="now">${money(price)}</span> <span class="save">you save ${money(save)}</span></p>
+  <p class="bundle-note">${members.length} courses · discounted bundle price at Udemy checkout</p>
   <div class="actions">${cta}</div>
 </div>`;
 }
 function bundlesSection() {
   const cards = BUNDLES.map(bundleCard).filter(Boolean).join('\n');
   if (!cards) return '';
-  const pct = Math.round(BUNDLE_DISCOUNT * 100);
+  const n = BUNDLES.filter(b => bundleMembers(b).length >= 2).length;
   return `<section id="bundles">
-  <h2 class="section-h">Learning Path Bundles — save ${pct}%</h2>
-  <p class="section-sub">Related certifications grouped by technology and role, bundled at ${pct}% off the combined price. Build a whole skill set, not just one exam.</p>
-  ${cards}
+  <h2 class="section-h">📦 Learning-Path Bundles — buy the set, save more</h2>
+  <p class="section-sub">${n} curated bundles group related certifications by technology and role. Buy a whole learning path together for a discounted bundle price instead of each exam separately — Udemy applies the bundle discount at checkout.</p>
+  <div class="bundle-grid">${cards}</div>
+</section>`;
+}
+
+// Category + company filter bar rendered above the course grid on the index page.
+// Facets are computed from the LIVE courses actually shown; the client-side script
+// (in indexPage) does the filtering by the data-cat / data-vendor / data-name
+// attributes on each card. Chips with a zero count are omitted.
+function filterBar() {
+  const live = COURSES.filter(c => c.live);
+  const catCounts = {}, venCounts = {};
+  for (const c of live) {
+    catCounts[courseCategory(c).key] = (catCounts[courseCategory(c).key] || 0) + 1;
+    venCounts[courseVendor(c).key] = (venCounts[courseVendor(c).key] || 0) + 1;
+  }
+  const chip = (filter, val, label, count) =>
+    `<button class="fchip" data-filter="${filter}" data-val="${val}">${esc(label)} <span class="fc">${count}</span></button>`;
+  const catChips = CATEGORIES.filter(x => catCounts[x.key]).map(x => chip('cat', x.key, x.label, catCounts[x.key])).join('');
+  const venChips = VENDORS.filter(x => venCounts[x.key]).map(x => chip('vendor', x.key, x.label, venCounts[x.key])).join('');
+  return `<section id="filters" class="filters">
+  <div class="filter-head"><h2 class="section-h">Browse ${live.length} certifications</h2>
+    <input id="courseSearch" type="search" placeholder="Search courses…" aria-label="Search courses" autocomplete="off"></div>
+  <div class="frow"><span class="flabel">Topic</span><button class="fchip active" data-filter="cat" data-val="all">All topics</button>${catChips}</div>
+  <div class="frow"><span class="flabel">Company</span><button class="fchip active" data-filter="vendor" data-val="all">All companies</button>${venChips}</div>
+  <p id="filterCount" class="filter-count" role="status"></p>
 </section>`;
 }
 
@@ -920,12 +1058,52 @@ function indexPage(cards) {
   <span class="chip">Free certification practice</span>
   <h1>Pass-ready practice for the certs employers actually ask for</h1>
   <p class="sub">Free, exam-style questions with detailed explanations across ${COURSES.filter(c=>c.live).length}+ AI &amp; cloud certifications — no sign-up. Score yourself, then close your gaps with a full course.</p>
-  <div class="cta-row"><a class="btn ghost" href="#courses">Browse the certs →</a><a class="btn practice" href="#bundles">Save 20% with bundles →</a></div>
+  <div class="cta-row"><a class="btn ghost" href="#filters">Browse &amp; filter certs →</a><a class="btn practice" href="#bundles">Save with learning-path bundles →</a></div>
 </div>
-<div class="trust"><span>✅ <b>Free</b> practice — no sign-up</span><span>📝 Real exam-style questions</span><span>💡 Detailed explanations</span><span>📦 <b>Save 20%</b> with course bundles</span></div>
+<div class="trust"><span>✅ <b>Free</b> practice — no sign-up</span><span>📝 Real exam-style questions</span><span>💡 Detailed explanations</span><span>📦 <b>Save</b> with course bundles</span></div>
 ${bundlesSection()}
-<div id="courses"></div>
+${filterBar()}
+<div id="courses" class="course-grid">
 ${cards}
+</div>
+<p id="noResults" class="no-results" hidden>No courses match — try a different topic, company, or search term.</p>
+<script>
+(function(){
+  var state={cat:'all',vendor:'all',q:''};
+  var grid=document.getElementById('courses');
+  if(!grid) return;
+  var cards=[].slice.call(grid.querySelectorAll('.card[data-cat]')).filter(function(c){return c.getAttribute('data-cat')!=='_meta';});
+  var metas=[].slice.call(grid.querySelectorAll('.card[data-cat="_meta"]'));
+  var countEl=document.getElementById('filterCount');
+  var noRes=document.getElementById('noResults');
+  var search=document.getElementById('courseSearch');
+  function apply(){
+    var shown=0;
+    cards.forEach(function(c){
+      var okc=state.cat==='all'||c.getAttribute('data-cat')===state.cat;
+      var okv=state.vendor==='all'||c.getAttribute('data-vendor')===state.vendor;
+      var okq=!state.q||(c.getAttribute('data-name')||'').indexOf(state.q)>-1;
+      var show=okc&&okv&&okq;
+      c.style.display=show?'':'none';
+      if(show) shown++;
+    });
+    var filtering=state.cat!=='all'||state.vendor!=='all'||state.q!=='';
+    metas.forEach(function(m){m.style.display=filtering?'none':'';});
+    if(countEl) countEl.textContent=filtering?('Showing '+shown+' of '+cards.length+' courses'):'';
+    if(noRes) noRes.hidden=shown!==0;
+  }
+  document.querySelectorAll('.fchip').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var f=btn.getAttribute('data-filter'), v=btn.getAttribute('data-val');
+      state[f]=v;
+      document.querySelectorAll('.fchip[data-filter="'+f+'"]').forEach(function(b){b.classList.toggle('active',b===btn);});
+      apply();
+    });
+  });
+  if(search) search.addEventListener('input',function(){state.q=search.value.trim().toLowerCase();apply();});
+  apply();
+})();
+</script>
 ${SUBSCRIBE_READY ? `<section id="subscribe" style="margin:28px 0;padding:24px;border:1px solid var(--line,#e2e8f0);border-radius:14px;background:var(--card,#f8fafc)">
   <h2 style="margin:0 0 6px">Get new courses &amp; bundle deals — a short email every few days</h2>
   <p style="margin:0 0 14px;color:var(--dim,#475569)">Opt in for a brief heads-up when we launch new certification prep or a new learning-path bundle. No spam, and one-click unsubscribe anytime.</p>
@@ -1021,7 +1199,13 @@ for (const c of COURSES) {
 
   fs.writeFileSync(path.join(OUT, `${c.page}.html`), certPage(c, qs, domainPages));
   sitemapPaths.push(`${c.page}.html`);
+  const cat = courseCategory(c);
+  const ven = courseVendor(c);
+  const bnd = bundleForPage(c.page);
   const deal = c.coupon ? `<span class="badge deal">${c.coupon.price} coupon</span>` : '';
+  // Discount promotion: link the card to its learning-path bundle so every course
+  // surfaces the bundle option. Udemy sets the bundle price, so no fixed % is claimed.
+  const bundleBadge = bnd ? `<a class="badge bundle-tag" href="#bundle-${bnd.id}" title="Part of the ${esc(bnd.title)} — buy the set for a discounted bundle price">In a bundle</a>` : '';
   // Prominent course button (live courses only — in-review ones have dead Udemy
   // links). Prefer the discounted coupon link when there is one so visitors land
   // on the deal price; label carries the price to make the CTA compelling.
@@ -1030,14 +1214,16 @@ for (const c of COURSES) {
     ? `<a class="btn course" href="${courseUrl}" rel="sponsored" target="_blank">${c.coupon ? `Get my ${c.coupon.price} deal →` : 'Start my full course →'}</a>`
     : '';
   const accent = vendorAccent(c);
-  cards.push(`<div class="card" style="--vendor:${accent}"><h2><span class="vchip"></span>${esc(c.name)}<span class="badge ${c.live ? 'live' : 'soon'}">${c.live ? 'Course live' : 'Course in review'}</span>${deal}</h2>
+  cards.push(`<div class="card" data-cat="${cat.key}" data-vendor="${ven.key}" data-name="${esc((c.name + ' ' + c.tagline).toLowerCase())}" data-live="${c.live ? 1 : 0}" style="--vendor:${accent}">
+  <h2><span class="vchip"></span>${esc(c.name)}<span class="badge ${c.live ? 'live' : 'soon'}">${c.live ? 'Course live' : 'Course in review'}</span>${deal}${bundleBadge}</h2>
+  <div class="meta-row"><span class="pill vendor-pill">${esc(ven.label)}</span><span class="pill cat-pill">${esc(cat.label)}</span></div>
   <p>${esc(c.tagline)}</p>
   <div class="actions">${courseBtn}<a class="btn practice" href="${c.page}.html">Free ${qs.length}-question practice test →</a></div></div>`);
   console.log(`✅ ${c.page}.html (${qs.length} questions, ${domainPages.length} domain pages)`);
 }
 if (!INCLUDE_ALL) {
   const pending = COURSES.filter(c => !c.live).map(c => c.name.replace(/ \(.*\)$/, ''));
-  if (pending.length) cards.push(`<div class="card"><h2>${pending.length} more certs on the way</h2><p>${esc(pending.join(', '))} practice tests go live here as each course completes Udemy review.</p></div>`);
+  if (pending.length) cards.push(`<div class="card" data-cat="_meta" data-vendor="_meta"><h2>${pending.length} more certs on the way</h2><p>${esc(pending.join(', '))} practice tests go live here as each course completes Udemy review.</p></div>`);
 }
 fs.writeFileSync(path.join(OUT, 'index.html'), indexPage(cards.join('\n')));
 
@@ -1055,4 +1241,4 @@ console.log(`✅ index.html (${cards.length} certs) + sitemap.xml + robots.txt\n
 }
 
 // Shared registry export so the email/marketing pipeline can reuse one source of truth.
-module.exports = { COURSES, SITE_URL };
+module.exports = { COURSES, SITE_URL, BUNDLES, BUNDLE_DISCOUNT, CATEGORIES, VENDORS, courseCategory, courseVendor, bundleForPage };

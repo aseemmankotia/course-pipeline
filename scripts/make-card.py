@@ -137,6 +137,37 @@ for _ in range(9):
     s = 6
     d.polygon([(x, y - s), (x + s, y), (x, y + s), (x - s, y)], fill=ACCENT + (200,))
 
+# TechNuggets brand logo — COMPLIANT corner placement (opt-in via --logo).
+# History: the old centered wordmark on a translucent PANEL, overlaid on the busy motif,
+# was rejected by Udemy review ("image contains text") on Google PCA + Terraform 004
+# (2026-08-16) because it broke two written image rules: "Logos should not overlay the
+# photo or make the layout muddy" and "adequate negative space ... do NOT add any frames,
+# borders, strokes or letterboxing" (the panel = a box). Udemy DOES allow a logo, so this
+# mode now follows their guidance: a SMALL logo in the top-left corner, on the plain dark
+# gradient (the top-left is clean — the burst is centered, the node mesh is right-side, the
+# telemetry lines are along the bottom), with real negative space and NO panel/box/border.
+# The dark-bg lockup is legible on the dark background without any panel. Default is still
+# text-free (no flag); pass --logo to include this compliant mark.
+if args.get("logo"):
+    logo_path = None
+    for cand in ("png/technuggets-logo-horizontal-dark-1200.png",
+                 "png/technuggets-logo-horizontal-dark-600.png",
+                 "png/technuggets-logo-horizontal-dark-2400.png"):
+        p = os.path.join(ROOT, "brand", cand)
+        if os.path.exists(p):
+            logo_path = p
+            break
+    if logo_path:
+        logo = Image.open(logo_path).convert("RGBA")
+        target_w = 168  # small — a corner mark, not a banner
+        target_h = round(logo.height * target_w / logo.width)
+        logo = logo.resize((target_w, target_h), Image.LANCZOS)
+        # top-left corner, generous padding => adequate negative space, no overlay of the
+        # central motif, no panel/box/border (Udemy-compliant).
+        img.paste(logo, (30, 26), logo)
+    else:
+        print("  ⚠ brand logo PNG not found under brand/png/ - card built without logo")
+
 OUT = os.path.join(ROOT, "exports", "course-images")
 os.makedirs(OUT, exist_ok=True)
 path = os.path.join(OUT, f"{slug}-card-notext.png")

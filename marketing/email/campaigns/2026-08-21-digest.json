@@ -1,0 +1,18 @@
+{
+  "date": "2026-08-21",
+  "subject": "New on TechNuggets Academy: AWS Certified Developer - Associate + 3 more",
+  "preheader": "New certification courses and this week's discounted picks — with free practice tests.",
+  "new": [
+    "aws-certified-developer-associate-dva-c02-2026",
+    "microsoft-ab-731-ai-transformation-leader-2026",
+    "microsoft-ab-730-ai-business-professional-2026",
+    "google-cloud-professional-data-engineer-2026"
+  ],
+  "popular": [
+    "nvidia-ncp-aio-ai-operations-2026",
+    "microsoft-ai-103-azure-ai-apps-agents-2026",
+    "nvidia-nca-ads-accelerated-data-science-2026"
+  ],
+  "htmlFile": "marketing/email/campaigns/2026-08-21-digest.html",
+  "textFile": "marketing/email/campaigns/2026-08-21-digest.txt"
+}

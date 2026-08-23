@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 140" width="560" height="140">
+  <g transform="translate(6,10)">
+    <polygon points="37,20 83,20 106,60 83,100 37,100 14,60" fill="#F59E0B" stroke="#B45309" stroke-width="3"/>
+    <path d="M60,30 L69,51 L90,60 L69,69 L60,90 L51,69 L30,60 L51,51 Z" fill="#FFFFFF"/>
+  </g>
+  <text x="150" y="84" font-family="DejaVu Sans, Arial, sans-serif" font-size="44" font-weight="700"><tspan fill="#FFFFFF">Tech</tspan><tspan fill="#F59E0B">Nuggets</tspan></text>
+  <text x="152" y="112" font-family="DejaVu Sans, Arial, sans-serif" font-size="15" letter-spacing="6" fill="#94A3B8">ACADEMY</text>
+</svg>

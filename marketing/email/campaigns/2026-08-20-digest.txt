@@ -1,0 +1,39 @@
+TechNuggets Academy — new & popular exam-prep courses
+
+NEW: AWS Certified Developer - Associate
+  Development with AWS Services, Security
+  $34.99 (was $109.99), code FREETEST33 ends September 19
+  Enroll: https://www.udemy.com/course/aws-certified-developer-associate-dva-c02-prep/?couponCode=FREETEST33
+  Free practice test: https://technuggets.academy/dva-c02.html
+NEW: Microsoft Certified: AI Transformation Leader
+  Business value of generative AI, Microsoft AI apps and services
+  $34.99 (was $109.99), code FREETEST33 ends September 19
+  Enroll: https://www.udemy.com/course/ab-731-ai-transformation-leader-exam-prep/?couponCode=FREETEST33
+  Free practice test: https://technuggets.academy/ab-731.html
+NEW: Microsoft Certified: AI Business Professional
+  Understand generative AI fundamentals, Manage prompts and conversations by using AI
+  $34.99 (was $99.99), code FREETEST33 ends September 19
+  Enroll: https://www.udemy.com/course/ab-730-microsoft-ai-business-professional-exam-prep-k/?couponCode=FREETEST33
+  Free practice test: https://technuggets.academy/ab-730.html
+NEW: Google Cloud Certified - Professional Data Engineer
+  Designing data processing systems, Ingesting and processing the data
+  $34.99 (was $129.99), code FREETEST33 ends September 16
+  Enroll: https://www.udemy.com/course/google-professional-data-engineer-exam-prep/?couponCode=FREETEST33
+  Free practice test: https://technuggets.academy/professional-data-engineer.html
+POPULAR: Google Cloud Generative AI Leader
+  GenAI fundamentals and Google Cloud's GenAI stack
+  Enroll: https://www.udemy.com/course/google-cloud-generative-ai-leader-exam-prep-2026/?couponCode=FREETEST33
+  Free practice test: https://technuggets.academy/generative-ai-leader.html
+POPULAR: NVIDIA AI Operations Professional (NCP-AIO)
+  Deploying and administering NVIDIA AI infrastructure
+  Enroll: https://www.udemy.com/course/ncp-aio-nvidia-ai-operations-professional-certification/?couponCode=FREETEST33
+  Free practice test: https://technuggets.academy/ncp-aio.html
+POPULAR: Microsoft Azure AI Apps & Agents Developer (AI-103)
+  Azure AI apps, agents and generative AI solutions
+  Enroll: https://www.udemy.com/course/ai-103-azure-ai-apps-agents-developer-certification/?couponCode=FREETEST33
+  Free practice test: https://technuggets.academy/ai-103.html
+
+All courses: https://technuggets.academy
+
+You opted in at TechNuggets Academy. {{physical_address}}
+Unsubscribe: {{unsubscribe_url}}  (sent to {{email}})

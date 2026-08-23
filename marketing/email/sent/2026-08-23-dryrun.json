@@ -1,0 +1,8 @@
+{
+  "campaign": "2026-08-23",
+  "provider": "brevo",
+  "at": "2026-08-23T13:11:00.559Z",
+  "mode": "dry-run",
+  "list": 5,
+  "contacts": "?(fetch failed)"
+}

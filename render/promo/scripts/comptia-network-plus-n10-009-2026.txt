@@ -1,0 +1,9 @@
+Subnetting mistakes fail more Network+ candidates than any other topic. One tiny math error, and you're stuck guessing on exam day.
+
+This course fixes that. You'll master the OSI model so you can pinpoint exactly where a network problem lives. You'll memorize ports and protocols the way the exam actually tests them — number and transport type together. And you'll conquer subnetting until CIDR-to-host-range conversion becomes automatic, not agonizing.
+
+Twelve chapters. All five N10-009 domains. Real hands-on labs covering VLANs, spanning tree, routing, and NAT — the exact PBQ-style scenarios that trip people up. Then you'll run a full exam simulation before test day, so nothing catches you off guard.
+
+This isn't theory. It's exam-focused, practical, built by people who know what CompTIA actually tests.
+
+Stop guessing. Enroll now and walk into your Network+ exam ready to pass.

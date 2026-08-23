@@ -1,0 +1,1 @@
+You've passed AZ-104. You know Azure. So why does AZ-305 keep beating you? Because it doesn't test tools, it tests architectural judgment. This course fixes that. You'll learn exactly when to choose managed identities and Conditional Access over passwords, how PIM turns standing access into time-bound, justified access, and when SQL Managed Instance beats elastic pools

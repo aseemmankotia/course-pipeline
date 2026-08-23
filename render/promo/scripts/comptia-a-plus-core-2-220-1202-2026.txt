@@ -1,0 +1,9 @@
+One wrong command on exam day, and you fail. CompTIA A+ Core 2 doesn't test general knowledge — it tests precise scenarios, and most students walk in unprepared.
+
+This course fixes that. You'll master exactly which Windows edition unlocks which feature, and which tool gets it done. You'll learn command-line utilities like ipconfig, netstat, and sfc — knowing exactly when and why to use each one. And you'll instantly recognize malware and social engineering attacks by behavior, not textbook definitions.
+
+Twelve focused chapters. Zero fluff. Built specifically around the 220-1202 blueprint — covering OS, security, troubleshooting, and operational procedures the way the exam actually tests them, through real scenarios, not vague theory.
+
+Beginners welcome. No prior experience needed. Just a clear path from confused to certified.
+
+Stop guessing what the exam wants. Enroll now, and pass Core 2 with total confidence.

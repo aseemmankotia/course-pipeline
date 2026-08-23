@@ -41,6 +41,11 @@
     { "name": "", "type": "A", "content": "185.199.109.153", "ttl": 600 },
     { "name": "", "type": "A", "content": "185.199.110.153", "ttl": 600 },
     { "name": "", "type": "A", "content": "185.199.111.153", "ttl": 600 },
+    { "name": "", "type": "AAAA", "content": "2606:50c0:8000::153", "ttl": 600,
+      "note": "GitHub Pages apex IPv6 (all four). Optional but recommended alongside the A records." },
+    { "name": "", "type": "AAAA", "content": "2606:50c0:8001::153", "ttl": 600 },
+    { "name": "", "type": "AAAA", "content": "2606:50c0:8002::153", "ttl": 600 },
+    { "name": "", "type": "AAAA", "content": "2606:50c0:8003::153", "ttl": 600 },
     {
       "name": "www", "type": "CNAME", "content": "aseemmankotia.github.io", "ttl": 600,
       "note": "www -> your GitHub Pages site. After DNS applies, set this domain as the custom domain in the GitHub Pages repo settings (adds a CNAME file) and enable Enforce HTTPS."

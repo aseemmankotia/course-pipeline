@@ -50,7 +50,7 @@ const ROOT = path.join(__dirname, '..');
 const WORKERS_ROOT = path.join(ROOT, '.workers');
 
 // Shared, per-slug-namespaced or read-only dirs → symlinked into the worker.
-const SYMLINK_SHARED = ['node_modules', 'generated', 'exports', 'course-configs', '.env', 'marketing', 'prompts'];
+const SYMLINK_SHARED = ['node_modules', 'generated', 'exports', 'course-configs', '.env', 'marketing', 'prompts', 'brand'];
 // Scratch dirs that must be per-worker and start empty.
 const EMPTY_SCRATCH = [
   path.join('render', 'chapters'),

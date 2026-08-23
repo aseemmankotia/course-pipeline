@@ -1,7 +1,24 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 140" width="560" height="140">
+  <defs>
+    <radialGradient id="tnHex" cx="50%" cy="44%" r="64%">
+      <stop offset="0%" stop-color="#FDE68A"/><stop offset="42%" stop-color="#FBBF24"/><stop offset="100%" stop-color="#D97706"/>
+    </radialGradient>
+    <radialGradient id="tnBloom" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/>
+      <stop offset="28%" stop-color="#FFFDF2" stop-opacity="0.75"/>
+      <stop offset="62%" stop-color="#FFE9A8" stop-opacity="0.30"/>
+      <stop offset="100%" stop-color="#FFE9A8" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="tnStar" cx="50%" cy="50%" r="55%">
+      <stop offset="0%" stop-color="#FFFFFF"/><stop offset="50%" stop-color="#FFFFFF"/>
+      <stop offset="78%" stop-color="#FFF8E1"/><stop offset="100%" stop-color="#FFD97A"/>
+    </radialGradient>
+    <filter id="tnSoft" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="4"/></filter>
+  </defs>
   <g transform="translate(6,10)">
-    <polygon points="37,20 83,20 106,60 83,100 37,100 14,60" fill="#F59E0B" stroke="#B45309" stroke-width="3"/>
-    <path d="M60,30 L69,51 L90,60 L69,69 L60,90 L51,69 L30,60 L51,51 Z" fill="#FFFFFF"/>
+    <polygon points="37,20 83,20 106,60 83,100 37,100 14,60" fill="url(#tnHex)" stroke="#B45309" stroke-width="3"/>
+    <circle cx="60" cy="60" r="40" fill="url(#tnBloom)" filter="url(#tnSoft)"/>
+    <path d="M60,30 L69,51 L90,60 L69,69 L60,90 L51,69 L30,60 L51,51 Z" fill="url(#tnStar)"/>
   </g>
   <text x="150" y="84" font-family="DejaVu Sans, Arial, sans-serif" font-size="44" font-weight="700"><tspan fill="#0F172A">Tech</tspan><tspan fill="#F59E0B">Nuggets</tspan></text>
   <text x="152" y="112" font-family="DejaVu Sans, Arial, sans-serif" font-size="15" letter-spacing="6" fill="#475569">ACADEMY</text>

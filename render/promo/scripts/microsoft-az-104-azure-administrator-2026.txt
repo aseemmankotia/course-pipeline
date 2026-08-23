@@ -1,0 +1,5 @@
+Most people fail the AZ-104 exam not because they don't know Azure — because they can't pick the narrowest correct scope under pressure. That's the real test.
+
+This course fixes that. You'll learn how to scope identity administration with administrative units and dynamic groups. You'll master Azure RBAC — assigning roles at the correct scope without confusing it with Azure Policy. And you'll finally understand governance: management groups, policy, locks, and budgets working together, not against each other.
+
+Twelve chapters. Real exam scenarios. Storage redundancy, tiers, SAS tokens — every
