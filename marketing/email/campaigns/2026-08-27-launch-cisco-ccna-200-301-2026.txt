@@ -1,0 +1,8 @@
+TechNuggets Academy — new course just launched
+Cisco Certified Network Associate (CCNA)
+Network Fundamentals, Network Access
+Enroll: https://www.udemy.com/course/ccna-200-301-v11-exam-prep-complete-course/
+Free practice test: https://technuggets.academy/200-301.html
+All courses: https://technuggets.academy
+You opted in at TechNuggets Academy. {{physical_address}}
+Unsubscribe: {{unsubscribe_url}}  (sent to {{email}})

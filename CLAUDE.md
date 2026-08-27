@@ -521,13 +521,17 @@ rejection was HOW make-card.py composited it: a centered wordmark on a transluce
 PANEL, OVERLAID on the busy abstract motif. That violates two written rules: "Logos should
 not overlay the photo or make the layout muddy" and "adequate negative space … do NOT add
 any frames, borders, strokes or letterboxing" (the translucent panel = a box/letterbox).
-FIX (make-card.py): logo is now OFF BY DEFAULT — gated on an opt-in `--logo` flag (was
-opt-out `--no-logo`). No flag → pure text-free abstract card, the look that passed review
-for every pre-2026-08-14 course. autopilot.js calls make-card with no flag, so new cards are
-text-free automatically. To fix a bounced card: `python3 scripts/make-card.py --slug=<slug>`
-(no --logo) → re-upload `-card-notext.png` → "Mark as fixed" → resubmit. A COMPLIANT logo is
-still possible (small, corner, real negative space, NO panel/box) if `--logo` is later
-reworked to match Udemy's examples. NOTE: in-VIDEO logo branding (intro/outro/footers) is
+FIX (make-card.py): logo is OFF BY DEFAULT in make-card.py — gated on an opt-in `--logo`
+flag (was opt-out `--no-logo`). No flag → pure text-free abstract card. UPDATE 2026-08-25:
+the `--logo` output was reworked to the COMPLIANT form Udemy allows — a small wordmark in the
+TOP-LEFT corner with real negative space and NO panel/box/letterbox (a logo is the sole
+allowed exception to the no-text rule). autopilot.js NOW PASSES `--logo` (scripts/autopilot.js
+step 3.5), so every generated card — direct autopilot AND `parallel:generate` (which runs
+`autopilot.js --only=<slug>`) — ships the corner logo automatically. Older cards generated
+before this stay logo-less until regenerated. To fix a bounced card, first re-run WITH the
+logo: `python3 scripts/make-card.py --slug=<slug> --logo` → re-upload `-card-notext.png` →
+"Mark as fixed" → resubmit. ONLY IF Udemy still flags the image for text should you fall back
+to no `--logo` (pure text-free). NOTE: in-VIDEO logo branding (intro/outro/footers) is
 UNAFFECTED — Udemy only flags the static card image, not the video frames.
 
 ## Practice-test loading — automated API step (added 2026-08-21)

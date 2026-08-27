@@ -1,0 +1,8 @@
+TechNuggets Academy — new course just launched
+CompTIA A+ (Core 2)
+Operating Systems, Security
+Enroll: https://www.udemy.com/course/comptia-a-core-2-220-1202-exam-prep-course/?referralCode=A5AE61D1C709A7886458
+Free practice test: https://technuggets.academy/220-1202.html
+All courses: https://technuggets.academy
+You opted in at TechNuggets Academy. {{physical_address}}
+Unsubscribe: {{unsubscribe_url}}  (sent to {{email}})

@@ -1,0 +1,8 @@
+TechNuggets Academy — new course just launched
+Microsoft Certified: Azure Administrator Associate
+Manage Azure identities and governance, Implement and manage storage
+Enroll: https://www.udemy.com/course/az-104-azure-administrator-associate-exam-prep-g/?referralCode=D00137EB1DCF6F4CB465
+Free practice test: https://technuggets.academy/az-104.html
+All courses: https://technuggets.academy
+You opted in at TechNuggets Academy. {{physical_address}}
+Unsubscribe: {{unsubscribe_url}}  (sent to {{email}})

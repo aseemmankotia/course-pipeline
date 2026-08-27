@@ -1,0 +1,50 @@
+{
+  "slug": "cisco-ccna-200-301-2026",
+  "topic": "Cisco Certified Network Associate CCNA (200-301) exam preparation - network fundamentals, network access (switching, VLANs, WLANs), IP connectivity (routing and OSPF), IP services, security fundamentals, and automation and programmability",
+  "cert_name": "Cisco Certified Network Associate (CCNA)",
+  "exam_code": "200-301",
+  "exam_vendor": "Cisco",
+  "exam_cost_usd": 300,
+  "exam_format": "A single 120-minute exam delivered at Pearson VUE test centers or via online proctoring. Cisco does NOT publish the exact number of questions or the official passing score; expect roughly 90-120 items in mixed formats - multiple choice (single and multiple answer), drag-and-drop, and simulation/simlet items that require configuring or troubleshooting on a simulated device. This course targets the CURRENT 200-301 v1.1 blueprint. Cisco published a larger CCNA v2.0 blueprint on May 20, 2026, but v2.0 does NOT become active until February 3, 2027, so v1.1 is the exam to study today - tell candidates to confirm the current version and topics on Cisco's official 200-301 exam page before scheduling. The certification is valid for three years and is renewed by re-exam or Cisco Continuing Education credits. Exam fee is approximately USD 300 plus tax and varies by region - present it as approximate and advise confirming current Cisco pricing.",
+  "question_types": "multiple choice (single answer, exactly 4 options) and multiple response clearly marked 'Choose TWO/THREE', plus scenario items modeled on the exam's drag-and-drop and simulation tasks; every item is a practical networking scenario asking which configuration, protocol, command, or troubleshooting step is correct - NOT rote definitions",
+  "audience": "Aspiring and early-career network engineers, network administrators, help-desk and NOC technicians, and IT professionals moving into networking. Cisco recommends about one year of hands-on experience with Cisco solutions, though no formal prerequisite is required. A strong vendor-specific complement to the vendor-neutral CompTIA Network+ (N10-009) course in this catalog and a foundation for cloud and AI-networking paths such as NVIDIA NCP-AIN.",
+  "difficulty": "Intermediate",
+  "course_price": "$99.99",
+  "chapters_target": 12,
+  "narration_mode": "tts",
+  "author": "Aseem Mankotia",
+  "brand": "TechNuggets Academy",
+  "domains": [
+    {
+      "name": "Network Fundamentals",
+      "weight": "20%",
+      "notes": "The building blocks: roles of network components (routers, Layer 2/3 switches, next-gen firewalls, APs, controllers, endpoints, servers, PoE); network topology architectures (2-tier, 3-tier, spine-leaf, WAN, SOHO, on-prem vs cloud); physical interfaces and cabling (copper, single-/multi-mode fiber); interface and cable issues; TCP vs UDP; IPv4 addressing and subnetting (including VLSM); IPv6 addressing, types, and prefixes; wireless principles (SSID, RF, channels, encryption); virtualization fundamentals (VMs, containers, VRFs); and switching concepts (MAC learning, frame flooding/forwarding). Choosing the correct component, address/subnet, cable, or fundamental concept for a described scenario."
+    },
+    {
+      "name": "Network Access",
+      "weight": "20%",
+      "notes": "Layer 2 and wireless access: configuring and verifying VLANs (normal range) across multiple switches, interswitch connectivity (access vs trunk ports, 802.1Q, native VLAN), Layer 2 discovery protocols (CDP, LLDP), EtherChannel (LACP), the purpose and operation of Rapid PVST+ Spanning Tree (root bridge, port roles/states, PortFast), and WLAN components and architecture (AP/WLC, management access to a WLC, WLAN creation, security settings WPA2/WPA3, QoS profiles). Choosing the correct switching, trunking, STP, or WLAN configuration for a described access scenario."
+    },
+    {
+      "name": "IP Connectivity",
+      "weight": "25%",
+      "notes": "The heaviest domain - routing. Interpreting the components of a routing table (routes, administrative distance, metric, gateway of last resort); how a router forwards a packet by default (longest match, AD, metric); configuring and verifying IPv4 and IPv6 static routing (default, network, host, floating static routes); configuring and verifying single-area OSPFv2 (neighbor adjacencies, point-to-point, router ID, passive interfaces); and first-hop redundancy protocol purpose (HSRP/FHRP concepts). Choosing the correct route, static-route configuration, or OSPF setting - and predicting which route is installed - for a described connectivity scenario."
+    },
+    {
+      "name": "IP Services",
+      "weight": "10%",
+      "notes": "The services that make a network usable: configuring and verifying inside source NAT (static and pools); NTP operation (client/server, stratum); DHCP and DNS roles within the network; SNMP function in operations; syslog features (facilities/levels); DHCP client and relay; per-hop QoS behavior (classification, marking, queuing, congestion, policing/shaping) at a conceptual level; and remote access with SSH and TFTP/FTP for file transfers. Choosing the correct IP service configuration or the right tool for a described operational requirement."
+    },
+    {
+      "name": "Security Fundamentals",
+      "weight": "15%",
+      "notes": "Baseline security: key security concepts (threats, vulnerabilities, exploits, mitigation) and the CIA triad; security program elements (user awareness, training, physical access); device-access control with local and AAA (RADIUS/TACACS+ awareness), enable/line/SSH hardening, and password policies; remote access and site-to-site VPN concepts (IPsec); access control lists (standard and extended numbered/named ACLs) configuration and placement; Layer 2 security features (DHCP snooping, dynamic ARP inspection, port security); and wireless security (WPA2/WPA3, PSK vs 802.1X). Choosing the correct security control, ACL, or Layer 2 protection for a described requirement."
+    },
+    {
+      "name": "Automation and Programmability",
+      "weight": "10%",
+      "notes": "Modern network operations: how automation impacts network management; comparing traditional networks with controller-based and software-defined architectures (overlay/underlay/fabric); comparing per-device (CLI) vs controller-based management and Cisco DNA Center; describing characteristics of REST-based APIs (CRUD, HTTP verbs, data encoding); recognizing the capabilities of configuration-management tools (Ansible, Puppet, Chef at a conceptual level); and interpreting JSON-encoded data. Choosing the correct automation concept, API characteristic, or tool for a described management scenario, and reading a JSON snippet."
+    }
+  ],
+  "extra_guidance": "Cisco CCNA 200-301 is Cisco's flagship associate-level networking credential and a strong vendor-specific complement to the vendor-neutral CompTIA Network+ (N10-009) course in this catalog. VERSION: this course covers the CURRENT 200-301 v1.1 blueprint; Cisco announced a larger CCNA v2.0 on May 20, 2026 that becomes active February 3, 2027 - state clearly that v1.1 is the exam to study today and tell candidates to verify the current version and topics on Cisco's official page before scheduling. The six domain names and weights above are Cisco's official 200-301 v1.1 exam-topic weights (Network Fundamentals 20%, Network Access 20%, IP Connectivity 25%, IP Services 10%, Security Fundamentals 15%, Automation and Programmability 10%) - use them verbatim. The exam is HANDS-ON and command-driven, including drag-and-drop and simulation/simlet tasks: the real skill it tests is 'given this network scenario, which configuration, command, protocol, or troubleshooting step is correct,' NOT memorizing definitions - model practice items on realistic configuration and troubleshooting scenarios. This is a READ-AND-UNDERSTAND, CLI-centric course: show and explain real Cisco IOS commands and outputs (show ip route, show ip ospf neighbor, show running-config, show vlan brief, show spanning-tree, show ip interface brief, configuration snippets) exactly as they appear, and make clear that a free simulator/emulator (Cisco Packet Tracer, or GNS3/EVE-NG/CML) is enough to follow along - no physical Cisco gear required. Cover the exam's signature emphases exactly: IPv4 subnetting and VLSM done quickly and accurately; how a router chooses a route (longest prefix match, then administrative distance, then metric) and predicting the installed route; single-area OSPFv2 neighbor formation and troubleshooting; VLANs, 802.1Q trunking, and Rapid PVST+ (root bridge election, port roles/states); EtherChannel; standard vs extended ACLs and correct placement/direction; NAT (static vs pool vs PAT); port security, DHCP snooping, and DAI; WLC/WLAN configuration and WPA2 vs WPA3; and the automation concepts (controller-based vs traditional, REST APIs/CRUD, JSON, Ansible/Puppet/Chef). Flag classic traps: administrative distance values (connected 0, static 1, OSPF 110, etc.); access vs trunk and native-VLAN mismatch; standard-ACL placement close to destination vs extended close to source; TCP vs UDP for a given service; wildcard masks vs subnet masks. Use current Cisco terminology and note technology evolves, so verify against Cisco's current objectives. NEVER promise a pass or use the word 'guarantee' in ANY form (Udemy compliance) - use 'exam-focused preparation' framing throughout, including the learning objectives and who-this-is-for. Present the exam fee as approximate (~USD 300 plus tax, varies by region) and note the 3-year validity with re-exam or Continuing Education renewal. The final chapter must be a full exam simulation with a 120-minute time-management strategy that accounts for the drag-and-drop and simulation items (which consume more time than multiple-choice). Scan the practice bank for stray other-vendor terms (Juniper Junos, Arista EOS, AWS/Azure) before upload per the pipeline compliance rules."
+}

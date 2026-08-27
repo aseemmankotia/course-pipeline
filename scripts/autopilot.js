@@ -193,7 +193,10 @@ function quarantineLegacyMedia() {
     // compliance gate (verbatim disclosure top-line, no promise language in the
     // description OR goals, text-free card) — the exact rules that bounce courses.
     if (!SKIP.has('artifacts')) {
-      run('course card (text-free)', 'python3', ['scripts/make-card.py', `--slug=${course.slug}`], { allowFail: true });
+      // --logo: composite the TechNuggets wordmark (small, top-left corner, no panel —
+      // Udemy-compliant; a logo is the sole allowed exception to the no-text rule). This
+      // is opt-in in make-card.py, so pass it here or every batch card ships logo-less.
+      run('course card (text-free + logo)', 'python3', ['scripts/make-card.py', `--slug=${course.slug}`, '--logo'], { allowFail: true });
       run('practice-test CSVs', 'python3', ['scripts/make-practice-test-csvs.py', `--slug=${course.slug}`], { allowFail: true });
       run('compliance gate', process.execPath, ['scripts/compliance-check.js', `--slug=${course.slug}`]); // hard: stops the run on any violation
     }

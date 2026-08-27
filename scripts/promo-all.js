@@ -175,6 +175,18 @@ const COURSES = [
     title: "Microsoft Certified: Azure Developer Associate: exam-prep in 60 seconds #Shorts",
     tags: "microsoft,az-204,certification,exam prep",
     udemy: 'https://www.udemy.com/course/az-204-azure-developer-associate-exam-focused-prep/?referralCode=C963B2384D070A86FD31', live: true },
+  { slug: 'nvidia-ncp-ain-ai-networking-2026', short: "NVIDIA-Certified Professional: AI Networ",
+    title: "NVIDIA-Certified Professional: AI Networking: exam-prep in 60 seconds #Shorts",
+    tags: "nvidia,ncp-ain,certification,exam prep",
+    udemy: 'https://www.udemy.com/course/ncp-ain-nvidia-ai-networking-certification-prep/', live: true },
+  { slug: 'aws-cloud-practitioner-clf-c02-2026', short: "AWS Certified Cloud Practitioner",
+    title: "AWS Certified Cloud Practitioner: exam-prep in 60 seconds #Shorts",
+    tags: "amazon web services,clf-c02,certification,exam prep",
+    udemy: 'https://www.udemy.com/course/aws-cloud-practitioner-clf-c02-exam-focused-prep/', live: true },
+  { slug: 'cisco-ccna-200-301-2026', short: "Cisco Certified Network Associate (CCNA)",
+    title: "Cisco Certified Network Associate (CCNA): exam-prep in 60 seconds #Shorts",
+    tags: "cisco,200-301,certification,exam prep",
+    udemy: 'https://www.udemy.com/course/ccna-200-301-v11-exam-prep-complete-course/', live: true },
   // __PROMO_COURSES_END__ (register-course.js inserts new course objects immediately above this line)
 ];
 

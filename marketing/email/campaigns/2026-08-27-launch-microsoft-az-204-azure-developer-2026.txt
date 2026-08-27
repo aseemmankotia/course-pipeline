@@ -1,0 +1,8 @@
+TechNuggets Academy — new course just launched
+Microsoft Certified: Azure Developer Associate
+Develop Azure compute solutions, Develop for Azure storage
+Enroll: https://www.udemy.com/course/az-204-azure-developer-associate-exam-focused-prep/?referralCode=C963B2384D070A86FD31
+Free practice test: https://technuggets.academy/az-204.html
+All courses: https://technuggets.academy
+You opted in at TechNuggets Academy. {{physical_address}}
+Unsubscribe: {{unsubscribe_url}}  (sent to {{email}})

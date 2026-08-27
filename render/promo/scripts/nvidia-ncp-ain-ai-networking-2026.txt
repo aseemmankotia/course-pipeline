@@ -1,0 +1,3 @@
+Your GPU cluster is bottlenecked, and you don't even know it. One misconfigured fabric, one disabled feature, and your million-dollar AI training run crawls.
+
+This course fixes that. You'll design rail-optimized fat-tree topologies that eliminate congestion during GPU collective communication. You'll configure subnet manager and UFM to handle addressing, prov

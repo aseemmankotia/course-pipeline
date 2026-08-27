@@ -1,0 +1,55 @@
+{
+  "slug": "oracle-oci-ai-foundations-1z0-1122-2026",
+  "topic": "Oracle Cloud Infrastructure 2025 AI Foundations Associate (1Z0-1122-25) exam preparation - core AI, machine learning, and deep learning concepts, generative AI and large language models, and the Oracle Cloud Infrastructure AI portfolio including OCI AI Services, OCI Data Science, the OCI Generative AI service, and select AI in Oracle Database 23ai",
+  "cert_name": "Oracle Cloud Infrastructure 2025 AI Foundations Associate",
+  "exam_code": "1Z0-1122-25",
+  "exam_vendor": "Oracle",
+  "exam_cost_usd": 0,
+  "exam_format": "A free, online, non-proctored certification exam taken through Oracle MyLearn. Published sources vary on the exact question count (roughly 40 to 65 multiple-choice and multiple-select questions) within about a 90-minute window, with a passing score commonly cited around 65 percent - present the question count, time limit, and passing score as APPROXIMATE and tell candidates to confirm the current figures on Oracle's official 1Z0-1122-25 exam page before scheduling. Because the exam is free and delivered through Oracle MyLearn, there is no USD fee; the associated training and exam are provided at no cost by Oracle. This course targets the CURRENT 2025 version (1Z0-1122-25); Oracle refreshes these AI Foundations exams roughly annually, so tell candidates to verify they are studying the current version and topics on Oracle's official exam page. Oracle certifications of this type do not expire in the traditional sense, but Oracle periodically retires and re-versions the exam - advise confirming current status.",
+  "question_types": "multiple choice (single answer, exactly 4 options) and multiple response clearly marked 'Choose TWO/THREE'; concept-and-scenario items asking which AI/ML/deep-learning idea, generative-AI technique, or Oracle Cloud Infrastructure AI service fits a described situation - NOT hands-on configuration or coding",
+  "audience": "IT professionals, developers, data professionals, cloud architects, and business and technical stakeholders who want to validate foundational knowledge of AI, machine learning, deep learning, and generative AI, and understand where Oracle Cloud Infrastructure's AI services fit. No prior AI or Oracle Cloud experience is required. A vendor-specific foundational credential that complements vendor-neutral and other-vendor AI foundations such as the AWS Certified AI Practitioner (AIF-C01), Microsoft Azure AI Fundamentals (AI-901), and Google Cloud Generative AI Leader courses in this catalog, and an on-ramp to the Oracle Cloud Infrastructure Generative AI Professional path.",
+  "difficulty": "Beginner",
+  "course_price": "$49.99",
+  "chapters_target": 12,
+  "narration_mode": "tts",
+  "author": "Aseem Mankotia",
+  "brand": "TechNuggets Academy",
+  "domains": [
+    {
+      "name": "Intro to AI Foundations",
+      "weight": "10%",
+      "notes": "Core artificial-intelligence concepts and vocabulary: what AI is and how it differs from traditional rule-based software; categories of AI (narrow vs general), common AI tasks (language, vision, speech, recommendation, anomaly detection, forecasting); real-world enterprise use cases; and the limitations, risks, and responsible-AI considerations of AI systems. Choosing the correct AI concept, task type, or use case for a described business scenario."
+    },
+    {
+      "name": "Intro to Machine Learning Foundations",
+      "weight": "15%",
+      "notes": "The fundamentals of machine learning: supervised learning (regression and classification on labeled data), unsupervised learning (clustering and pattern extraction from unlabeled data), and reinforcement learning (learning from rewards); the typical ML workflow from data collection and feature preparation to training, evaluation, and inference; and basic evaluation ideas (train/test split, overfitting/underfitting, accuracy vs other metrics at a conceptual level). Choosing the correct learning paradigm, workflow step, or evaluation idea for a described problem."
+    },
+    {
+      "name": "Intro to Deep Learning Foundations",
+      "weight": "15%",
+      "notes": "How deep learning extends machine learning: artificial neural networks, layers, weights, and activation, and why depth helps with complex data; common architectures at an awareness level (CNNs for images, RNNs/sequence models for sequential data, and transformers as the basis of modern language models); and when deep learning is appropriate versus classical ML. Choosing the correct deep-learning concept or architecture family for a described data type or task."
+    },
+    {
+      "name": "Intro to Generative AI and LLMs",
+      "weight": "15%",
+      "notes": "Generative AI principles and large language models: how generative models differ from discriminative/predictive models; tokens, embeddings, context windows, and how LLMs produce text; prompt engineering basics; retrieval-augmented generation (RAG) and fine-tuning as ways to ground and adapt models; AI agents at a conceptual level; and the capabilities, limitations, hallucinations, and responsible-use considerations of generative AI. Choosing the correct generative-AI concept or adaptation technique for a described requirement."
+    },
+    {
+      "name": "Get Started with the OCI AI Portfolio",
+      "weight": "15%",
+      "notes": "The shape of Oracle Cloud Infrastructure's AI and ML offerings and how they fit together: the distinction between ready-to-use AI Services, the OCI Data Science platform for building custom models, ML capabilities embedded in Oracle Database, and the OCI Generative AI service; plus the roles of infrastructure such as GPUs and how OCI supports the AI lifecycle. Choosing the correct part of the OCI AI portfolio for a described need (pretrained service vs custom model vs in-database ML vs generative AI)."
+    },
+    {
+      "name": "Intro to OCI AI Services",
+      "weight": "20%",
+      "notes": "The heaviest domain. OCI's pretrained and customizable AI Services and what each does: OCI Language (text analysis, translation, entity/sentiment), OCI Vision (image classification, object detection, document image analysis), OCI Speech (speech-to-text), OCI Document Understanding (text/table/key-value extraction), and OCI Anomaly Detection and Forecasting for operational data; plus how these services are consumed (console, REST APIs, SDKs) at an awareness level. Choosing the correct OCI AI Service for a described business task."
+    },
+    {
+      "name": "OCI Generative AI Service and Oracle Database 23ai",
+      "weight": "10%",
+      "notes": "Oracle's generative-AI and in-database AI offerings: the OCI Generative AI service (foundation models, dedicated AI clusters, prompting, fine-tuning, and RAG on OCI), OCI Generative AI Agents, and select AI in Oracle Database 23ai such as AI Vector Search and in-database use of embeddings for semantic and RAG-style retrieval. Choosing the correct Oracle generative-AI or in-database AI capability for a described enterprise scenario."
+    }
+  ],
+  "extra_guidance": "Oracle Cloud Infrastructure 2025 AI Foundations Associate (1Z0-1122-25) is Oracle's free, entry-level AI credential and a vendor-specific complement to the other foundational AI courses in this catalog (AWS AIF-C01, Microsoft AI-901, Google Cloud Generative AI Leader), and an on-ramp to the Oracle Cloud Infrastructure Generative AI Professional path. It is BROAD but SHALLOW and CONCEPTUAL: it tests understanding of AI, ML, deep learning, and generative AI ideas, and awareness of where Oracle Cloud Infrastructure's AI services fit - NOT hands-on configuration, math, or coding. The seven domain names and weights above are Oracle's official 1Z0-1122-25 exam-topic areas (Intro to AI Foundations 10%, Intro to ML Foundations 15%, Intro to DL Foundations 15%, Intro to Generative AI & LLMs 15%, Get Started with the OCI AI Portfolio 15%, Intro to OCI AI Services 20%, OCI Generative AI & Oracle Database 23ai 10%) - use them as the backbone, and note Oracle refreshes the exam roughly annually so learners should verify the current version and topics on Oracle's official page. This is a READ-AND-UNDERSTAND course - explain each concept and each OCI AI service with concrete plain-language examples; a free Oracle Cloud account and the free Oracle MyLearn training are more than enough to follow along and are NOT required to benefit from the course. Use EXACT current Oracle service names and call out the commonly confused pairs the exam likes: supervised vs unsupervised vs reinforcement learning; machine learning vs deep learning; predictive/discriminative vs generative models; prompt engineering vs fine-tuning vs RAG; pretrained OCI AI Services vs custom models in OCI Data Science vs in-database ML; OCI Language vs OCI Vision vs OCI Document Understanding vs OCI Speech; and OCI Generative AI service vs Oracle Database 23ai AI Vector Search. Flag classic traps: choosing a ready-to-use AI Service when the scenario needs a custom model (or vice versa); RAG for grounding in private data vs fine-tuning for style/behavior; anomaly detection vs forecasting. Anchor everything to real, current Oracle behavior and published docs (Oracle MyLearn, OCI AI Services and OCI Generative AI documentation); do NOT invent service names, limits, or specs. Present the exam honestly as free, online, and non-proctored via Oracle MyLearn, with an APPROXIMATE question count (~40-65), ~90-minute window, and ~65% passing score, and tell candidates to verify current details on Oracle's official 1Z0-1122-25 page before scheduling. Frame the credential as 'exam-focused preparation' - NEVER promise a pass or use the word 'guarantee' in ANY form (Udemy compliance), including the learning objectives and who-this-is-for. The final chapter must be a full exam simulation with a time-management strategy for the approximate question count and 90-minute window. Scan the practice bank for stray other-vendor terms (AWS SageMaker/Bedrock, Azure, Google Vertex AI, NVIDIA) before upload per the pipeline compliance rules - keep all service references Oracle-specific."
+}

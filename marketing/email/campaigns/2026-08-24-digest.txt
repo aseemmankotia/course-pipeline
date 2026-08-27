@@ -1,0 +1,39 @@
+TechNuggets Academy — new & popular exam-prep courses
+
+NEW: Microsoft Certified: Azure Developer Associate
+  Develop Azure compute solutions, Develop for Azure storage
+  
+  Enroll: https://www.udemy.com/course/az-204-azure-developer-associate-exam-focused-prep/?referralCode=C963B2384D070A86FD31
+  Free practice test: https://technuggets.academy/az-204.html
+NEW: Microsoft Certified: Azure Administrator Associate
+  Manage Azure identities and governance, Implement and manage storage
+  
+  Enroll: https://www.udemy.com/course/az-104-azure-administrator-associate-exam-prep-g/?referralCode=D00137EB1DCF6F4CB465
+  Free practice test: https://technuggets.academy/az-104.html
+NEW: CompTIA A+ (Core 2)
+  Operating Systems, Security
+  
+  Enroll: https://www.udemy.com/course/comptia-a-core-2-220-1202-exam-prep-course/?referralCode=A5AE61D1C709A7886458
+  Free practice test: https://technuggets.academy/220-1202.html
+NEW: CompTIA A+ (Core 1)
+  Mobile Devices, Networking
+  
+  Enroll: https://www.udemy.com/course/comptia-a-core-1-220-1201-exam-prep-w/?referralCode=E9C2F71E84C4F4779984
+  Free practice test: https://technuggets.academy/220-1201.html
+POPULAR: NVIDIA-Certified Professional: Accelerated Data Science
+  GPU-Accelerated Data Science Fundamentals, Data Preparation and Manipulation with cuDF
+  Enroll: https://www.udemy.com/course/ncp-ads-nvidia-accelerated-data-science-prep/?couponCode=FREETEST33
+  Free practice test: https://technuggets.academy/ncp-ads.html
+POPULAR: NVIDIA-Certified Associate: Generative AI Multimodal
+  Core Machine Learning and AI Knowledge, Experimentation
+  Enroll: https://www.udemy.com/course/nca-genm-nvidia-generative-ai-multimodal-exam-prep/?couponCode=FREETEST33
+  Free practice test: https://technuggets.academy/nca-genm.html
+POPULAR: PMI Certified Professional in Managing AI
+  Support Responsible and Trustworthy AI Efforts, Identify Business Needs and Solutions
+  Enroll: https://www.udemy.com/course/pmi-cpmai-certification-exam-prep-masterclass/?couponCode=FREETEST33
+  Free practice test: https://technuggets.academy/pmi-cpmai.html
+
+All courses: https://technuggets.academy
+
+You opted in at TechNuggets Academy. {{physical_address}}
+Unsubscribe: {{unsubscribe_url}}  (sent to {{email}})

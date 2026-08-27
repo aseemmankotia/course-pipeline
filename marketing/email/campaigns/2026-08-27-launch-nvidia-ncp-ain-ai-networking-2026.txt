@@ -1,0 +1,8 @@
+TechNuggets Academy — new course just launched
+NVIDIA-Certified Professional: AI Networking
+AI Data Center Network Design and Optimization, InfiniBand Fabric Configuration and Management
+Enroll: https://www.udemy.com/course/ncp-ain-nvidia-ai-networking-certification-prep/
+Free practice test: https://technuggets.academy/ncp-ain.html
+All courses: https://technuggets.academy
+You opted in at TechNuggets Academy. {{physical_address}}
+Unsubscribe: {{unsubscribe_url}}  (sent to {{email}})

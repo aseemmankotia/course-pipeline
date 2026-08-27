@@ -1,0 +1,8 @@
+TechNuggets Academy — new course just launched
+AWS Certified Cloud Practitioner
+Cloud Concepts, Security and Compliance
+Enroll: https://www.udemy.com/course/aws-cloud-practitioner-clf-c02-exam-focused-prep/
+Free practice test: https://technuggets.academy/clf-c02.html
+All courses: https://technuggets.academy
+You opted in at TechNuggets Academy. {{physical_address}}
+Unsubscribe: {{unsubscribe_url}}  (sent to {{email}})

@@ -1,0 +1,40 @@
+{
+  "slug": "aws-cloud-practitioner-clf-c02-2026",
+  "topic": "AWS Certified Cloud Practitioner (CLF-C02) exam preparation - cloud concepts, security and compliance (the AWS shared responsibility model, IAM, and security services), core AWS technology and services (compute, storage, networking, databases, and global infrastructure), and billing, pricing, and support",
+  "cert_name": "AWS Certified Cloud Practitioner",
+  "exam_code": "CLF-C02",
+  "exam_vendor": "Amazon Web Services",
+  "exam_cost_usd": 100,
+  "exam_format": "65 questions in 90 minutes, delivered at Pearson VUE test centers or via online proctoring. Question types are multiple choice (one correct answer of four) and multiple response (two or more correct answers). 15 of the 65 questions are unscored. Scored on a scale of 100-1000 with a passing score of 700 (700 is a scaled threshold, not 70 percent correct). The certification is valid for three years. Exam fee is approximately USD 100 and varies by region and local tax - present it as approximate and advise candidates to confirm current AWS pricing. AWS periodically updates the exam guide, so tell candidates to verify the current domains and weights on the official AWS Certified Cloud Practitioner (CLF-C02) exam guide before scheduling.",
+  "question_types": "multiple choice (single answer, exactly 4 options) and multiple response clearly marked 'Choose TWO/THREE'; foundational, concept-and-scenario items asking which AWS service, cloud concept, security responsibility, or pricing/support option fits a described situation - NOT deep technical configuration",
+  "audience": "Individuals with basic or no hands-on AWS experience who want to validate overall knowledge of the AWS Cloud - including those in sales, marketing, business analysis, project management, finance, and non-technical roles, as well as technical beginners starting their AWS journey. AWS recommends up to about six months of exposure to the AWS Cloud, but no technical prerequisites are required. The foundational entry point to the AWS catalog that leads into the AWS Solutions Architect Associate (SAA-C04), Developer Associate (DVA-C02), and AI Practitioner (AIF-C01) courses already in this catalog.",
+  "difficulty": "Beginner",
+  "course_price": "$54.99",
+  "chapters_target": 12,
+  "narration_mode": "tts",
+  "author": "Aseem Mankotia",
+  "brand": "TechNuggets Academy",
+  "domains": [
+    {
+      "name": "Cloud Concepts",
+      "weight": "24%",
+      "notes": "Defining the AWS Cloud and its value proposition (agility, elasticity, cost, global reach); the six advantages of cloud and the AWS Cloud Adoption Framework (CAF) at an awareness level; cloud economics (fixed vs variable cost, total cost of ownership, right-sizing, automation, managed-service benefits); and cloud architecture design principles (design for failure, decoupling, elasticity, the Well-Architected Framework pillars at a high level). Choosing the correct cloud concept, benefit, or high-level design principle for a described business scenario."
+    },
+    {
+      "name": "Security and Compliance",
+      "weight": "30%",
+      "notes": "The AWS shared responsibility model (what AWS secures vs what the customer secures, and how it shifts across EC2, managed services, and serverless); AWS security, governance, and compliance concepts (AWS Artifact, compliance programs, AWS Shield, WAF, GuardDuty, Inspector, Macie at an awareness level); identity and access management (IAM users, groups, roles, policies, MFA, root-user protection, IAM Identity Center); and where to find security support and documentation. Choosing who is responsible, or the correct AWS security/identity service, for a described requirement."
+    },
+    {
+      "name": "Cloud Technology and Services",
+      "weight": "34%",
+      "notes": "The heaviest domain. Methods of deploying and operating in AWS (Management Console, CLI, SDKs, IaC/CloudFormation; connectivity options - internet, VPN, Direct Connect); AWS global infrastructure (Regions, Availability Zones, edge locations/CloudFront); and CORE services by category - compute (EC2, Lambda, ECS/EKS, Elastic Beanstalk, Auto Scaling), storage (S3, EBS, EFS, S3 Glacier), networking (VPC, Route 53, ELB, API Gateway), databases (RDS, Aurora, DynamoDB, Redshift), plus awareness of analytics, ML/AI (SageMaker, Bedrock), and integration services. Choosing the correct AWS service for a described technical need, and distinguishing service categories."
+    },
+    {
+      "name": "Billing, Pricing, and Support",
+      "weight": "12%",
+      "notes": "AWS pricing models (On-Demand, Reserved Instances, Savings Plans, Spot; pay-as-you-go; data-transfer and free-tier awareness); account structure and billing tools (AWS Organizations and consolidated billing, Billing Console, Cost Explorer, AWS Budgets, Cost and Usage Report, the Pricing Calculator); and AWS support resources (the AWS Support plans - Basic/Developer/Business/Enterprise, Trusted Advisor, AWS Health Dashboard, re:Post, Knowledge Center). Choosing the correct pricing model, cost-management tool, or support plan for a described cost or support requirement."
+    }
+  ],
+  "extra_guidance": "AWS Certified Cloud Practitioner (CLF-C02) is AWS's foundational, entry-level credential and the on-ramp to the AWS Solutions Architect Associate (SAA-C04), Developer Associate (DVA-C02), and AI Practitioner (AIF-C01) courses in this catalog. It is BROAD but SHALLOW: it tests overall understanding of the AWS Cloud, its value, security model, core services, and pricing/support - NOT hands-on configuration. The four domain names and weights above are AWS's official CLF-C02 exam-guide weightings (Cloud Concepts 24%, Security and Compliance 30%, Cloud Technology and Services 34%, Billing, Pricing, and Support 12%) - use them verbatim, and note AWS updates the guide periodically so learners should verify on the official AWS exam page. This is a READ-AND-UNDERSTAND course - explain concepts, the shared responsibility model, service purposes, and pricing/support options with concrete plain-language examples; a free-tier AWS account is enough to follow along and is NOT required to pass. Use EXACT current AWS service names and call out the commonly confused pairs the exam loves: shared responsibility (who secures what, and how it changes for managed vs unmanaged services); EC2 vs Lambda vs containers; S3 vs EBS vs EFS vs Glacier; RDS vs DynamoDB vs Redshift; Security Groups vs NACLs (awareness); On-Demand vs Reserved vs Savings Plans vs Spot; Basic vs Developer vs Business vs Enterprise Support; Cost Explorer vs Budgets vs Pricing Calculator; Regions vs Availability Zones vs edge locations; IAM users vs roles vs policies. Flag classic traps: 'the customer is responsible for security IN the cloud, AWS for security OF the cloud'; Spot for interruptible workloads; Trusted Advisor checks; consolidated billing benefits. Keep everything vendor-accurate to current AWS offerings and note the cloud evolves, so verify against current AWS docs. NEVER promise a pass or use the word 'guarantee' in ANY form (Udemy compliance) - use 'exam-focused preparation' framing throughout, including the learning objectives and who-this-is-for. Present the exam fee as approximate (~USD 100, varies by region) and note the certification is valid for three years. The final chapter must be a full exam simulation with a 90-minute, 65-question time-management strategy. Scan the practice bank for stray other-vendor terms (Azure/GCP/NVIDIA) before upload per the pipeline compliance rules."
+}

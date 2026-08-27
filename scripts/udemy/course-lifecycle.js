@@ -75,9 +75,12 @@ async function buildCurriculum(client, cid, chapterTitles, log = console.log) {
   for (const l of (dlec.results || [])) await client.del(`${base}/lectures/${l.id}/`);
   for (const c of (dch.results || [])) await client.del(`${base}/chapters/${c.id}/`);
   // create one chapter + one lecture per title, in order
+  // is_downloadable:false — video lectures stream-only by default (Udemy defaults to
+  // downloadable=true; we never want the source videos downloadable). See attachVideo,
+  // which re-asserts this because attaching an asset can reset the flag.
   for (const t of chapterTitles) {
     await client.post(`${base}/chapters/`, { title: t });
-    await client.post(`${base}/lectures/`, { title: t });
+    await client.post(`${base}/lectures/`, { title: t, is_downloadable: false });
   }
   const [chs, lecs] = await Promise.all([
     client.get(`${base}/chapters/`, { query: { page_size: 100, 'fields[chapter]': 'title,sort_order' } }),
@@ -101,9 +104,11 @@ async function buildCurriculum(client, cid, chapterTitles, log = console.log) {
 }
 
 // ---- attach an already-uploaded video asset to a lecture --------------------
-// [OK] PATCH lecture.asset = assetId.
+// [OK] PATCH lecture.asset = assetId. Re-assert is_downloadable:false in the same
+// PATCH — attaching a video asset can flip Udemy's per-lecture downloadable flag
+// back to its default (true), so we pin it off here to keep videos stream-only.
 async function attachVideo(client, cid, lectureId, assetId) {
-  return client.patch(`/api-2.0/users/me/taught-courses/${cid}/lectures/${lectureId}/`, { asset: assetId });
+  return client.patch(`/api-2.0/users/me/taught-courses/${cid}/lectures/${lectureId}/`, { asset: assetId, is_downloadable: false });
 }
 
 // ---- submit for review ------------------------------------------------------

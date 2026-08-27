@@ -1,0 +1,45 @@
+{
+  "slug": "nvidia-ncp-ain-ai-networking-2026",
+  "topic": "NVIDIA-Certified Professional: AI Networking (NCP-AIN) exam preparation - designing, configuring, optimizing, securing, and troubleshooting NVIDIA InfiniBand and Spectrum-X Ethernet networks for AI workloads, including RDMA/RoCE, adaptive routing, congestion control, UFM, NVUE/Ansible automation, and Kubernetes/RDMA integration",
+  "cert_name": "NVIDIA-Certified Professional: AI Networking",
+  "exam_code": "NCP-AIN",
+  "exam_vendor": "NVIDIA",
+  "exam_cost_usd": 400,
+  "exam_format": "Approximately 60-70 multiple-choice questions in roughly 90-120 minutes, taken online with remote proctoring (Certiverse). Published sources vary on the exact question count, time limit, and fee, so present all of these as approximate and tell candidates to confirm the current figures on NVIDIA's official NCP-AIN exam page before scheduling. NVIDIA does NOT publish an official passing score or official per-domain percentage weightings for NCP-AIN, so the domain weights in this course are editorial estimates that reflect the emphasis of NVIDIA's published exam-topic themes, not NVIDIA's official numbers. The certification is valid for two years. Exam fee is approximately USD 400 (the higher infrastructure/networking-tier price) and varies by region.",
+  "question_types": "multiple choice (single answer and multiple response) and scenario-based questions asking which NVIDIA networking technology, fabric design, configuration, automation step, security control, or troubleshooting action is correct for a described AI-cluster networking situation - NOT rote definitions",
+  "audience": "Network engineers, data-center and AI infrastructure architects, and AI/ML platform engineers responsible for the high-performance network fabric behind GPU clusters. CCNA-level networking fundamentals plus familiarity with data-center concepts, Linux, and RDMA are recommended; no prior NVIDIA certification is required. The networking pillar of NVIDIA's professional infrastructure track, pairing naturally with the NCP-AII (AI Infrastructure) and NCP-AIO (AI Operations) courses already in this catalog.",
+  "difficulty": "Advanced",
+  "course_price": "$199.99",
+  "chapters_target": 12,
+  "narration_mode": "tts",
+  "author": "Aseem Mankotia",
+  "brand": "TechNuggets Academy",
+  "domains": [
+    {
+      "name": "AI Data Center Network Design and Optimization",
+      "weight": "~18%",
+      "notes": "How AI-factory networks are architected and why: rail-optimized and fat-tree topologies for GPU clusters, separating compute/storage/management fabrics, sizing for east-west GPU-to-GPU traffic, non-blocking designs, and choosing InfiniBand vs Spectrum-X Ethernet for a given AI workload. Selecting the correct topology, fabric type, or capacity plan for a described AI data-center requirement."
+    },
+    {
+      "name": "InfiniBand Fabric Configuration and Management",
+      "weight": "~24%",
+      "notes": "Standing up and running InfiniBand: subnet manager and UFM (Unified Fabric Manager), adaptive routing and SHARP in-network computing, partitioning (pkeys), QoS/service levels, link and cable validation, and fabric health monitoring. Choosing the correct InfiniBand configuration, routing, or management action for a described fabric scenario, and reading ib* diagnostics."
+    },
+    {
+      "name": "Spectrum-X Ethernet and RoCE for AI",
+      "weight": "~24%",
+      "notes": "Building AI-optimized Ethernet fabrics: NVIDIA Spectrum-X (Spectrum switches + BlueField), RoCEv2, adaptive routing and congestion control (programmable congestion control, ECN/PFC), lossless Ethernet tuning, and telemetry for RoCE. Selecting the correct Spectrum-X/RoCE configuration or congestion-management approach for a described Ethernet AI-fabric scenario, and distinguishing InfiniBand vs Spectrum-X trade-offs."
+    },
+    {
+      "name": "Network Automation, Monitoring, and Telemetry",
+      "weight": "~16%",
+      "notes": "Operating the fabric at scale: NVUE and Ansible automation, Cumulus Linux configuration, UFM telemetry and What-Just-Happened (WJH) analytics, streaming telemetry, and DOCA/BlueField service offload concepts. Choosing the correct automation, monitoring, or telemetry tool/action to configure or observe an AI network for a described operational requirement."
+    },
+    {
+      "name": "Security, Troubleshooting, and Performance",
+      "weight": "~18%",
+      "notes": "Keeping AI networks secure and fast: fabric security and isolation (partitioning, zero-trust with BlueField/DOCA), diagnosing congestion, packet loss, and link faults on InfiniBand and RoCE, GPU-to-GPU communication and RDMA validation, Kubernetes RDMA integration (network operator, SR-IOV/GPUDirect RDMA), and end-to-end performance tuning. Selecting the correct security control, diagnostic, or optimization step for a described AI-networking problem."
+    }
+  ],
+  "extra_guidance": "NVIDIA-Certified Professional: AI Networking (NCP-AIN) is the NETWORKING pillar of NVIDIA's professional infrastructure track, completing the ladder alongside NCP-AII (AI Infrastructure) and NCP-AIO (AI Operations) already in this catalog. It validates designing, configuring, automating, securing, and troubleshooting the high-performance network fabric for GPU/AI clusters - InfiniBand and Spectrum-X Ethernet. CRITICAL accuracy note: NVIDIA does NOT publish official per-domain percentage weightings or a fixed passing score for NCP-AIN, and secondary sources DISAGREE on the exact question count, time limit, and fee - so present the domain NAMES/themes but mark all weights with a leading '~' as EDITORIAL ESTIMATES (never NVIDIA's official figures), state this where weights appear, and present the format (approx. 60-70 questions, ~90-120 minutes, ~USD 400, valid 2 years) as APPROXIMATE with an explicit instruction to verify on NVIDIA's official NCP-AIN page. This is a scenario/decision exam: the real skill is 'given this AI-cluster networking situation, which fabric design, configuration, automation step, security control, or troubleshooting action is correct,' NOT memorizing definitions - practice questions MUST be scenario-based and use EXACT NVIDIA networking terminology (InfiniBand, Spectrum-X, Spectrum switches, BlueField DPU, DOCA, UFM, SHARP, adaptive routing, RoCEv2, ECN/PFC, programmable congestion control, NVUE, Cumulus Linux, Ansible, WJH, GPUDirect RDMA, SR-IOV, Kubernetes network operator, ib* utilities). Cover the recurring decisions the exam is known to emphasize: InfiniBand vs Spectrum-X Ethernet for a workload; adaptive routing and congestion control tuning; RoCE lossless (ECN/PFC) configuration; UFM/telemetry-driven troubleshooting; partitioning and fabric security; and Kubernetes RDMA/GPUDirect integration. This is a READ-AND-UNDERSTAND course - show and explain topologies, CLI/NVUE snippets, Ansible tasks, and UFM/telemetry outputs rather than requiring real InfiniBand/Spectrum hardware; make that explicit since most learners lack a GPU-cluster fabric, and note that simulated labs (EVE-NG/GNS3-style Linux networking, DOCA cloud labs) suffice to follow along. Anchor everything to real NVIDIA networking behavior and published docs (NVIDIA networking/DOCA/Cumulus/UFM documentation); do NOT invent specs, limits, or weights. Frame the credential honestly as 'exam-focused preparation' - NEVER promise a pass or use the word 'guarantee' in ANY form (Udemy compliance), including learning objectives and who-this-is-for. The final chapter must be a full exam simulation with a time-management strategy for the approximate 60-70-question, ~90-120-minute format. Scan the practice bank for stray other-vendor networking terms (Cisco IOS, Juniper, Arista EOS, AWS/Azure) before upload per the pipeline compliance rules."
+}
