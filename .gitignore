@@ -33,3 +33,7 @@ site/
 # parallel pipeline isolated worker dirs
 .workers/
 marketing/coupons.json
+
+youtube-token.json
+client_secrets.json
+.env.bak.*
