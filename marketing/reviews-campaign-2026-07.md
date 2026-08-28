@@ -641,3 +641,82 @@ promo window is **08-24**. r/comptia + r/dataengineering remain no-post per thei
    post once fresh coupons exist.
 5. Sept 1: bulk Free:Open regeneration window for the ~31 older courses (or use
    Free:Targeted 100 seats/31 days sooner if desired).
+
+---
+
+## Run log — 2026-08-28 (scheduled task) — ⛔ Udemy actions BLOCKED (no confirmable browser; Aseem absent) + ⚠️ STRATEGY CONFLICT flagged
+
+**Why blocked (same as 08-01 / 08-21):** Unattended scheduled run. Two Chrome
+extensions are connected — "Browser 1" (Windows, remote, deviceId a9a4467a…) and
+"Browser 2" (macOS, local, deviceId 308b006e…, where the instructor session lives).
+The browser-selection safety guard requires Aseem to confirm which browser to drive,
+and he was not present, so I did NOT drive any browser. Every instructor-session
+action therefore could not run this pass: /instructor/courses/ status check, Free:Open
+coupon creation, educational announcements. Irreversible actions (announcements,
+LinkedIn/Reddit posts) also require Aseem's explicit approval, which was likewise
+unavailable. I deliberately did not fire an interactive browser-selection prompt into
+an empty room.
+
+**⚠️ STRATEGY CONFLICT to resolve (NEW — flag for Aseem):** The repo strategy changed
+AFTER the last campaign run and now partially contradicts this task's playbook:
+- 2026-08-23 (commit 9175460) + 2026-08-26 (6be2159): "Retire free-coupon strategy;
+  add 20%-off learning-path bundles." `ClaudeFolder/bundle-strategy-2026-08.md` states
+  it "supersedes the weekly FREETEST33 free/near-free coupon campaign," and
+  build-practice-site.js had EVERY site-facing `coupon:{…}` block removed (no more
+  per-course paid-discount coupons, urgency timers, or "fresh coupons every week" copy).
+  The site now sells 13 native learning-path BUNDLES at ~20% off + free practice tests.
+- IMPACT on this task's copy rules: the task file still lists "the per-course Udemy
+  COUPON with a real price (e.g. $34.99)" as a promotable discount — that lever is
+  RETIRED on the site. Any future LinkedIn/Reddit copy should promote (a) the free
+  practice tests, (b) learning-path bundles mentioned generically (NO fixed % / no
+  computed savings, per task rules — even though the strategy doc's internal table
+  shows 20%, Udemy sets the live bundle price), and (c) the honest-review FREE seats
+  for newly-live courses. Do NOT cite a per-course paid coupon price.
+- The honest-review Free:Open (FREEREVIEW10) lever is NOT retired: the 2026-08-24
+  GO-LIVE doc (post-dates the retirement) still lists "Create the honest-review 'Open'
+  coupon and sync it to the site (node scripts/sync-coupons.js)" as a per-course
+  post-launch step. So review-seeding free coupons continue; only the site-facing PAID
+  discount coupons were retired. Recommend Aseem confirm this reading so next runs stay
+  consistent.
+
+**Local funnel state VERIFIED (idempotent, safe — done this run, no writes):**
+- 51 courses registered in build-practice-site.js COURSES. The recent go-live batch is
+  ALREADY wired into the site registry (register-course.js kept current on the Mac):
+  nvidia-ncp-ain-ai-networking-2026, aws-cloud-practitioner-clf-c02-2026,
+  cisco-ccna-200-301-2026, comptia-a-plus-core-1-220-1201-2026,
+  comptia-a-plus-core-2-220-1202-2026, microsoft-az-104-azure-administrator-2026,
+  microsoft-az-204-azure-developer-2026 — all present. Nothing to register this run.
+- 5 course-configs exist but are NOT yet in any registry (candidates to onboard once
+  they flip to Live AND a browser is confirmable): databricks-ml-associate-2026,
+  databricks-ml-professional-2026, oracle-oci-ai-foundations-1z0-1122-2026,
+  oracle-oci-genai-professional-1z0-1127-2026,
+  microsoft-ab-900-copilot-agent-administration-fundamentals-2026. Live status UNKNOWN
+  (needs instructor session). register-course.js also needs each one's real live URL.
+
+**Practice-site build/deploy:** NOT run — `build-practice-site.js --all` fails in the
+sandbox at `fs.rmSync(site/)` (EPERM; the mount blocks file deletion). Remains a Mac
+step: `cd ~/course-pipeline && node scripts/build-practice-site.js --all` then push
+site/ to aseemmankotia.github.io.
+
+**Coupons:** NONE created (no session). Budget reality (08-08): Free:Open is
+1 coupon/course/month; the ~40+ older courses that got one earlier are spent until
+Sept 1. A genuinely newly-live course with no August Free:Open would still have budget.
+
+**Educational announcements:** NONE sent (no session; Aseem absent for approval).
+
+**Social posts:** NONE posted (irreversible; needs approval + session). No Reddit
+window actioned. r/comptia + r/dataengineering remain no-post per their rules.
+
+**Decisions / follow-ups needed from Aseem (attended run):**
+1. CONFIRM the strategy reading above: paid per-course coupons retired (bundles + free
+   practice tests + honest-review free seats are the live levers). Update this playbook's
+   copy templates so posts stop referencing a per-course paid coupon price.
+2. Confirm the correct Chrome (local macOS "Browser 2") at the start of the next
+   attended run so the weekly Udemy levers can run; everything is idempotent and catches up.
+3. Confirm which of the 5 unregistered configs (Databricks ML Assoc/Pro, OCI AI
+   Foundations, OCI GenAI Pro, AB-900) are now Live → register-course.js with the real
+   live URL, create the first FREEREVIEW10 Free:Open coupon, sync-coupons, add to a
+   learning-path bundle if applicable.
+4. (Mac) `node scripts/build-practice-site.js --all` + push site/ to
+   aseemmankotia.github.io; render+upload any pending promo Shorts.
+5. Sept 1: Free:Open regeneration window for courses whose August allowance is spent.
