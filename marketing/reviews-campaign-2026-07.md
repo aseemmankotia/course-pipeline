@@ -10,7 +10,7 @@ Databricks GenAI Engineer, NVIDIA NCA-GENL, Salesforce Agentforce Specialist,
 Claude Certified Developer (CCDV-F). (Agentforce → r/salesforce, r/AgentforceAI;
 CCDV-F → r/ClaudeAI, r/LLMDevs — both now live, added 2026-07-29.)
 Week-6 go-lives added 2026-08-02: CompTIA Security+ SY0-701, AWS SAA-C04,
-Microsoft AI-300, Google Cloud GenAI Leader, NVIDIA NCP-AIO, Microsoft AI-103, AWS Certified Solutions Architect - Associate (added 2026-08-02), NVIDIA-Certified Associate: Accelerated Data Science (added 2026-08-07), NVIDIA-Certified Professional: OpenUSD Development (added 2026-08-07), AIPMM Certified Digital Product Manager (added 2026-08-07), AIPMM Certified Product Manager (added 2026-08-07), NVIDIA-Certified Professional: Agentic AI (added 2026-08-07), NVIDIA-Certified Professional: Generative AI and LLMs (added 2026-08-07), AWS Certified Machine Learning Engineer - Associate (added 2026-08-07), Google Cloud Professional Machine Learning Engineer (added 2026-08-07), NVIDIA-Certified Professional: AI Infrastructure (added 2026-08-09), NVIDIA-Certified Professional: Accelerated Data Science (added 2026-08-09), NVIDIA-Certified Associate: Generative AI Multimodal (added 2026-08-09), PMI Certified Professional in Managing AI (added 2026-08-14), GSDC Certified Forward Deployed Engineer (added 2026-08-14), AWS Certified Data Engineer - Associate (added 2026-08-14), Google Cloud Certified - Associate Cloud Engineer (added 2026-08-14), Microsoft Certified: Fabric Analytics Engineer Associate (added 2026-08-16), Google Cloud Certified - Professional Data Engineer (added 2026-08-16), Microsoft Certified: AI Business Professional (added 2026-08-20), Microsoft Certified: AI Transformation Leader (added 2026-08-20), AWS Certified Developer - Associate (added 2026-08-20), Google Cloud Certified - Professional Cloud Architect (added 2026-08-22), HashiCorp Certified: Terraform Associate (004) (added 2026-08-22), Microsoft Certified: Azure Solutions Architect Expert (added 2026-08-22), AWS Certified SysOps Administrator - Associate (added 2026-08-22), CompTIA Network+ (added 2026-08-22), CompTIA A+ (Core 1) (added 2026-08-23), CompTIA A+ (Core 2) (added 2026-08-23), Microsoft Certified: Azure Administrator Associate (added 2026-08-23), Microsoft Certified: Azure Developer Associate (added 2026-08-23), NVIDIA-Certified Professional: AI Networking (added 2026-08-27), AWS Certified Cloud Practitioner (added 2026-08-27), Cisco Certified Network Associate (CCNA) (added 2026-08-27), Microsoft Certified: Azure AI Fundamentals (added 2026-08-27), NVIDIA-Certified Associate: AI Infrastructure and Operations (added 2026-08-27), Microsoft Certified: Azure Fundamentals (added 2026-08-27).
+Microsoft AI-300, Google Cloud GenAI Leader, NVIDIA NCP-AIO, Microsoft AI-103, AWS Certified Solutions Architect - Associate (added 2026-08-02), NVIDIA-Certified Associate: Accelerated Data Science (added 2026-08-07), NVIDIA-Certified Professional: OpenUSD Development (added 2026-08-07), AIPMM Certified Digital Product Manager (added 2026-08-07), AIPMM Certified Product Manager (added 2026-08-07), NVIDIA-Certified Professional: Agentic AI (added 2026-08-07), NVIDIA-Certified Professional: Generative AI and LLMs (added 2026-08-07), AWS Certified Machine Learning Engineer - Associate (added 2026-08-07), Google Cloud Professional Machine Learning Engineer (added 2026-08-07), NVIDIA-Certified Professional: AI Infrastructure (added 2026-08-09), NVIDIA-Certified Professional: Accelerated Data Science (added 2026-08-09), NVIDIA-Certified Associate: Generative AI Multimodal (added 2026-08-09), PMI Certified Professional in Managing AI (added 2026-08-14), GSDC Certified Forward Deployed Engineer (added 2026-08-14), AWS Certified Data Engineer - Associate (added 2026-08-14), Google Cloud Certified - Associate Cloud Engineer (added 2026-08-14), Microsoft Certified: Fabric Analytics Engineer Associate (added 2026-08-16), Google Cloud Certified - Professional Data Engineer (added 2026-08-16), Microsoft Certified: AI Business Professional (added 2026-08-20), Microsoft Certified: AI Transformation Leader (added 2026-08-20), AWS Certified Developer - Associate (added 2026-08-20), Google Cloud Certified - Professional Cloud Architect (added 2026-08-22), HashiCorp Certified: Terraform Associate (004) (added 2026-08-22), Microsoft Certified: Azure Solutions Architect Expert (added 2026-08-22), AWS Certified SysOps Administrator - Associate (added 2026-08-22), CompTIA Network+ (added 2026-08-22), CompTIA A+ (Core 1) (added 2026-08-23), CompTIA A+ (Core 2) (added 2026-08-23), Microsoft Certified: Azure Administrator Associate (added 2026-08-23), Microsoft Certified: Azure Developer Associate (added 2026-08-23), NVIDIA-Certified Professional: AI Networking (added 2026-08-27), AWS Certified Cloud Practitioner (added 2026-08-27), Cisco Certified Network Associate (CCNA) (added 2026-08-27), Microsoft Certified: Azure AI Fundamentals (added 2026-08-27), NVIDIA-Certified Associate: AI Infrastructure and Operations (added 2026-08-27), Microsoft Certified: Azure Fundamentals (added 2026-08-27), Oracle Cloud Infrastructure 2025 AI Foundations Associate (added 2026-08-29), Databricks Certified Machine Learning Associate (added 2026-08-29).
 
 ---
 
@@ -720,3 +720,54 @@ window actioned. r/comptia + r/dataengineering remain no-post per their rules.
 4. (Mac) `node scripts/build-practice-site.js --all` + push site/ to
    aseemmankotia.github.io; render+upload any pending promo Shorts.
 5. Sept 1: Free:Open regeneration window for courses whose August allowance is spent.
+
+## Update — 2026-08-28 (later, attended): Aseem confirmed browser + decisions; announcement SENT
+
+Aseem returned and directed "drive local macOS Chrome" (deviceId 308b006e). Instructor
+session was HEALTHY (no logout). Decisions captured via question prompts:
+- **Coupons: NONE this run** — hold Free:Open regeneration to Sept 1 (Free:Open is
+  1/course/month with a 5-day expiry; creating on 08-28 would burn the August slot right
+  before the reset and only helps if distributed). No coupons created.
+- **Distribution: educational announcement only** (no LinkedIn/Reddit this run).
+- **Strategy: KEEP paid per-course coupons** as a promotable lever in copy — Aseem chose
+  NOT to retire them from the messaging templates despite the site-side removal (commit
+  9175460). So this playbook's post-copy templates are left UNCHANGED. (Note the standing
+  inconsistency: build-practice-site.js no longer renders per-course paid coupons on the
+  site — only bundles + free practice tests — so any paid-coupon mention in a post must
+  point to a coupon link that still exists on Udemy, not to the site.)
+
+**Course status (/instructor/courses/, newest-first):** the recent go-live batch is all
+LIVE and already registered (CCNA, CLF-C02, NCP-AIN, AZ-104, AZ-204, A+ Core 1/2,
+Network+, SOA-C02, DVA-C02, AZ-305, Terraform 004, PCA, DP-600, PDE, AB-730/731). Two
+previously-unregistered configs are NOW LIVE (0 reviews, 0 enrollments):
+Databricks ML Associate ($89.99) and Oracle Cloud AI Foundations 1Z0-1122 ($49.99).
+Still not live (draft/submitted, not in newest list): databricks-ml-professional-2026,
+oracle-oci-genai-professional-1z0-1127-2026, microsoft-ab-900-copilot-agent-...-2026.
+NOTE: the 2 newly-live courses are LIVE on Udemy but NOT yet registered in the funnel
+(register-course.js + site build/deploy + promo Short) — onboarding still owed on the Mac
+(build/deploy fails in sandbox: EPERM on rmSync).
+
+**Educational announcement — SENT (Udemy: "under review, will be sent once approved"):**
+ONE bulk educational announcement to **26 never-announced courses** (every course live
+since the 08-08 send that had not yet received an August announcement). Subject: "Your
+exam-week readiness checklist - a small favor". Body = 3-point readiness checklist
+(explain each domain; both timed practice tests; know why each distractor is wrong) +
+soft honest-review footer. NO links, NO coupon mention, NO positive-rating incentive —
+compliant. Uses 1 of 4 August budget on each of the 26. Recipients:
+Databricks ML Associate, Oracle Cloud AI Foundations, CCNA 200-301, AWS CLF-C02, NCP-AIN,
+AZ-204, AZ-104, A+ Core 2, A+ Core 1, Network+ N10-009, AWS SOA-C02, DVA-C02, AZ-305,
+Terraform 004, Google PCA, DP-600, Google PDE, AB-731, AB-730, PMI-CPMAI, GSDC CFDE,
+NCP-AII, NCP-ADS, NCA-GENM, AWS DEA-C01, Google ACE. (Bulk send → no per-cert domain
+callout this week, per the 08-02 precedent.)
+
+**Coupons:** none. **Social posts:** none (Aseem chose announcement-only).
+
+**Follow-ups for Aseem (Mac):**
+1. Onboard the 2 newly-live courses (Databricks ML Associate, OCI AI Foundations 1Z0-1122):
+   `npm run go-live -- --slug=<slug> --udemy=<liveUrl> --promo --announce-live` (or
+   register-course.js + build-practice-site.js --all + push site/ + promo-all). Add each
+   to the relevant BUNDLE and run `npm run sync-coupons`.
+2. Sept 1: Free:Open regeneration window for the whole live portfolio; time a distribution
+   post to that window so seats don't expire undistributed.
+3. Onboard databricks-ml-professional, oracle-oci-genai-professional, AB-900 when they
+   flip to Live.
