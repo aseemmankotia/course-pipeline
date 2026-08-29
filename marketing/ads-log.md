@@ -99,3 +99,98 @@ targeting. Never auto-published; never any payment-detail entry.
 - **Social — NEW bundle creative:** `marketing/bundle-ads-2026-08.md` (generic + AWS + NVIDIA +
   Google + CompTIA; destination technuggets.academy/#bundles; compliance-checked, no promise
   language). Create on each platform manually or via Claude-in-Chrome.
+
+---
+
+## Run — 2026-08-28 · Cisco CCNA 200-301 (v1.1)
+
+**Course:** `cisco-ccna-200-301-2026` — "CCNA 200-301 (v1.1) Exam Prep: Complete Course"
+(newest live course in build-practice-site.js not yet advertised; NCA-ADS was the only
+prior entry in ads-rotation.json).
+**Destination for all ads:** https://technuggets.academy/
+**No active coupon** for `200-301` in `marketing/coupons.json`, so no price is claimed in
+the copy — only the free practice tests and a generic "bundle related certs and save".
+
+### Meta (Facebook/Instagram) — DRAFT CREATED ✅ (not published)
+- Ad account 65932722. Campaign **"CCNA 200-301 Practice Site Traffic — 2026-08-28"**
+  (id `52557800375969`), ad set **"CCNA — IT/Network Pros — $10 lifetime"**
+  (`52557800376169`), ad **"CCNA 200-301 Card Image Ad"** (`52557800375769`).
+  Status: **In draft** — appears under "Review and publish".
+- Objective Traffic → Website; performance goal = maximize landing page views.
+- Budget **$10 LIFETIME**, Aug 28 → Sep 5 2026. NOTE: Meta rejects $10 lifetime over
+  30 days (min ~$31 / ~$1.03 per day), so the schedule was shortened to 9 days — the
+  longest run $10 lifetime allows. Raise the budget if a 30-day flight is wanted.
+- Targeting: US + India + UK + Canada + Germany; min age 22 (22–65+); English (All);
+  detailed targeting = Cisco Systems, Computer network, Information technology (interests)
+  + Network administrator, Network/Telecom Engineer (job titles). Est. audience ~210M.
+- Creative: **placeholder** = TechNuggets gold-nugget logo (800×800, 1.91:1 crop).
+  Chrome's file-upload tool was unavailable in this session, so the CCNA card could not be
+  uploaded. Pre-scaled swap-in files were written to the ClaudeFolder:
+  `ccna-fb-1200x675.png` and `ccna-ig-1080x1080.png` (from
+  `exports/course-images/cisco-ccna-200-301-2026-card-notext.png`).
+- Advantage+ AI text variants **deselected (0 of 5 primary, 0 of 2 headlines)** — Meta's
+  generated headlines were "Pass the CCNA 200-301 Exam with Ease" and "Pass with Free
+  Practice Tests", both of which violate the no-promise rule. Do NOT enable them.
+  AI image generation, overlays, touch-ups, text improvements and translation all off.
+
+**Copy used (Meta):**
+> "show ip route" is on the screen and you have 90 seconds. Which route does the router actually install?
+>
+> CCNA 200-301 (v1.1) exam-focused prep built on real Cisco IOS output — not flashcards. All six domains at Cisco's official weights, hands-on labs you can run in Packet Tracer (no hardware needed), plus 2 full-length, time-boxed practice exams.
+>
+> ➔ Free practice tests: https://technuggets.academy/
+>
+> Filter by vendor, take a free practice test, grab the course coupon, or bundle related certs and save. Start preparing today.
+
+- Headline: `CCNA 200-301 v1.1 Exam-Focused Prep`
+- Description: `Free practice tests at technuggets.academy`
+- CTA: Learn more · Website URL `https://technuggets.academy/` · display link `technuggets.academy`
+
+### Google Ads (YouTube) — BLOCKED, NOT SAVED ⚠️
+- Account 238-821-4892. Google has **retired new Video conversion campaigns** — the flow
+  auto-converts to **Demand Gen** (serves YouTube incl. Shorts, Discover, Gmail, Display).
+- Campaign was fully built: name "CCNA 200-301 Practice Site Traffic — 2026-08-28",
+  goal Clicks / Maximize clicks, **$10 campaign-total**, start Aug 28 + "Ends in 1 month",
+  locations US/IN/UK/CA/DE (bulk add), language English, audience
+  "CCNA / Networking Certification Seekers" (in-market: Network Equipment &
+  Virtualization, Network Management, Open Online Courses), single image ad using the site's
+  own og-image scanned from technuggets.academy, final URL https://technuggets.academy/,
+  business name TechNuggets Academy, CTA "Learn more".
+- **Two blockers:**
+  1. Google enforces a **minimum total budget of $160** for this campaign/duration —
+     $10 lifetime is not accepted. (Budget left at $10 deliberately so nothing can run.)
+  2. Google repeatedly demanded **"Confirm it's you"** re-authentication to save; entering
+     the account password is out of scope, so the final state showed "Unsaved changes".
+- Nothing was published and no spend is possible. Aseem: re-auth in Google Ads, then either
+  raise the total budget to ≥$160 or skip Google for this course.
+- Headlines drafted (compliance-checked): "CCNA 200-301 Exam-Focused Prep" · "Free CCNA
+  Practice Tests" · "Real Cisco IOS, Not Flashcards" · "All 6 CCNA Domains Covered" ·
+  "Packet Tracer Labs Included".
+  Descriptions: "Exam-focused CCNA 200-301 prep: all six domains, hands-on labs, 2 full
+  practice exams." · "Free practice tests and the course coupon at technuggets.academy.
+  Start preparing today."
+  (Google's own suggestion "Pass-ready practice for the top AI certifications" was NOT used —
+  promise language.)
+
+### TikTok — SKIPPED
+- ads.tiktok.com redirected to the TikTok for Business login page. Not logged in, so no
+  campaign was attempted (per the no-login rule). The 9:16 asset is ready at
+  `exports/cisco-ccna-200-301-2026/welcome-promo-short.mp4` (1080×1920, 34 s).
+
+### Needs Aseem's attention
+1. **Meta ad image** — swap the placeholder logo for the CCNA card before publishing.
+2. **Meta / India** — Ads Manager requires a declaration on whether the ads relate to
+   securities & investments ("Review requirements"). Left unanswered; it is a legal
+   attestation for the advertiser to make.
+3. **Meta / EU** — the ad set includes Germany, so Meta requires advertiser + payer details
+   for EU delivery. Left blank for the same reason.
+4. **Google** — re-authenticate, then decide: raise total budget to ≥$160 or drop Google.
+5. **TikTok** — log in to TikTok Ads Manager so the next run can build the video ad.
+6. Ads Manager also shows older campaigns (AZ-204, DVA-C02, NCA-GENM) that were never
+   recorded in `ads-rotation.json`, plus the stale NCA-ADS/"New Traffic Campaign" drafts
+   flagged for deletion on 2026-08-23.
+
+**Direct links**
+- Meta: https://adsmanager.facebook.com/adsmanager/manage/campaigns?act=65932722
+- Google Ads: https://ads.google.com/aw/campaigns?ocid=8156899860
+- TikTok: https://ads.tiktok.com/i18n/perf/creation

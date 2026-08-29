@@ -9,15 +9,26 @@
         "google": "draft 10208186673 created (needs YouTube video ad)",
         "tiktok": "skipped - not logged in"
       },
-      "retired": "2026-08-23 — superseded by bundle promotions (old domain aseemmankotia.github.io; Meta ad ended Aug 16)"
+      "retired": "2026-08-23 \u2014 superseded by bundle promotions (old domain aseemmankotia.github.io; Meta ad ended Aug 16)"
+    },
+    {
+      "slug": "cisco-ccna-200-301-2026",
+      "title": "CCNA 200-301 (v1.1) Exam Prep: Complete Course",
+      "date": "2026-08-28",
+      "destination": "https://technuggets.academy/",
+      "platforms": {
+        "meta": "DRAFT created \u2014 campaign 52557800375969 / adset 52557800376169 / ad 52557800375769 ('In draft', not published). $10 lifetime, Aug 28\u2013Sep 5 (9 days; Meta min is ~$1.03/day so 30 days was not possible at $10). Placeholder creative = TechNuggets gold-nugget logo (Chrome file upload unavailable this session) \u2014 swap in the CCNA card before publishing.",
+        "google": "BLOCKED \u2014 Demand Gen campaign fully built (name 'CCNA 200-301 Practice Site Traffic \u2014 2026-08-28', $10 campaign-total, Aug 28 + 1 month, US/IN/UK/CA/DE, English, in-market Network Equipment & Virtualization / Network Management / Open Online Courses, image ad w/ site og-image, 5 headlines, 2 descriptions, CTA Learn more) but Google enforces a $160 minimum total budget and demanded re-authentication ('Confirm it's you') to save. Not published, not saved. Aseem must re-auth and decide on budget.",
+        "tiktok": "skipped \u2014 not logged in to TikTok Ads Manager in Chrome"
+      }
     }
   ],
-  "lastRun": "2026-08-23",
+  "lastRun": "2026-08-28",
   "retiredCampaigns": [
     {
       "platform": "meta",
       "what": "NCA-ADS Card Image Ad (traffic, $10) + stub Traffic Campaign draft",
-      "status": "ended Aug 16 2026 — delete/archive in Ads Manager",
+      "status": "ended Aug 16 2026 \u2014 delete/archive in Ads Manager",
       "pageId": "1187947767742236"
     },
     {
@@ -44,9 +55,9 @@
       "comptia-security"
     ],
     "platformStatus": {
-      "meta": "creative ready — create in Ads Manager (or Chrome-drive)",
-      "google": "creative ready — create campaign",
-      "tiktok": "creative ready — create when logged in"
+      "meta": "creative ready \u2014 create in Ads Manager (or Chrome-drive)",
+      "google": "creative ready \u2014 create campaign",
+      "tiktok": "creative ready \u2014 create when logged in"
     }
   }
 }
