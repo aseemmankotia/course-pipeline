@@ -782,3 +782,24 @@ on credit/balance 400s). FIX: an empty (`!text.trim()`) or `stop_reason === 'ref
 response now returns null → `callAI` falls through to the Gemini fallback (GEMINI_API_KEY
 already set), same as the balance-error path. General: any empty Claude completion now
 self-heals to Gemini instead of dead-ending the render.
+
+### 4. Missing cues on diagram/analogy/live_code/portal_demo slides → proportional drift (`render/course-render.js`, 2026-09-01)
+SYMPTOM: after a clean render, some chapters' slides drift out of sync with the voice
+(the old "audio doesn't match the slides" complaint) while others are perfect. Replaying
+`slide-timing.js` over the section caches showed EVERY cue that exists matches 100%, but
+many `diagram`/`analogy`/`live_code`/`portal_demo` slides had an EMPTY `cue` → chapters
+heavy in those types fell below buildAlignedTimeline's 60% confidence bar → proportional
+fallback (drift). comptia-pentest ch2/3/6/9/10 fully drifted, ch1/5/12 borderline.
+ROOT CAUSE: the slide-split prompt says "CUE (REQUIRED on EVERY slide)" but the JSON
+EXAMPLES for those four slide types omitted the `cue` field, so the model copied the
+examples and dropped cues on them. FIX: added a `cue` field to all four examples + a
+hard rule line ("CUE IS MANDATORY ON EVERY SINGLE SLIDE INCLUDING analogy/diagram/
+live_code/portal_demo"). The renderer already treats a cache whose content slides lack
+cues as stale and re-splits, so a `--force` re-render self-heals: comptia-pentest went
+from 4 drifted + 3 borderline to **12/12 at 100% cue match**. Re-verify after a render:
+replay buildAlignedTimeline per chapter, or watch for `Audio-aligned timing: N/N` in the
+render log (a `using proportional timing` line means that chapter still has empty cues).
+GOTCHA: per-chapter `node render/course-render.js N --force` needs the staged
+`course-render-input-N.json` AND `heygen-chapter-NN.mp4` + `.words.json` in the repo root
+— `collect-videos.js` moves the narration mp4s to `exports/<slug>/heygen-src/`, so
+re-stage (`stage-course.js --slug`) and restore the mp4s before a manual re-render.

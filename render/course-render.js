@@ -384,6 +384,7 @@ Rules:
 - VARIETY IS MANDATORY: use at least 4 different slide types per chapter; never more than 2 "concept" slides in a row — break theory up with live_code, diagram, portal_demo, or analogy slides
 - Prefer "live_code" over "code" whenever demonstrating execution; prefer "diagram" whenever the script describes an architecture, flow, or comparison
 - CUE (REQUIRED on EVERY slide): copy VERBATIM the first 8–12 words of the exact portion of the Script that this slide covers — the words as they are actually spoken, in order, exactly as written in the Script (do NOT paraphrase, summarize, translate, or fix them). The cues, read top to bottom, must march FORWARD through the Script (each slide's cue starts at or after the previous slide's). This is what lets us flip the slide at the moment the narrator reaches it, so it must be a real substring of the Script.
+- CUE IS MANDATORY ON EVERY SINGLE SLIDE INCLUDING analogy / diagram / live_code / portal_demo — a slide with no cue cannot be time-aligned to the narration and causes drift
 - Return ONLY a JSON array, no markdown`,
     prompt: `Chapter: ${input.chapter_title}
 Concepts: ${(input.concepts || []).join(', ')}
@@ -412,6 +413,7 @@ Return JSON array of slides:
   {
     "type": "analogy",
     "title": "Analogy title",
+    "cue": "verbatim first 8-12 words of the script span this slide covers",
     "analogy_left": "Simple everyday thing",
     "analogy_right": "Technical term",
     "simple_label": "Think of it like...",
@@ -421,12 +423,14 @@ Return JSON array of slides:
   {
     "type": "diagram",
     "title": "Diagram title",
+    "cue": "verbatim first 8-12 words of the script span this slide covers",
     "mermaid_code": "flowchart LR\\n  A[Input] --> B[Process]\\n  B --> C[Output]\\n  B --> D[Log]",
     "duration_seconds": 35
   },
   {
     "type": "live_code",
     "title": "Loading Our Dataset",
+    "cue": "verbatim first 8-12 words of the script span this slide covers",
     "language": "python",
     "setup_comment": "# Let's load our first dataset",
     "code_lines": [
@@ -443,6 +447,7 @@ Return JSON array of slides:
   {
     "type": "portal_demo",
     "title": "Creating a Virtual Machine",
+    "cue": "verbatim first 8-12 words of the script span this slide covers",
     "portal_service": "Virtual Machines",
     "portal_action": "Create VM - Basics tab",
     "portal_url": "portal.azure.com/#create/Microsoft.VirtualMachine",
