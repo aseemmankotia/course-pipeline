@@ -26,6 +26,19 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.join(__dirname, '..');
+
+// Resolve the Python interpreter for this project: prefer $PIPELINE_PYTHON, then
+// the project venv (.venv), else bare 'python3'. Keeps narration/cards on the
+// pinned interpreter even from cron / scheduled tasks / parallel workers that
+// never activated the venv (a bare 'python3' can pick up an unrelated conda base).
+const PYTHON = (() => {
+  if (process.env.PIPELINE_PYTHON) return process.env.PIPELINE_PYTHON;
+  const venv = process.platform === 'win32'
+    ? path.join(ROOT, '.venv', 'Scripts', 'python.exe')
+    : path.join(ROOT, '.venv', 'bin', 'python3');
+  try { if (fs.existsSync(venv)) return venv; } catch (e) {}
+  return 'python3';
+})();
 const args = Object.fromEntries(process.argv.slice(2).map(a => {
   const m = a.match(/^--([^=]+)(?:=(.*))?$/); return m ? [m[1], m[2] ?? true] : [a, true];
 }));
@@ -196,8 +209,8 @@ function quarantineLegacyMedia() {
       // --logo: composite the TechNuggets wordmark (small, top-left corner, no panel —
       // Udemy-compliant; a logo is the sole allowed exception to the no-text rule). This
       // is opt-in in make-card.py, so pass it here or every batch card ships logo-less.
-      run('course card (text-free + logo)', 'python3', ['scripts/make-card.py', `--slug=${course.slug}`, '--logo'], { allowFail: true });
-      run('practice-test CSVs', 'python3', ['scripts/make-practice-test-csvs.py', `--slug=${course.slug}`], { allowFail: true });
+      run('course card (text-free + logo)', PYTHON, ['scripts/make-card.py', `--slug=${course.slug}`, '--logo'], { allowFail: true });
+      run('practice-test CSVs', PYTHON, ['scripts/make-practice-test-csvs.py', `--slug=${course.slug}`], { allowFail: true });
       run('compliance gate', process.execPath, ['scripts/compliance-check.js', `--slug=${course.slug}`]); // hard: stops the run on any violation
     }
 

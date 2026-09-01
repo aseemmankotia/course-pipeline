@@ -37,3 +37,6 @@ marketing/coupons.json
 youtube-token.json
 client_secrets.json
 .env.bak.*
+
+# Python virtualenv for the pipeline
+.venv/

@@ -28,6 +28,19 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 
 const ROOT = path.join(__dirname, '..');
+
+// Resolve the Python interpreter for this project: prefer $PIPELINE_PYTHON, then
+// the project venv (.venv), else bare 'python3'. Keeps narration/cards on the
+// pinned interpreter even from cron / scheduled tasks / parallel workers that
+// never activated the venv (a bare 'python3' can pick up an unrelated conda base).
+const PYTHON = (() => {
+  if (process.env.PIPELINE_PYTHON) return process.env.PIPELINE_PYTHON;
+  const venv = process.platform === 'win32'
+    ? path.join(ROOT, '.venv', 'Scripts', 'python.exe')
+    : path.join(ROOT, '.venv', 'bin', 'python3');
+  try { if (fs.existsSync(venv)) return venv; } catch (e) {}
+  return 'python3';
+})();
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 function loadEnv() {
@@ -59,6 +72,7 @@ const VOICE = ENV.TTS_VOICE || 'en-US-AndrewMultilingualNeural';
 //                  retryable error so the retry/backoff loop re-attempts.
 const EDGE_STALL_S = parseInt(ENV.EDGE_STALL_S || '45', 10);
 const EDGE_CAP_S = parseInt(ENV.EDGE_CAP_S || '300', 10);
+const EDGE_CHUNK_CHARS = parseInt(ENV.EDGE_CHUNK_CHARS || '2400', 10); // max chars per edge-tts request (chunking makes long chapters reliable)
 
 const HEYGEN_DIR = args.slug ? path.join(ROOT, 'generated', args.slug, 'heygen') : null;
 if (HEYGEN_DIR && !fs.existsSync(HEYGEN_DIR)) { console.error(`❌ ${HEYGEN_DIR} not found — generate the course first.`); process.exit(1); }
@@ -99,56 +113,101 @@ const ffmpeg = findBinary('ffmpeg');
 
 // ---------- engines ----------
 function ttsEdge(textFile, outMp3, outJson) {
-  // Use the edge-tts python module (pip3 install edge-tts). We STREAM instead of
-  // save() so we can capture WordBoundary events — an exact spoken timestamp for
-  // every word — and write them to outJson. course-render.js uses that sidecar
-  // to flip each slide the instant the narrator reaches it (audio-aligned
-  // timing), which is what fixes the "audio doesn't match the slides" drift.
+  // Synthesize with edge-tts, CHUNKED at sentence boundaries, with PER-CHUNK retry
+  // + checkpointing: each chunk is its own request; a chunk that stalls is retried
+  // on its own without discarding the chunks already done, and only if a chunk
+  // can't complete after CHUNK_TRIES does the chapter fail (→ the caller's retry).
+  // The MP3 frames are concatenated and WordBoundary events merged into ONE timing
+  // stream (each chunk's offsets shifted by the running audio length) so the
+  // audio-aligned slide sidecar stays correct. Chunk size via EDGE_CHUNK_CHARS.
   const py = `
-import asyncio, sys, json, edge_tts
-STALL = ${EDGE_STALL_S}   # abort if no audio for this many seconds (stall)
-CAP   = ${EDGE_CAP_S}     # hard cap on one chapter's synthesis
-async def synth():
-    text = open(sys.argv[1], encoding='utf-8').read()
-    out_mp3 = sys.argv[2]
-    out_json = sys.argv[3] if len(sys.argv) > 3 and sys.argv[3] else None
-    # edge-tts >= 7.x added a keyword-only \`boundary\` that DEFAULTS to
-    # "SentenceBoundary" — so word-level events are NOT sent unless we ask for
-    # them explicitly. Without this the stream yields zero WordBoundary chunks and
-    # the timing sidecar comes out empty (the bug that made every chapter fall back
-    # to proportional timing). Request WordBoundary + short receive_timeout so a
-    # stalled connection RAISES (retryable) instead of hanging forever. Fall back
-    # for older versions (< 7.x) that don't accept these kwargs.
+import asyncio, sys, json, re, edge_tts
+STALL = ${EDGE_STALL_S}
+MAXLEN = ${EDGE_CHUNK_CHARS}
+CHUNK_TIMEOUT = min(${EDGE_CAP_S}, 90)   # hard cap on ONE chunk's synthesis
+CHUNK_TRIES = 3                          # per-chunk retries before the chapter fails
+def norm(s):
+    return re.sub(r'\\s+', ' ', s).strip()
+def split_text(text):
+    sents = re.split(r'(?<=[.!?])\\s+', text.strip())
+    chunks = []
+    buf = ''
+    for s in sents:
+        s = norm(s)
+        if not s:
+            continue
+        while len(s) > MAXLEN:
+            cut = s.rfind(' ', 0, MAXLEN)
+            if cut <= 0:
+                cut = MAXLEN
+            piece = s[:cut].strip()
+            if buf:
+                chunks.append(buf); buf = ''
+            if piece:
+                chunks.append(piece)
+            s = s[cut:].strip()
+        if not s:
+            continue
+        if buf and len(buf) + 1 + len(s) > MAXLEN:
+            chunks.append(buf); buf = s
+        else:
+            buf = (buf + ' ' + s) if buf else s
+    if buf:
+        chunks.append(buf)
+    return chunks or ['']
+async def synth_chunk(text, audio, cwords):
     try:
         tts = edge_tts.Communicate(text, voice='${VOICE}', rate='+4%', boundary='WordBoundary', connect_timeout=15, receive_timeout=STALL)
     except TypeError:
         tts = edge_tts.Communicate(text, voice='${VOICE}', rate='+4%')
-    words = []
+    last_end = 0
+    async for chunk in tts.stream():
+        t = chunk.get('type')
+        if t == 'audio':
+            audio.extend(chunk['data'])
+        elif t in ('WordBoundary', 'SentenceBoundary'):
+            off = chunk.get('offset', 0); dur = chunk.get('duration', 0)
+            cwords.append({'text': chunk.get('text', ''), 'offset': off, 'duration': dur})
+            if off + dur > last_end:
+                last_end = off + dur
+    return last_end
+async def synth():
+    text = open(sys.argv[1], encoding='utf-8').read()
+    out_mp3 = sys.argv[2]
+    out_json = sys.argv[3] if len(sys.argv) > 3 and sys.argv[3] else None
+    chunks = split_text(text)
+    words = []; base = 0
     with open(out_mp3, 'wb') as f:
-        async for chunk in tts.stream():
-            t = chunk.get('type')
-            if t == 'audio':
-                f.write(chunk['data'])
-            elif t in ('WordBoundary', 'SentenceBoundary'):
-                words.append({'text': chunk.get('text', ''),
-                              'offset': chunk.get('offset', 0),
-                              'duration': chunk.get('duration', 0)})
+        for i, c in enumerate(chunks):
+            for attempt in range(1, CHUNK_TRIES + 1):
+                audio = bytearray(); cwords = []
+                try:
+                    end = await asyncio.wait_for(synth_chunk(c, audio, cwords), timeout=CHUNK_TIMEOUT)
+                    if not audio:
+                        raise RuntimeError('no audio returned')
+                    f.write(audio)
+                    for w in cwords:
+                        w['offset'] += base; words.append(w)
+                    base += end + 1000000   # +0.1s gap (100ns ticks) between chunks
+                    sys.stderr.write('    chunk %d/%d ok — %d words so far\\n' % (i + 1, len(chunks), len(words)))
+                    break
+                except Exception as e:
+                    if attempt >= CHUNK_TRIES:
+                        raise RuntimeError('chunk %d/%d failed after %d tries: %s' % (i + 1, len(chunks), CHUNK_TRIES, type(e).__name__))
+                    sys.stderr.write('    chunk %d/%d stalled (try %d/%d) — retrying\\n' % (i + 1, len(chunks), attempt, CHUNK_TRIES))
+                    await asyncio.sleep(3 * attempt)
     if out_json:
         json.dump(words, open(out_json, 'w', encoding='utf-8'))
     sys.stderr.write('    word-timings captured: %d\\n' % len(words))
-async def main():
-    await asyncio.wait_for(synth(), timeout=CAP)
-asyncio.run(main())
+asyncio.run(synth())
 `;
-  const r = spawnSync('python3', ['-c', py, textFile, outMp3, outJson || ''],
-    { stdio: ['ignore', 'inherit', 'pipe'], encoding: 'utf8', timeout: (EDGE_CAP_S + 30) * 1000, killSignal: 'SIGKILL' });
-  // A hang → spawnSync kills the child: surface it as a THROW so the caller's
-  // retry/backoff re-attempts (a stall is exactly what edge-tts throttling causes).
-  if (r.error && r.error.code === 'ETIMEDOUT') throw new Error(`edge-tts hung > ${EDGE_CAP_S}s (stalled connection / throttling) — killed`);
+  const r = spawnSync(PYTHON, ['-c', py, textFile, outMp3, outJson || ''],
+    { stdio: ['ignore', 'inherit', 'pipe'], encoding: 'utf8', timeout: Math.max(EDGE_CAP_S + 30, 900) * 1000, killSignal: 'SIGKILL' });
+  if (r.error && r.error.code === 'ETIMEDOUT') throw new Error(`edge-tts process wedged — killed`);
   if (r.signal) throw new Error(`edge-tts killed (${r.signal}) — likely a stall/timeout`);
   if (r.status !== 0) {
     if ((r.stderr || '').includes('No module named')) {
-      throw new Error("edge-tts not installed. Run:  pip3 install edge-tts");
+      throw new Error("edge-tts not installed. Run:  pip install edge-tts");
     }
     throw new Error('edge-tts failed: ' + (r.stderr || '').slice(-400));
   }

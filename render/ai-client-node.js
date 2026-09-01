@@ -66,6 +66,16 @@ async function _callAnthropic({ prompt, systemPrompt, maxTokens, action }) {
     .map(b => b.text)
     .join('');
 
+  // An empty completion (0 chars) or an explicit refusal is NOT usable downstream
+  // (parsers reject "" as "No JSON array"/empty). This happens when Claude declines
+  // to reformat sensitive material — e.g. offensive-security chapters (persistence,
+  // lateral movement, exfiltration). Treat it like the balance-error case: signal
+  // null so callAI falls through to the Gemini fallback instead of returning "".
+  if (!text.trim() || data.stop_reason === 'refusal') {
+    console.log(`   ⚠️  [Claude] ${action}: empty/refusal (stop_reason=${data.stop_reason || 'none'}) — trying Gemini fallback…`);
+    return null;
+  }
+
   console.log(`   ✓ [Claude] ${action}: ${text.length} chars`);
   return text;
 }
