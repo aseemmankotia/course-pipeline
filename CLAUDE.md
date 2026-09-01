@@ -460,6 +460,84 @@ match, so this is the design going forward (no manual site edits — `fs.rmSync(
   so the domain must resolve before publishing or the site goes dark.
 - Handoff docs + assets: `new-website/` (README, generator.patch, style.css, LINK-AUDIT.md).
 
+### WEBSITE PUBLISH TARGET — `~/tna-site` (settled 2026-08-28)
+The live GitHub Pages clone is **`/Users/macbookpro/tna-site`** (remote
+`github.com/aseemmankotia/aseemmankotia.github.io`, `CNAME` = technuggets.academy).
+Use ONLY this directory to publish. Three look-alikes exist and cost a session to
+untangle — do not rsync into any of them:
+- `/Users/macbookpro/pages-repo` — a SECOND clone of the same repo, stale (last commit
+  2026-08-23). Delete it; if it lingers, never publish from it.
+- `/Users/macbookpro/aseemmankotia.github.io` — NOT a git repo, just a bare directory
+  named after the repo. `git pull` there fails with "not a git repository" while a
+  chained `rsync --delete` still silently overwrites it. Safe to `rm -rf`.
+- `~/course-pipeline/site/` — generator OUTPUT, wiped by `fs.rmSync(OUT)` every build.
+  Never edit by hand, never treat as the repo.
+
+BUILD THEN PUBLISH (both steps on the Mac):
+```
+cd ~/course-pipeline
+SUBSCRIBE_ENDPOINT=https://technuggets-subscribe.technuggets.workers.dev/subscribe \
+  node scripts/build-practice-site.js --all
+grep -c technuggets-subscribe site/index.html      # MUST be > 0 (see gotcha below)
+
+cd ~/tna-site && git pull
+rsync -a --delete --exclude '.git' --exclude '_to_delete' --exclude '_backup' \
+  ~/course-pipeline/site/ .
+git status                                         # review before committing
+git add -A && git commit -m "…" && git push
+```
+GOTCHA — `build-practice-site.js` reads `process.env.SUBSCRIBE_ENDPOINT` and does NOT
+load `.env`, so a plain `node scripts/build-practice-site.js --all` builds a site with
+NO subscribe form (falls back to the `REPLACE-WITH-YOUR-HOST` placeholder, and
+`SUBSCRIBE_READY` goes false). Deploying that silently strips the working signup form
+off the live site. Always pass the env var inline and verify with the grep above.
+NOTE: interactive zsh does not treat `#` as a comment — trailing `# comments` on a
+command line become arguments (that grep will error on them).
+DNS is already live, so the DNS-first step above only applies to a domain change.
+
+### YouTube upload OAuth — BROKEN, in progress (2026-08-28)
+`scripts/upload-short.js` + `youtube-auth.js` need TWO gitignored files in the repo root
+(`.gitignore` lines 37-38), so they are local-only and were LOST on this machine:
+`client_secrets.json` and `youtube-token.json`. Neither exists. Consequence:
+`promo-all.js --slug=<slug> --upload` dies with ENOENT before uploading anything.
+
+What we found, in order (do not re-derive):
+1. `.env`'s `YOUTUBE_CLIENT_ID`/`YOUTUBE_CLIENT_SECRET` are DEAD — the Google Cloud
+   OAuth client was deleted (`Error 401: deleted_client`). Rebuilding client_secrets.json
+   from `.env` does NOT work. A NEW OAuth client must be created.
+2. A new `client_secrets.json` was created and chmod 600'd. Use application type
+   **Desktop app** (loopback redirects work without registering a redirect URI).
+   Still TODO: enable YouTube Data API v3 + Sheets API, add the account under Test users,
+   and update `.env` to the new client id/secret so the two don't drift.
+3. BLOCKED HERE: `node youtube-auth.js` fails with `EADDRINUSE 127.0.0.1:8080`. A stale
+   `node youtube-auth.js` (PID 13282, started 23:07) holds the port and survived both
+   `kill` and `kill -9`. Next step: check its parent (`ps -o ppid= -p <pid>`) for a
+   respawner, or just reboot; alternatively change `REDIRECT_URI`/port at
+   `youtube-auth.js:30` (a Desktop client accepts ANY loopback port, so no console change
+   is needed). Then `node youtube-auth.js` → verify `youtube-token.json` exists → re-run
+   the upload. Run auth and upload as SEPARATE commands; chaining them uploads before the
+   token exists.
+4. GOTCHA to set once it works: if the OAuth consent screen stays in **Testing**, Google
+   expires refresh tokens after 7 DAYS and uploads break weekly. Set it to **In
+   production** (single-user app publishes without verification; one "unverified app"
+   warning at consent).
+
+Pending uploads once fixed: `oracle-oci-ai-foundations-1z0-1122-2026` and
+`databricks-ml-associate-2026` (promo Shorts already rendered in
+`exports/<slug>/welcome-promo-short.mp4`). Uploads default to UNLISTED; flip with
+`node scripts/upload-short.js --publish=<videoId>`.
+
+### Newsletter subscriber count — check BREVO, not subscribers.json
+With `EMAIL_PROVIDER=brevo` (current default) signups go straight into Brevo list 5;
+`marketing/email/subscribers.json` is only used by the legacy smtp/resend path, so
+`node scripts/subscribers.js stats` reads ~1 (a self-test row) and is NOT a signal —
+do not report it as "0 subscribers". Real count: Brevo dashboard → Contacts → list 5.
+Also, `api.brevo.com` is NOT in the Linux sandbox's DNS allowlist, so any Brevo call
+from a sandboxed session fails with `EAI_AGAIN` and send-campaign prints
+`list 5 (?(fetch failed) contacts)`. That is a sandbox artifact, not a bad API key —
+it works from the Mac. The Cloudflare subscribe Worker is deployed and healthy
+(`GET /health` → 200 at technuggets-subscribe.technuggets.workers.dev).
+
 ## Course-card logo branding (added 2026-08-14)
 `make-card.py` now composites the TechNuggets gold-nugget logo (dark-bg horizontal
 lockup from `brand/png/technuggets-logo-horizontal-dark-*.png`) onto every card,
@@ -655,3 +733,52 @@ Terraform questions in a row.
 SANDBOX NOTE: the sandbox cannot delete inside the mounted repo, so `shutil.rmtree` of the
 temp `.frames-*` dirs silently fails there (it works fine on the Mac). If you see stray
 `exports/clips/*/.frames-*` dirs after a sandbox run, they are safe to delete.
+
+## TTS + render reliability — chunked edge-tts, pinned interpreter, AI empty-fallback (2026-09-01)
+
+Three failures surfaced building `comptia-pentest-pt0-003-2026` (parallel:generate,
+then solo autopilot). All three are fixed in code; symptoms + fixes recorded so the
+next occurrence is recognisable.
+
+### 1. edge-tts hangs on the biggest chapter → CHUNK the request (`scripts/tts-generate.js`)
+SYMPTOM: `tts narration (free)` stops on one chapter (always the largest — ch3/ch5)
+with `edge-tts failed: io.wait_for(synth(), timeout=CAP)` → `TimeoutError`, all 4
+retries exhausted; 0 videos. ROOT CAUSE: `ttsEdge` sent the ENTIRE chapter (16 KB+)
+as a SINGLE `edge_tts.Communicate` request. Microsoft's free endpoint stalls on large
+single requests — the 300s CAP fires (the 45s STALL receive_timeout does NOT catch a
+slow-drip stream). The ElevenLabs path already chunked; the edge path did not.
+FIX: `ttsEdge` now splits the chapter at sentence boundaries into chunks
+≤ `EDGE_CHUNK_CHARS` (.env, default 2400), synthesises each in its own request,
+concatenates the MP3 frames, and MERGES the WordBoundary events into one stream with
+each chunk's offsets shifted by the running audio length (`base += last_end + gap`) so
+the `.words.json` audio-aligned sidecar stays correct and monotonic. Verified: ch3
+(16.5 KB) → 8 chunks, all sidecars 127–182 KB non-empty across all 12 chapters.
+HARDENED same day: retry is now PER-CHUNK with checkpointing (CHUNK_TRIES=3) — a stalled
+chunk retries on its own without discarding the chunks already synthesised; only a chunk
+that can't finish fails the chapter (→ the caller's chapter-level retry). A single
+throttle stall no longer wastes a whole chapter's work.
+
+### 2. Bare `python3` picks up the wrong interpreter → PINNED resolver + project venv
+SYMPTOM: the edge-tts traceback shows an UNRELATED python — e.g.
+`/Users/macbookpro/sonia_robosuite_demos/miniconda3/lib/python3.13/...` (conda base
+auto-activated) or Homebrew `python@3.14`. edge-tts's aiohttp stack is unstable on
+bleeding-edge Pythons (3.13/3.14) → chronic stream stalls even after chunking.
+ROOT CAUSE: every script spawned a BARE `python3`, so whatever was first on PATH won.
+FIX: `tts-generate.js` and `autopilot.js` resolve a pinned interpreter — prefer
+`$PIPELINE_PYTHON`, then `<repo>/.venv/bin/python3`, else bare `python3` (inert until a
+`.venv` exists). So cron/scheduled tasks and parallel workers use the project venv even
+without activating it. SETUP (Mac): `conda config --set auto_activate_base false` →
+`python3.12 -m venv .venv` (use 3.12 — NOT 3.13/3.14) → `pip install edge-tts Pillow`.
+`.venv/` is gitignored. Python deps are only edge-tts + Pillow.
+
+### 3. Render dies on offensive-security chapters → Claude empty/refusal now FALLS BACK to Gemini (`render/ai-client-node.js`)
+SYMPTOM: render stops at `Step 1 — Splitting chapter script into slide sections` with
+`✓ [Claude] slide_splitting: 0 chars` then `No JSON array in split response` (both
+attempts). Hit on ch11 "Persistence, Lateral Movement, Pivoting, and Cleanup" — Claude
+returns an EMPTY completion (200 OK, zero text / stop_reason refusal) declining to
+reformat the attack tradecraft into slides. ROOT CAUSE: `_callAnthropic` returned that
+empty string as success, so `callAI` never fell through to Gemini (fallback only fired
+on credit/balance 400s). FIX: an empty (`!text.trim()`) or `stop_reason === 'refusal'`
+response now returns null → `callAI` falls through to the Gemini fallback (GEMINI_API_KEY
+already set), same as the balance-error path. General: any empty Claude completion now
+self-heals to Gemini instead of dead-ending the render.
