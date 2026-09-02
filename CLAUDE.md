@@ -803,3 +803,28 @@ GOTCHA: per-chapter `node render/course-render.js N --force` needs the staged
 `course-render-input-N.json` AND `heygen-chapter-NN.mp4` + `.words.json` in the repo root
 — `collect-videos.js` moves the narration mp4s to `exports/<slug>/heygen-src/`, so
 re-stage (`stage-course.js --slug`) and restore the mp4s before a manual re-render.
+
+## Video curriculum via API — `scripts/load-curriculum.js` (2026-09-02)
+The Bulk Uploader only puts videos in the shared content LIBRARY; it does NOT create
+lectures, so a freshly-built shell shows just the default "Introduction" lecture and the
+12 chapter videos sit unattached (symptom: "shell only contained chapter 1"). New step,
+mirroring load-practice-tests.js, attaches them all via the instructor API instead of ~36
+browser clicks per course:
+```
+npm run curriculum:load:dry -- --slug=<slug> --course=<cid>   # preview asset matches, no writes
+npm run curriculum:load     -- --slug=<slug> --course=<cid>   # build 12 lectures + attach videos
+npm run pt:load             -- --slug=<slug> --course=<cid>   # RESTORE practice tests (see note)
+```
+- Reuses the [OK]-validated `buildCurriculum` + `attachVideo` in `scripts/udemy/course-lifecycle.js`.
+- Asset match: the "Add from library" picker calls
+  `GET /api-2.0/users/me/assets/?asset_type=Video&search=<key>&fields[asset]=title,status,...`.
+  load-curriculum searches by the `<examcode>-chapter-NN` key, then requires an EXACT
+  filename match so ch1 never grabs ch10 AND a `-rev1` file gets the `-rev1` asset (not a
+  stale pre-remediation upload — CISSP had 2 candidates/chapter, exact match picked rev1).
+- Prefers `exports/<slug>/videos-rev1/` over `videos/` (upload the aligned remediated set).
+- GOTCHA: buildCurriculum WIPES existing lectures+chapters (fresh-shell assumption), which
+  removes practice tests loaded earlier → ALWAYS re-run `pt:load` after (idempotent; the
+  script prints the exact command). Always run `curriculum:load:dry` first to confirm all
+  12 assets match before the destructive real run.
+- Validated 2026-09-02: dry-run matched 12/12 for PenTest+ (7322091), CISSP (7322123),
+  CySA+ (7322129).

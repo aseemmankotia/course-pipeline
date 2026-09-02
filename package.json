@@ -78,7 +78,9 @@
     "dns:list": "node scripts/setup-dns.js --list",
     "dns:clean-parking": "node scripts/setup-dns.js --clean-parking",
     "go-live": "node scripts/go-live.js",
-    "sync-coupons": "node scripts/sync-coupons.js"
+    "sync-coupons": "node scripts/sync-coupons.js",
+    "curriculum:load": "node scripts/load-curriculum.js",
+    "curriculum:load:dry": "node scripts/load-curriculum.js --dry-run"
   },
   "repository": {
     "type": "git",
