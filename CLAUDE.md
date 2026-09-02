@@ -822,9 +822,14 @@ npm run pt:load             -- --slug=<slug> --course=<cid>   # RESTORE practice
   filename match so ch1 never grabs ch10 AND a `-rev1` file gets the `-rev1` asset (not a
   stale pre-remediation upload — CISSP had 2 candidates/chapter, exact match picked rev1).
 - Prefers `exports/<slug>/videos-rev1/` over `videos/` (upload the aligned remediated set).
-- GOTCHA: buildCurriculum WIPES existing lectures+chapters (fresh-shell assumption), which
-  removes practice tests loaded earlier → ALWAYS re-run `pt:load` after (idempotent; the
-  script prints the exact command). Always run `curriculum:load:dry` first to confirm all
-  12 assets match before the destructive real run.
-- Validated 2026-09-02: dry-run matched 12/12 for PenTest+ (7322091), CISSP (7322123),
-  CySA+ (7322129).
+- NON-DESTRUCTIVE (fixed 2026-09-02): the original version reused course-lifecycle's
+  buildCurriculum, which WIPES the curriculum first — but Udemy returns 400 "Cannot delete
+  the first section since it is not empty" because the practice tests live in section 1. So
+  load-curriculum now APPENDS: it creates 12 chapter-sections ABOVE the existing content
+  (idempotent, reuse-by-title), attaches videos, deletes only the empty placeholder
+  "Introduction" lecture, and renames that first section to "Practice Exams". Practice tests
+  are PRESERVED — no pt:load re-run needed.
+- Always run `curriculum:load:dry` first to confirm all 12 assets match.
+- Validated live 2026-09-02: 12/12 lectures + video attached on PenTest+ (7322091, 3h11m),
+  CISSP (7322123, 3h34m), CySA+ (7322129, 3h22m); practice tests intact in a "Practice
+  Exams" section.
