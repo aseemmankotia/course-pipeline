@@ -10,7 +10,7 @@ Databricks GenAI Engineer, NVIDIA NCA-GENL, Salesforce Agentforce Specialist,
 Claude Certified Developer (CCDV-F). (Agentforce → r/salesforce, r/AgentforceAI;
 CCDV-F → r/ClaudeAI, r/LLMDevs — both now live, added 2026-07-29.)
 Week-6 go-lives added 2026-08-02: CompTIA Security+ SY0-701, AWS SAA-C04,
-Microsoft AI-300, Google Cloud GenAI Leader, NVIDIA NCP-AIO, Microsoft AI-103, AWS Certified Solutions Architect - Associate (added 2026-08-02), NVIDIA-Certified Associate: Accelerated Data Science (added 2026-08-07), NVIDIA-Certified Professional: OpenUSD Development (added 2026-08-07), AIPMM Certified Digital Product Manager (added 2026-08-07), AIPMM Certified Product Manager (added 2026-08-07), NVIDIA-Certified Professional: Agentic AI (added 2026-08-07), NVIDIA-Certified Professional: Generative AI and LLMs (added 2026-08-07), AWS Certified Machine Learning Engineer - Associate (added 2026-08-07), Google Cloud Professional Machine Learning Engineer (added 2026-08-07), NVIDIA-Certified Professional: AI Infrastructure (added 2026-08-09), NVIDIA-Certified Professional: Accelerated Data Science (added 2026-08-09), NVIDIA-Certified Associate: Generative AI Multimodal (added 2026-08-09), PMI Certified Professional in Managing AI (added 2026-08-14), GSDC Certified Forward Deployed Engineer (added 2026-08-14), AWS Certified Data Engineer - Associate (added 2026-08-14), Google Cloud Certified - Associate Cloud Engineer (added 2026-08-14), Microsoft Certified: Fabric Analytics Engineer Associate (added 2026-08-16), Google Cloud Certified - Professional Data Engineer (added 2026-08-16), Microsoft Certified: AI Business Professional (added 2026-08-20), Microsoft Certified: AI Transformation Leader (added 2026-08-20), AWS Certified Developer - Associate (added 2026-08-20), Google Cloud Certified - Professional Cloud Architect (added 2026-08-22), HashiCorp Certified: Terraform Associate (004) (added 2026-08-22), Microsoft Certified: Azure Solutions Architect Expert (added 2026-08-22), AWS Certified SysOps Administrator - Associate (added 2026-08-22), CompTIA Network+ (added 2026-08-22), CompTIA A+ (Core 1) (added 2026-08-23), CompTIA A+ (Core 2) (added 2026-08-23), Microsoft Certified: Azure Administrator Associate (added 2026-08-23), Microsoft Certified: Azure Developer Associate (added 2026-08-23), NVIDIA-Certified Professional: AI Networking (added 2026-08-27), AWS Certified Cloud Practitioner (added 2026-08-27), Cisco Certified Network Associate (CCNA) (added 2026-08-27), Microsoft Certified: Azure AI Fundamentals (added 2026-08-27), NVIDIA-Certified Associate: AI Infrastructure and Operations (added 2026-08-27), Microsoft Certified: Azure Fundamentals (added 2026-08-27), Oracle Cloud Infrastructure 2025 AI Foundations Associate (added 2026-08-29), Databricks Certified Machine Learning Associate (added 2026-08-29).
+Microsoft AI-300, Google Cloud GenAI Leader, NVIDIA NCP-AIO, Microsoft AI-103, AWS Certified Solutions Architect - Associate (added 2026-08-02), NVIDIA-Certified Associate: Accelerated Data Science (added 2026-08-07), NVIDIA-Certified Professional: OpenUSD Development (added 2026-08-07), AIPMM Certified Digital Product Manager (added 2026-08-07), AIPMM Certified Product Manager (added 2026-08-07), NVIDIA-Certified Professional: Agentic AI (added 2026-08-07), NVIDIA-Certified Professional: Generative AI and LLMs (added 2026-08-07), AWS Certified Machine Learning Engineer - Associate (added 2026-08-07), Google Cloud Professional Machine Learning Engineer (added 2026-08-07), NVIDIA-Certified Professional: AI Infrastructure (added 2026-08-09), NVIDIA-Certified Professional: Accelerated Data Science (added 2026-08-09), NVIDIA-Certified Associate: Generative AI Multimodal (added 2026-08-09), PMI Certified Professional in Managing AI (added 2026-08-14), GSDC Certified Forward Deployed Engineer (added 2026-08-14), AWS Certified Data Engineer - Associate (added 2026-08-14), Google Cloud Certified - Associate Cloud Engineer (added 2026-08-14), Microsoft Certified: Fabric Analytics Engineer Associate (added 2026-08-16), Google Cloud Certified - Professional Data Engineer (added 2026-08-16), Microsoft Certified: AI Business Professional (added 2026-08-20), Microsoft Certified: AI Transformation Leader (added 2026-08-20), AWS Certified Developer - Associate (added 2026-08-20), Google Cloud Certified - Professional Cloud Architect (added 2026-08-22), HashiCorp Certified: Terraform Associate (004) (added 2026-08-22), Microsoft Certified: Azure Solutions Architect Expert (added 2026-08-22), AWS Certified SysOps Administrator - Associate (added 2026-08-22), CompTIA Network+ (added 2026-08-22), CompTIA A+ (Core 1) (added 2026-08-23), CompTIA A+ (Core 2) (added 2026-08-23), Microsoft Certified: Azure Administrator Associate (added 2026-08-23), Microsoft Certified: Azure Developer Associate (added 2026-08-23), NVIDIA-Certified Professional: AI Networking (added 2026-08-27), AWS Certified Cloud Practitioner (added 2026-08-27), Cisco Certified Network Associate (CCNA) (added 2026-08-27), Microsoft Certified: Azure AI Fundamentals (added 2026-08-27), NVIDIA-Certified Associate: AI Infrastructure and Operations (added 2026-08-27), Microsoft Certified: Azure Fundamentals (added 2026-08-27), Oracle Cloud Infrastructure 2025 AI Foundations Associate (added 2026-08-29), Databricks Certified Machine Learning Associate (added 2026-08-29), NVIDIA-Certified Professional: AI Rack and Interconnect (added 2026-08-30), ISC2 Certified Cloud Security Professional (CCSP) (added 2026-08-30), Google Cloud Certified - Professional Cloud Security Engineer (added 2026-08-30), Oracle Cloud Infrastructure 2025 Generative AI Professional (added 2026-09-02), Databricks Certified Machine Learning Professional (added 2026-09-02).
 
 ---
 
@@ -771,3 +771,99 @@ callout this week, per the 08-02 precedent.)
    post to that window so seats don't expire undistributed.
 3. Onboard databricks-ml-professional, oracle-oci-genai-professional, AB-900 when they
    flip to Live.
+
+---
+
+## Run log — 2026-09-04 (scheduled task, unattended; Aseem absent)
+
+**Browser:** Exactly ONE Chrome connected this run — "Browser 1" (macOS, local,
+deviceId 308b006e = the known instructor-session machine). No browser-selection
+ambiguity (unlike 08-01/08-21/08-28), so I drove it. Instructor session HEALTHY
+(no logout). All read-only status checks done; only irreversible/undistributable
+levers were held (see below).
+
+**Step 0 — course status (/instructor/courses/, searched by name):**
+Six courses are LIVE with 0 reviews. THREE are already registered in the funnel
+(build-practice-site.js COURSES, `live:true`) — onboarded earlier on the Mac:
+- Oracle Cloud AI Foundations 1Z0-1122 ($49.99) → https://www.udemy.com/course/oracle-cloud-ai-foundations-1z0-1122-25-exam-prep/
+- Databricks ML Associate ($89.99) → https://www.udemy.com/course/databricks-ml-associate-certification-exam-prep/
+- Databricks ML Professional ($99.99) → https://www.udemy.com/course/databricks-ml-professional-certification-exam-prep/
+THREE are LIVE but NOT yet registered in any funnel registry (built: have
+course-configs/ + generated/ + exports/, just never onboarded):
+- ISC2 CISSP (2026) — id 7322123 — slug `isc2-cissp-2026` — $99.99
+  → https://www.udemy.com/course/cissp-2024-exam-prep-all-8-domains-masterclass/
+- CompTIA PenTest+ (PT0-003) — id 7322091 — slug `comptia-pentest-pt0-003-2026` — $89.99
+  → https://www.udemy.com/course/comptia-pentest-pt0-003-exam-focused-prep/
+- CompTIA CySA+ (CS0-003) — id 7322129 — slug `comptia-cysa-cs0-003-2026` — $89.99
+  → https://www.udemy.com/course/comptia-cysa-cs0-003-complete-analyst-exam-prep/
+
+NEW DRAFTS (not live; watch list for future runs): CISM (Certified Information
+Security Manager), CompTIA SecurityX (CAS-005), SC-900 Security/Compliance/Identity.
+OCI GenAI Professional (1Z0-1127) and Microsoft AB-900 (Copilot Agent Admin) did NOT
+appear as live (still draft/not built) — no "Copilot" or "1Z0-1127" live result.
+
+⚠️ FLAG for Aseem: CISSP's instructor header read "0min of video content published"
+despite CLAUDE.md recording the 09-02 API curriculum load (12/12 lectures + video on
+CISSP 7322123 / PenTest 7322091 / CySA 7322129, "validated live"). Verify the video
+curriculum actually shows/plays on all three live pages before driving traffic to them
+— a live course with unpublished video will convert poorly and draw bad early reviews.
+
+**Onboarding NOT completed in-sandbox** (can't finish unattended): build-practice-site.js
+fails on `fs.rmSync(site/)` (EPERM — the mount blocks deletion), promo-all.js needs
+api.anthropic.com + YouTube (YouTube OAuth also still broken per CLAUDE.md), and
+register-course.js edits the REAL repo registries — best done atomically via the go-live
+wrapper on the Mac so register+build+deploy+promo stay consistent. Left the repo
+untouched except this log. Aseem, run on the Mac for each of the 3 CompTIA courses:
+```
+npm run go-live -- --slug=isc2-cissp-2026            --udemy=https://www.udemy.com/course/cissp-2024-exam-prep-all-8-domains-masterclass/ --promo --announce-live
+npm run go-live -- --slug=comptia-pentest-pt0-003-2026 --udemy=https://www.udemy.com/course/comptia-pentest-pt0-003-exam-focused-prep/ --promo --announce-live
+npm run go-live -- --slug=comptia-cysa-cs0-003-2026   --udemy=https://www.udemy.com/course/comptia-cysa-cs0-003-complete-analyst-exam-prep/ --promo --announce-live
+```
+Then add each course's `page` to the most relevant BUNDLE (a "Cybersecurity /
+CompTIA" learning path) in scripts/build-practice-site.js, run `npm run sync-coupons`,
+rebuild + deploy site/.
+
+**Coupons — HELD (none created).** Reasoning (unattended run):
+- A Free:Open / honest-review coupon has value ONLY when distributed. Every
+  distribution channel is unavailable this run: educational announcements + LinkedIn/
+  Reddit posts are irreversible and need Aseem's approval (he was absent); the site
+  coupon-sync path (sync-coupons → build → deploy) needs the Mac (build EPERM in sandbox).
+- The 6 newly-live courses have ~0 enrollments, so there are no existing students for a
+  coupon to reach either.
+- Coupons carry a 5-day expiry and a monthly per-course budget, so creating them now
+  would burn this month's slot on coupons that expire undistributed — the exact 0/10
+  pattern seen all through July/August, and precisely why Aseem (present) chose to HOLD
+  Free:Open on 08-28 and time it to a distribution window.
+- NOTE — coupon system changed AGAIN: the promotions page no longer says "1 free open
+  coupon/month"; it now shows "N coupons available … Limits reset monthly" (CISSP: 3
+  available) plus a new "Create multiple coupons" / bulk-coupon feature. Worth Aseem
+  re-reading the new limits before the next bulk regeneration.
+RECOMMENDATION: run the coupon lever in an ATTENDED session so creation + distribution
+happen inside one 5-day window (create FREEREVIEW10 on the target courses, then the same
+day: LinkedIn post + Monday r/AWSCertifications value-first post + sync-coupons to the site).
+
+**Educational announcements — NONE sent.** Irreversible messages to real students →
+need Aseem's approval; he was absent. Also low value right now: the 6 newly-live courses
+have ~0 enrollments (an announcement reaches almost no one), and the established
+portfolio already received August checklist announcements (a repeat risks unsubscribe/
+spam fatigue). Recommend a first announcement to each new course once it has an enrolled base.
+
+**Social posts — NONE posted.** Irreversible public posts → need Aseem's approval; absent.
+No fresh coupon links to post anyway. r/AWSCertifications remains Mondays-only (next
+window Mon 09-07); r/comptia + r/dataengineering remain no-post per their rules. Note: any
+future post copy should promote the free practice tests + learning-path bundles generically
+(no fixed % / no computed savings) + honest-review free seats — and, per Aseem's 08-28
+call, per-course paid coupons MAY still be referenced but only via a live Udemy coupon link
+(the site no longer renders per-course paid coupons).
+
+**Decisions / follow-ups needed from Aseem (attended run):**
+1. Onboard the 3 live CompTIA cyber courses (CISSP / PenTest+ / CySA+) on the Mac via the
+   go-live commands above; add them to a Cybersecurity bundle + sync-coupons + deploy.
+2. VERIFY video is actually published/playable on those 3 (the "0min published" flag).
+3. Approve + run the coupon lever attended (create FREEREVIEW10 + distribute same day) —
+   for the 6 newly-live courses at minimum, and decide whether to bulk-regenerate the
+   established portfolio now that the monthly budgets have reset.
+4. Approve the recurring LinkedIn post + a Monday r/AWSCertifications post once fresh
+   coupons exist.
+5. Onboard OCI GenAI Pro (1Z0-1127) / Databricks ML Pro (done) / AB-900 / CISM / SecurityX /
+   SC-900 when they flip to Live.

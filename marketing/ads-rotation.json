@@ -9,7 +9,7 @@
         "google": "draft 10208186673 created (needs YouTube video ad)",
         "tiktok": "skipped - not logged in"
       },
-      "retired": "2026-08-23 \u2014 superseded by bundle promotions (old domain aseemmankotia.github.io; Meta ad ended Aug 16)"
+      "retired": "2026-08-23 — superseded by bundle promotions (old domain aseemmankotia.github.io; Meta ad ended Aug 16)"
     },
     {
       "slug": "cisco-ccna-200-301-2026",
@@ -17,18 +17,77 @@
       "date": "2026-08-28",
       "destination": "https://technuggets.academy/",
       "platforms": {
-        "meta": "DRAFT created \u2014 campaign 52557800375969 / adset 52557800376169 / ad 52557800375769 ('In draft', not published). $10 lifetime, Aug 28\u2013Sep 5 (9 days; Meta min is ~$1.03/day so 30 days was not possible at $10). Placeholder creative = TechNuggets gold-nugget logo (Chrome file upload unavailable this session) \u2014 swap in the CCNA card before publishing.",
-        "google": "BLOCKED \u2014 Demand Gen campaign fully built (name 'CCNA 200-301 Practice Site Traffic \u2014 2026-08-28', $10 campaign-total, Aug 28 + 1 month, US/IN/UK/CA/DE, English, in-market Network Equipment & Virtualization / Network Management / Open Online Courses, image ad w/ site og-image, 5 headlines, 2 descriptions, CTA Learn more) but Google enforces a $160 minimum total budget and demanded re-authentication ('Confirm it's you') to save. Not published, not saved. Aseem must re-auth and decide on budget.",
-        "tiktok": "skipped \u2014 not logged in to TikTok Ads Manager in Chrome"
+        "meta": "DRAFT created — campaign 52557800375969 / adset 52557800376169 / ad 52557800375769 ('In draft', not published). $10 lifetime, Aug 28–Sep 5 (9 days; Meta min is ~$1.03/day so 30 days was not possible at $10). Placeholder creative = TechNuggets gold-nugget logo (Chrome file upload unavailable this session) — swap in the CCNA card before publishing.",
+        "google": "BLOCKED — Demand Gen campaign fully built (name 'CCNA 200-301 Practice Site Traffic — 2026-08-28', $10 campaign-total, Aug 28 + 1 month, US/IN/UK/CA/DE, English, in-market Network Equipment & Virtualization / Network Management / Open Online Courses, image ad w/ site og-image, 5 headlines, 2 descriptions, CTA Learn more) but Google enforces a $160 minimum total budget and demanded re-authentication ('Confirm it's you') to save. Not published, not saved. Aseem must re-auth and decide on budget.",
+        "tiktok": "skipped — not logged in to TikTok Ads Manager in Chrome"
       }
+    },
+    {
+      "slug": "databricks-ml-associate-2026",
+      "title": "Databricks ML Associate Certification: Exam Prep",
+      "date": "2026-08-29",
+      "destination": "https://technuggets.academy/",
+      "platforms": {
+        "meta": "DRAFT created — campaign 52558653182569 / adset 52558653182769 / ad 52558653182969 ('In draft', NOT published). $10 LIFETIME, Aug 29–Sep 7 (9 days; Meta warned a 30-day window needs >=$31). Traffic objective, Website conversion, Learn more CTA, dest https://technuggets.academy/. Targeting: US/IN/UK/CA/DE, 18+, all languages, Advantage+ placements. Creative = PLACEHOLDER TechNuggets gold-nugget logo (800x800) — Chrome file_upload is unavailable in this session again, so the Databricks card could not be uploaded. Swap in exports/databricks-ml-associate-2026/databricks-ml-associate-2026-card-notext.png before publishing.",
+        "google": "DRAFT created — Search campaign 'Databricks ML Associate | Search | 2026-08-29', campaignId 281499173749589 / draftId 10211270039. NOT published. Objective Website traffic, bidding Maximize clicks, Search network only (Display unchecked), locations US/IN/UK/CA/DE, English, EU-political-ads = No. CAMPAIGN TOTAL BUDGET $10, Aug 29–Sep 28 (30 days) — the Search 'Campaign total budget' option accepted $10 with no minimum, unlike Demand Gen's $160 floor (2026-08-28). 10 phrase-match keywords, 7 headlines, 4 descriptions, all compliance-checked. BLOCKER: Google still throws 'Confirm it's you' re-authentication when saving/exiting; entering the account password is out of scope, so Aseem must re-auth and re-open the draft to review + publish.",
+        "tiktok": "skipped — ads.tiktok.com redirected to the TikTok for Business login page (not logged in in Chrome). 9:16 asset ready at exports/databricks-ml-associate-2026/welcome-promo-short.mp4."
+      }
+    },
+    {
+      "slug": "google-professional-cloud-security-engineer-2026",
+      "title": "Google Cloud Security Engineer Exam Prep (PCSE)",
+      "date": "2026-08-31",
+      "destination": "https://technuggets.academy/",
+      "platforms": {
+        "meta": "NOT created — browser step blocked: 2 Chrome extensions connected (Windows + macOS) and the browser-selection gate needs a present user to choose; unattended run cannot pick. Copy + assets ready (see marketing/ad-drafts/). Card: exports/course-images/google-professional-cloud-security-engineer-2026-card-notext.png.",
+        "google": "NOT created — same browser-selection block; also the recurring Google ‘Confirm it’s you’ re-auth wall from prior runs. Search-campaign copy + keywords ready in the brief.",
+        "tiktok": "NOT created — same browser-selection block; TikTok Ads Manager also logged out in prior runs. 9:16 asset ready: exports/google-professional-cloud-security-engineer-2026/welcome-promo-short.mp4."
+      },
+      "note": "No per-course Udemy coupon active in coupons.json — copy names no price; leads on free practice test + 2 full-length practice exams + generic bundles."
+    },
+    {
+      "slug": "isc2-ccsp-cloud-security-professional-2026",
+      "title": "CCSP Certified Cloud Security Professional Exam Prep",
+      "date": "2026-09-01",
+      "destination": "https://technuggets.academy/",
+      "platforms": {
+        "meta": "DRAFT created — campaign 52559575445569 / adset 52559575445769 / ad 52559575445369 (\"In draft\", NOT published). Traffic objective, Website conversion, Learn more CTA, dest https://technuggets.academy/. $10 LIFETIME, Sep 1–10 2026 (9 days; $10 over 30 days tripped Meta’s ≥$30 min, so shortened rather than raise budget). Targeting: US/IN/UK/CA/DE (via bulk-add), 18+, Advantage+ audience/placements, English (age 22-55 not applied — streamlined editor). FB Page TechNuggets Academy set. Creative = PLACEHOLDER TechNuggets gold-nugget logo (800x800 from account library) — Chrome file_upload unavailable again this session, so the CCSP card could not be uploaded. Swap in exports/course-images/isc2-ccsp-cloud-security-professional-2026-card-notext.png before publishing.",
+        "google": "DRAFT created — Search campaign \"ISC2 CCSP | Search | 2026-09-01\", campaignId 281499184409054 / draftId 10211964778 (acct 238-821-4892). NOT published. Website traffic, Maximize clicks, Search network only (Display + Search Partners unchecked), locations US/IN/UK/CA/DE (all country-level), English, EU-political-ads = No. 10 phrase-match keywords, 7 compliant headlines, 4 compliant descriptions (replaced the pre-filled generic assets that contained AWS/AI mentions and a \"Pass-ready\" phrase), display path ccsp/exam-prep. CAMPAIGN TOTAL BUDGET $10, Sep 1–Oct 1 2026 (30 days). BLOCKER: Google threw the \"Confirm it’s you\" re-authentication at the budget step and again on exit; entering the account password is out of scope, so Aseem must re-auth, re-open the draft, and publish.",
+        "tiktok": "skipped — ads.tiktok.com redirected to the TikTok for Business login page (not logged in in Chrome). 9:16 asset ready at exports/isc2-ccsp-cloud-security-professional-2026/welcome-promo-short.mp4."
+      },
+      "note": "No per-course Udemy coupon active for CCSP in coupons.json — copy names no price; leads on FREE practice test + 2 full-length practice exams + generic bundles."
+    },
+    {
+      "slug": "databricks-ml-professional-2026",
+      "title": "Databricks ML Professional Certification Prep",
+      "date": "2026-09-03",
+      "destination": "https://technuggets.academy/",
+      "platforms": {
+        "meta": "NOT created — browser-selection gate blocked the unattended run (2 Chrome extensions connected: Windows + macOS; picking one requires a present user via AskUserQuestion). Copy + assets ready in marketing/ad-drafts/databricks-ml-professional-2026.md. Card: exports/course-images/databricks-ml-professional-2026-card-notext.png.",
+        "google": "NOT created — same browser-selection block (and the recurring 'Confirm it's you' re-auth wall from prior runs). Search-campaign copy + keywords ready in the brief.",
+        "tiktok": "NOT created — same browser-selection block; TikTok Ads Manager also logged out in prior runs. 9:16 asset ready: exports/databricks-ml-professional-2026/welcome-promo-short.mp4."
+      },
+      "note": "No per-course Udemy coupon active in coupons.json — copy names no price; leads on FREE practice test + 2 full-length practice exams + generic bundles."
+    },
+    {
+      "slug": "oracle-oci-genai-professional-1z0-1127-2026",
+      "title": "OCI 2025 Generative AI Professional 1Z0-1127-25",
+      "date": "2026-09-05",
+      "destination": "https://technuggets.academy/",
+      "platforms": {
+        "meta": "DRAFT created — campaign 52560920578969 / adset 52560920579169 / ad 52560920579369 (\"In draft\", NOT published). Traffic objective, Website conversion, Learn more CTA, dest https://technuggets.academy/. $10 LIFETIME, Sep 5–14 2026 (9 days; $10 over 30 days tripped Meta’s $30 min, so shortened rather than raise budget). Targeting: US/IN/UK/CA/DE (5 countries added), 18+, Advantage+ audience/placements, English. FB Page TechNuggets Academy. Full compliant copy applied (primary text + headline + description). Creative = PLACEHOLDER TechNuggets gold-nugget logo (800x800 from library) — Chrome file_upload unavailable this session again, so the OCI card could not be uploaded. Swap in exports/course-images/oracle-oci-genai-professional-1z0-1127-2026-card-notext.png before publishing.",
+        "google": "DRAFT created — Search campaign \"OCI GenAI | Search | 2026-09-05\", campaignId 281499201177260 / draftId 10212568995 (acct 238-821-4892). NOT published. Website traffic, Maximize clicks, Search network only (Display + Search Partners unchecked), locations US/IN/UK/CA/DE (all country-level), English, EU-political-ads = No. 10 phrase-match keywords, 7 compliant headlines + 4 compliant descriptions (REPLACED the pre-filled generic assets that contained AWS/Google-Cloud mentions and a \"Pass-ready\" phrase — all off-topic/non-compliant), display path oci-genai/exam-prep. CAMPAIGN TOTAL BUDGET $10, Sep 5–Oct 5 2026 (30 days). BLOCKER: Google threw the \"Confirm it’s you\" re-authentication at the budget-save step (\"Changes failed to save\"); entering the account password is out of scope, so Aseem must re-auth, re-open the draft, confirm the $10 budget saved, and publish.",
+        "tiktok": "skipped — ads.tiktok.com redirected to the TikTok for Business login page (not logged in in Chrome). 9:16 asset ready at exports/oracle-oci-genai-professional-1z0-1127-2026/welcome-promo-short.mp4."
+      },
+      "note": "No per-course Udemy coupon active for this course in coupons.json — copy names no price; leads on FREE practice test + 2 full-length practice exams + generic bundles."
     }
   ],
-  "lastRun": "2026-08-28",
+  "lastRun": "2026-09-05",
   "retiredCampaigns": [
     {
       "platform": "meta",
       "what": "NCA-ADS Card Image Ad (traffic, $10) + stub Traffic Campaign draft",
-      "status": "ended Aug 16 2026 \u2014 delete/archive in Ads Manager",
+      "status": "ended Aug 16 2026 — delete/archive in Ads Manager",
       "pageId": "1187947767742236"
     },
     {
@@ -55,9 +114,9 @@
       "comptia-security"
     ],
     "platformStatus": {
-      "meta": "creative ready \u2014 create in Ads Manager (or Chrome-drive)",
-      "google": "creative ready \u2014 create campaign",
-      "tiktok": "creative ready \u2014 create when logged in"
+      "meta": "creative ready — create in Ads Manager (or Chrome-drive)",
+      "google": "creative ready — create campaign",
+      "tiktok": "creative ready — create when logged in"
     }
   }
 }
