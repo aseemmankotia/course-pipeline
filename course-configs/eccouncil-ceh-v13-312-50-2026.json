@@ -1,0 +1,65 @@
+{
+  "slug": "eccouncil-ceh-v13-312-50-2026",
+  "topic": "EC-Council Certified Ethical Hacker (CEH v13, exam 312-50) certification exam preparation - the industry-standard ethical-hacking credential that teaches the mindset, methodology, and countermeasures of an authorized penetration tester across the full attack lifecycle, with CEH v13's new emphasis on AI-driven offensive and defensive techniques; taught conceptually and for authorized, legal engagements only",
+  "cert_name": "Certified Ethical Hacker (CEH v13)",
+  "exam_code": "312-50",
+  "exam_vendor": "EC-Council",
+  "exam_cost_usd": 1199,
+  "exam_format": "125 multiple-choice questions in 4 hours (240 minutes), delivered via the ECC EXAM portal or Pearson VUE. EC-Council uses a variable, form-dependent cut score (commonly cited around 70 percent, but the passing score can range roughly 60 to 85 percent depending on the difficulty of the specific exam form) - present the passing score as variable and form-dependent, not a fixed number. CEH v13 covers 20 modules and hundreds of attack techniques. The knowledge exam (312-50) is separate from the optional hands-on CEH Practical. The exam/training fee is approximately USD 1,199 and often bundled with official training and an exam voucher - present the fee as approximate and highly variable, and advise confirming current pricing, eligibility (official training or an experience-based application), and the exam blueprint on EC-Council's official CEH page before scheduling.",
+  "question_types": "multiple choice (single answer, exactly 4 options) and multiple response clearly marked 'Choose TWO/THREE'; conceptual and scenario-based items that test knowledge of attack methodology, tool categories, indicators, and - most importantly - the correct COUNTERMEASURE or defensive control for a described technique, framed for an authorized ethical hacker rather than asking for operational attack instructions",
+  "audience": "Security professionals learning offensive techniques to DEFEND better and to perform AUTHORIZED, legal penetration testing - aspiring penetration testers, red-team members, SOC analysts and blue-teamers who want to understand attacker methodology, and security engineers preparing for the CEH. CEH v13 assumes basic networking and security knowledge (Security+ or equivalent is helpful); eligibility requires either official EC-Council training or approved security work experience. Complements the offensive CompTIA PenTest+ and the defensive CySA+ already in this catalog by teaching the attacker's methodology at a conceptual, exam-focused level.",
+  "difficulty": "Intermediate",
+  "course_price": "$89.99",
+  "chapters_target": 12,
+  "narration_mode": "tts",
+  "author": "Aseem Mankotia",
+  "brand": "TechNuggets Academy",
+  "domains": [
+    {
+      "name": "Information Security and Ethical Hacking Overview",
+      "weight": "6%",
+      "notes": "The foundation and the LEGAL/ETHICAL framing that governs everything else: information security fundamentals (CIA triad, threats, attack types, the cyber kill chain, MITRE ATT&CK, the Diamond Model); the five phases of ethical hacking (reconnaissance, scanning, gaining access, maintaining access, clearing tracks) understood as an authorized testing methodology; and - critically - hacker classes, the importance of written authorization and scope, rules of engagement, and relevant laws and standards. Emphasize that ethical hacking is legal only with explicit authorization. Choosing the correct methodology phase, framework, or legal/authorization concept for a described engagement."
+    },
+    {
+      "name": "Reconnaissance Techniques",
+      "weight": "21%",
+      "notes": "HEAVIEST DOMAIN - footprinting, scanning, and enumeration as an authorized tester maps a target's attack surface: footprinting and OSINT concepts and tool CATEGORIES; network scanning concepts (host discovery, port and service discovery, OS fingerprinting) and what scan results mean; and enumeration (NetBIOS, SNMP, LDAP, NFS, DNS, SMTP and other services) - what information each exposes and, for every technique, the COUNTERMEASURES that reduce exposure. CEH v13 adds AI-assisted reconnaissance and OSINT tooling here. Choosing the correct recon concept, result interpretation, or countermeasure for a described scenario."
+    },
+    {
+      "name": "System Hacking Phases and Attack Techniques",
+      "weight": "17%",
+      "notes": "Vulnerability analysis and the system-hacking methodology at a CONCEPTUAL level: vulnerability assessment concepts, scoring (CVSS) and tool categories; the system-hacking phases (gaining access, privilege escalation, maintaining access, clearing logs) described as categories of technique rather than operational steps; and malware threats (types of trojans, viruses, worms, fileless malware, APT concepts) with a strong focus on DETECTION and COUNTERMEASURES. CEH v13 adds AI-driven malware awareness (e.g., FraudGPT/WormGPT as threat-awareness topics). Choosing the correct concept, detection method, or countermeasure for a described technique."
+    },
+    {
+      "name": "Network and Perimeter Hacking",
+      "weight": "14%",
+      "notes": "Attacks against the network and their defenses: sniffing concepts and countermeasures (switch security, encryption); social-engineering categories and defenses (awareness, verification, policy); denial-of-service and distributed denial-of-service concepts and mitigations; session hijacking concepts and defenses; and evading IDS, firewalls, and honeypots - understood so a defender can recognize and stop them. Choosing the correct attack identification or, more often, the correct defensive control for a described network scenario."
+    },
+    {
+      "name": "Web Application Hacking",
+      "weight": "16%",
+      "notes": "The web attack surface and secure defenses: hacking web servers and web applications at a conceptual level; the OWASP Top 10 categories; SQL injection, cross-site scripting, command injection, broken access control, and other web flaws - what they are, how they are detected, and the secure-coding and WAF COUNTERMEASURES that prevent them. Choosing the correct vulnerability identification or remediation/countermeasure for a described web scenario."
+    },
+    {
+      "name": "Wireless Network Hacking",
+      "weight": "6%",
+      "notes": "Wireless threats and hardening: wireless encryption standards (WEP/WPA/WPA2/WPA3), wireless attack categories (rogue APs, evil twin, deauthentication) and, importantly, wireless security countermeasures and secure configuration. Choosing the correct wireless concept, attack recognition, or hardening control for a described scenario."
+    },
+    {
+      "name": "Mobile Platform, IoT, and OT Hacking",
+      "weight": "8%",
+      "notes": "Emerging attack surfaces and their defenses: mobile platform attack vectors and mobile device management/security; IoT threats, architecture, and hardening; and OT/ICS security concepts and countermeasures. Choosing the correct threat identification or security control for a described mobile, IoT, or OT scenario."
+    },
+    {
+      "name": "Cloud Computing",
+      "weight": "6%",
+      "notes": "Cloud attack surface and shared-responsibility defenses: cloud computing concepts and service/deployment models; container and serverless security concepts; common cloud threats and misconfigurations; and cloud security controls and the shared-responsibility model. CEH v13 also touches AI/ML system security in the cloud context (prompt injection, model theft, training-data poisoning at an introductory, awareness level). Choosing the correct cloud concept, threat, or control for a described scenario."
+    },
+    {
+      "name": "Cryptography",
+      "weight": "6%",
+      "notes": "Cryptography for the ethical hacker: symmetric and asymmetric algorithms, hashing, digital signatures and PKI at a conceptual level; disk and email encryption; cryptographic attack CATEGORIES (and why strong crypto and key management defeat them); and cryptanalysis concepts. Choosing the correct cryptographic concept, control, or countermeasure for a described situation."
+    }
+  ],
+  "extra_guidance": "EC-Council Certified Ethical Hacker (CEH v13, exam 312-50) is the industry-standard ETHICAL-HACKING credential - it teaches an attacker's methodology so security professionals can DEFEND better and perform AUTHORIZED, LEGAL penetration testing. It complements the offensive CompTIA PenTest+ and the defensive CySA+ already in this catalog. ABSOLUTELY CRITICAL COMPLIANCE AND SAFETY FRAMING - apply throughout: (1) Every offensive technique MUST be taught CONCEPTUALLY and for AUTHORIZED, in-scope engagements only, and MUST be paired with its DETECTION and COUNTERMEASURE. Do NOT provide operational, step-by-step attack instructions, working exploit code, malware source, or copy-paste commands that would let a reader carry out an attack; describe what a technique IS, what it looks like, how it is detected, and how it is prevented - the exam itself tests methodology, tool CATEGORIES, indicators, and countermeasures, not live exploitation. (2) Open the course, and every offensive chapter, by reinforcing that ethical hacking is legal ONLY with explicit written authorization and defined scope/rules of engagement, and that performing these techniques without authorization is a crime. (3) Keep tool references at the category level (what class of tool does what and how a defender detects its use) rather than as operational how-to guides. The nine domain names and weights above are EC-Council's OFFICIAL CEH exam-blueprint areas (Information Security and Ethical Hacking Overview 6%; Reconnaissance Techniques 21%; System Hacking Phases and Attack Techniques 17%; Network and Perimeter Hacking 14%; Web Application Hacking 16%; Wireless Network Hacking 6%; Mobile Platform, IoT, and OT Hacking 8%; Cloud Computing 6%; Cryptography 6%) mapping the 20 CEH modules - use them and tell learners to verify the current blueprint and eligibility on EC-Council's official CEH page, since weights can shift by version. Cover CEH v13's signature NEW emphasis: AI woven into the domains - AI-assisted reconnaissance and OSINT, AI-driven malware awareness (e.g., FraudGPT/WormGPT as threat-awareness topics), and introductory coverage of attacks against AI systems (prompt injection, model theft, training-data poisoning) - always framed as awareness and defense, never operational. Use precise, current terminology (cyber kill chain, MITRE ATT&CK, OWASP Top 10, CVSS, footprinting, enumeration, privilege escalation, evil twin, WAF, PKI). Present exam mechanics honestly: 125 multiple-choice questions in 4 hours, a VARIABLE form-dependent cut score (roughly 60-85 percent; do NOT state a single fixed passing score), 20 modules, approximately USD 1,199 and highly variable/bundled pricing, with eligibility via official training or approved experience. This is a READ-AND-UNDERSTAND, exam-focused course taught at a conceptual level - no lab, live target, or paid tooling is required or provided. NEVER promise a pass or use the word 'guarantee' in ANY form (Udemy compliance) - use 'exam-focused preparation' framing throughout, including the learning objectives and who-this-is-for. The final chapter must be a full 125-question exam simulation walkthrough with a 4-hour time-management strategy. Scan the practice bank to keep questions concept-, methodology-, and countermeasure-based rather than requiring operational attack detail or a single proprietary tool as the only correct answer, per the pipeline compliance rules."
+}

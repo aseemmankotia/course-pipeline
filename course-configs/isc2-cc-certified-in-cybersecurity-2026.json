@@ -1,0 +1,45 @@
+{
+  "slug": "isc2-cc-certified-in-cybersecurity-2026",
+  "topic": "ISC2 Certified in Cybersecurity (CC) certification exam preparation - the entry-level, foundational cybersecurity credential from ISC2 (the makers of CISSP) covering the core concepts every security professional needs: security principles, incident response and business continuity, access controls, network security, and security operations",
+  "cert_name": "ISC2 Certified in Cybersecurity",
+  "exam_code": "CC",
+  "exam_vendor": "ISC2",
+  "exam_cost_usd": 50,
+  "exam_format": "100 multiple-choice questions in 2 hours, scored on a scale of 100 to 1000 with a passing score of 700. There are NO prerequisites and no work experience is required - CC is designed as the true entry point to a cybersecurity career and as an on-ramp to ISC2's flagship CISSP. The exam fee is approximately USD 50 (ISC2 has also run a 'One Million Certified in Cybersecurity' program offering free exams and training - mention that free training and exam vouchers may be available and tell learners to check the official ISC2 CC page), plus an Annual Maintenance Fee to keep the certification active. Present the fee as approximate and advise confirming current pricing, any free-exam offers, and the exam outline on ISC2's official CC page before scheduling.",
+  "question_types": "multiple choice (single answer, exactly 4 options) and multiple response clearly marked 'Choose TWO/THREE'; foundational, concept-check items that test understanding of core security terminology, principles, and best practices for a described situation - definitional and scenario-lite rather than deep technical configuration",
+  "audience": "Newcomers to cybersecurity and career changers with no prior experience - students, IT support and help-desk staff, career switchers, and anyone starting a security path. ISC2 positions CC as its foundational, no-prerequisite credential and the natural first step before the SSCP and CISSP. A strong ISC2-branded on-ramp that complements vendor-neutral fundamentals like CompTIA Security+ and Microsoft SC-900 already in this catalog.",
+  "difficulty": "Beginner",
+  "course_price": "$74.99",
+  "chapters_target": 10,
+  "narration_mode": "tts",
+  "author": "Aseem Mankotia",
+  "brand": "TechNuggets Academy",
+  "domains": [
+    {
+      "name": "Domain 1: Security Principles",
+      "weight": "26%",
+      "notes": "HEAVIEST DOMAIN - the vocabulary and mindset of security: the CIA triad (confidentiality, integrity, availability) plus authenticity and non-repudiation; the fundamentals of risk management (threats, vulnerabilities, likelihood, impact, risk treatment - accept, transfer, mitigate, avoid); security controls (technical, administrative, physical); the ISC2 Code of Ethics; and governance elements (policies, standards, procedures, guidelines, regulations, and laws). Choosing the correct principle, control type, risk-treatment option, or governance term for a described situation."
+    },
+    {
+      "name": "Domain 2: Incident Response, Business Continuity, and Disaster Recovery Concepts",
+      "weight": "10%",
+      "notes": "SMALLEST DOMAIN - keep proportionate. The purpose and components of incident response (the IR plan, roles, detection, response, recovery); business continuity (BC plans, importance of keeping the business running); and disaster recovery (DR plans, restoring operations after a disruption). Distinguishing IR vs BC vs DR and choosing the correct concept for a described scenario at a foundational level."
+    },
+    {
+      "name": "Domain 3: Access Controls Concepts",
+      "weight": "22%",
+      "notes": "Controlling who gets in and what they can do: physical access controls (badges, mantraps, guards, CCTV) and logical access controls; the principle of least privilege and segregation of duties; and access-control models - Discretionary Access Control (DAC), Mandatory Access Control (MAC), Role-Based Access Control (RBAC), and the identification/authentication/authorization/accountability chain. Choosing the correct access-control concept or model for a described requirement."
+    },
+    {
+      "name": "Domain 4: Network Security",
+      "weight": "24%",
+      "notes": "How networks work and how to defend them: computer networking basics (OSI and TCP/IP models, IP addressing, ports and protocols); common threats and attacks (DoS/DDoS, spoofing, on-path, phishing); and network security infrastructure and defenses (firewalls, IDS/IPS, VPNs, segmentation, VLANs, defense in depth, on-premises vs cloud, secure design). Choosing the correct network concept, threat identification, or defensive control for a described situation."
+    },
+    {
+      "name": "Domain 5: Security Operations",
+      "weight": "18%",
+      "notes": "The day-to-day practice of keeping systems secure: data handling and the data lifecycle (classification, labeling, retention, destruction); encryption basics (symmetric, asymmetric, hashing) at a conceptual level; system hardening, patching, and configuration management; security awareness training; and core security-operations best practices. Choosing the correct data-handling, encryption, hardening, or awareness action for a described scenario."
+    }
+  ],
+  "extra_guidance": "ISC2 Certified in Cybersecurity (CC) is the ENTRY-LEVEL, foundational credential from ISC2 (the organization behind CISSP) - frame it as the true starting point of a cybersecurity career and the on-ramp toward SSCP and CISSP, and a strong ISC2-branded counterpart to the vendor-neutral CompTIA Security+ and Microsoft SC-900 fundamentals already in this catalog. CRITICAL framing: CC is CONCEPTUAL and definitional, NOT hands-on - it tests whether a beginner understands core security terminology, principles, and best practices, so practice questions MUST be foundational concept-check and scenario-lite items ('which principle, control, or concept fits this described situation'), never deep configuration, CLI, or code. The five domain names and weights above are ISC2's OFFICIAL CC exam outline weights (Security Principles 26%; Incident Response, Business Continuity, and Disaster Recovery Concepts 10%; Access Controls Concepts 22%; Network Security 24%; Security Operations 18%) - use them and tell learners to verify the current exam outline on ISC2's official CC page. Cover the exam's signature emphases exactly and in beginner-friendly language with concrete, relatable analogies: the CIA triad; risk management basics and risk treatment; the three control types (technical/administrative/physical); the ISC2 Code of Ethics (which IS tested); access-control models (DAC, MAC, RBAC) and least privilege; networking fundamentals (OSI/TCP-IP, ports, firewalls, IDS/IPS, VPNs); and security-operations basics (data handling, encryption concepts, hardening, patching, security awareness). Because CC has NO prerequisites and assumes no experience, define every term the first time it appears and build up from zero - do not assume prior IT knowledge. Note prominently that ISC2 has offered FREE training and exam vouchers through its 'One Million Certified in Cybersecurity' initiative and that learners should check the official ISC2 CC page for current free-exam availability, pricing, and the Annual Maintenance Fee. This is a READ-AND-UNDERSTAND course - explain concepts with simple examples; no lab, tenant, or paid tooling is required to follow along. Anchor everything to the current ISC2 CC exam outline; do NOT invent objective weights or exam mechanics. NEVER promise a pass or use the word 'guarantee' in ANY form (Udemy compliance) - use 'exam-focused preparation' framing throughout, including the learning objectives and who-this-is-for; present the exam as 100 multiple-choice questions in 2 hours, 700/1000 to pass, no prerequisites, approximately USD 50 (or free via ISC2's program). Because CC is a shorter foundational exam, target 10 chapters and keep each focused and digestible for a complete beginner. The final chapter must be a full 100-question exam simulation with a time-management strategy suited to a 2-hour foundational exam. Scan the practice bank to keep questions concept-based rather than depending on memorizing a single vendor product, per the pipeline compliance rules."
+}
