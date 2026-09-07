@@ -543,3 +543,25 @@ This session: only ONE Chrome browser connected (macOS/local) — no browser-sel
    $10 Sep 5–Oct 5 total budget saved (it showed "Changes failed to save"), review + publish.
 3. **TikTok login** — log into TikTok Ads Manager in Chrome to enable that platform.
 4. **No active coupon** for this course — copy names no price (free practice test + 2 practice exams + bundles).
+
+---
+
+## 2026-09-07 — 200-201 CBROPS: CyberOps Associate Exam Prep (cisco-cyberops-associate-cbrops-200-201-2026)
+Newest live course not yet advertised (registry #65). Destination for all ads: https://technuggets.academy/.
+No active per-course Udemy coupon — copy names no price; leads on FREE practice test + 2 full-length practice exams + generic bundles.
+Exam domains: Security Concepts (20%), Security Monitoring (25%), Host-Based Analysis (20%), Network Intrusion Analysis (20%), Security Policies & Procedures (15%).
+
+- **Meta — DRAFT created (confirmed "In draft", NOT published).** Account 65932722. Campaign 52561215700969 / adset 52561215701169 / ad 52561215701369. Traffic objective, Website conversion, CTA "Learn more". $10 LIFETIME, Sep 7–16 2026 (9 days — a 30-day window tripped Meta's ~$29 campaign-budget minimum with the EU/multi-country audience, so shortened rather than raise the budget above $10). Campaign-level lifetime Advantage+ budget. Targeting (bulk-add): US/IN/UK/CA/DE + 3 tiny territories the fuzzy matcher added (British Indian Ocean Territory, US Virgin Islands, US Minor Outlying Islands — negligible reach). 18+, Advantage+ audience/placements, all languages. FB Page TechNuggets Academy. Compliant primary text + headline + description applied; the auto-generated headline suggestions that contained "Pass" were left UNAPPLIED. Creative = PLACEHOLDER gold-nugget logo (Chrome file_upload unavailable this session) — swap in exports/course-images/cisco-cyberops-associate-cbrops-200-201-2026-card-notext.png before publishing.
+- **Google — DRAFT created, BLOCKED at budget.** Account 238-821-4892. Search campaign "CBROPS 200-201 | Search | 2026-09-07", campaignId 281499196166155 / draftId 10212809205. Website traffic, Maximize clicks, Search network only (Display + Search Partners unchecked), locations US/IN/UK/CA/DE (had to remove a fuzzy "Indianapolis DMA" mis-match and re-add India country), English, EU-political-ads = No. 10 phrase-match keywords, 7 compliant headlines + 4 compliant descriptions REPLACING the pre-filled generic assets that contained "Pass-Ready"/"Pass-ready" and AWS/Google-Cloud mentions. Display path cyberops/exam-prep. BLOCKER: the recurring "Confirm it's you" re-auth wall fired at the BUDGET-save step ("Changes failed to save"); password entry is out of scope, so the $10 campaign-total budget (Sep 7–Oct 7) could not persist. Aseem must re-auth, re-open draft 10212809205, set the $10 campaign-total budget + Sep 7–Oct 7 dates, and publish. Every other step saved.
+- **TikTok — skipped.** ads.tiktok.com dashboard loaded from cache, but "Create ad" redirected to the TikTok for Business login page (not logged in for ad creation; entering credentials is out of scope). 9:16 asset ready: exports/cisco-cyberops-associate-cbrops-200-201-2026/welcome-promo-short.mp4.
+
+### Copy used (compliance-checked: no pass/guarantee/first-attempt; no invented coupon %/price)
+- **Meta** — Primary text leads "Preparing for the Cisco 200-201 CBROPS CyberOps Associate certification? Build the SOC-analyst skills the exam tests…"; all five exam domains; 2 full-length practice exams + FREE practice test; link on its own line (https://technuggets.academy/); CTA "Start preparing today → https://technuggets.academy/". Headline "CyberOps Associate 200-201 — Exam Prep". Description "Video course + 2 full-length practice exams. Free practice test at technuggets.academy."
+- **Google Search** — Headlines: CyberOps 200-201 Exam Prep / Cisco CBROPS Practice Tests / Free CyberOps Practice Test / 2 Full-Length Practice Exams / SOC Analyst Exam Prep / Security Monitoring Course / Exam-Focused CBROPS Prep. Descriptions: exam-focused prep for 200-201 CBROPS + 2 practice exams; security monitoring/host & network intrusion analysis/incident response; free test at technuggets.academy + bundle & save; learn SOC-analyst skills the exam tests. 10 phrase-match keywords ("cyberops associate", "200-201 cbrops", …). Campaign-total budget $10, Sep 7–Oct 7.
+- **TikTok** — 9:16 welcome-promo-short.mp4; caption drives to technuggets.academy, CTA "Learn more".
+
+### Needs Aseem's attention
+1. **Meta image** — Chrome file_upload unavailable; swap the gold-nugget placeholder for the CBROPS text-free card (exports/course-images/cisco-cyberops-associate-cbrops-200-201-2026-card-notext.png), then publish the "In draft" ad.
+2. **Google re-auth** — clear the "Confirm it's you" wall, re-open draft 10212809205, set the $10 campaign-total budget (Sep 7–Oct 7), review + publish.
+3. **TikTok login** — log into TikTok Ads Manager in Chrome to enable that platform, then create the ad from the 9:16 promo.
+4. **No active coupon** for CBROPS — copy names no price (free practice test + 2 practice exams + bundles).

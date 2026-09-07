@@ -80,9 +80,21 @@
         "tiktok": "skipped — ads.tiktok.com redirected to the TikTok for Business login page (not logged in in Chrome). 9:16 asset ready at exports/oracle-oci-genai-professional-1z0-1127-2026/welcome-promo-short.mp4."
       },
       "note": "No per-course Udemy coupon active for this course in coupons.json — copy names no price; leads on FREE practice test + 2 full-length practice exams + generic bundles."
+    },
+    {
+      "slug": "cisco-cyberops-associate-cbrops-200-201-2026",
+      "title": "200-201 CBROPS: CyberOps Associate Exam Prep",
+      "date": "2026-09-07",
+      "destination": "https://technuggets.academy/",
+      "platforms": {
+        "meta": "DRAFT created & CONFIRMED In-draft — campaign 52561215700969 / adset 52561215701169 / ad 52561215701369 (acct 65932722, NOT published). Traffic objective, Website conversion, Learn more CTA, dest https://technuggets.academy/. $10 LIFETIME, Sep 7-16 2026 (9 days; a 30-day window tripped Meta's >=$29 campaign-budget min with the EU/multi-country audience, so shortened rather than raise budget). Campaign-level lifetime Advantage+ budget. Targeting via bulk-add: US/IN/UK/CA/DE (+3 tiny territories the fuzzy matcher added: British Indian Ocean Territory, US Virgin Islands, US Minor Outlying Islands - negligible, optional cleanup), 18+, Advantage+ audience/placements, All languages (English not applied - streamlined editor). FB Page TechNuggets Academy. Full compliant copy applied (primary text + headline 'CyberOps Associate 200-201 - Exam Prep' + description); AI headline suggestions containing 'Pass' left UNAPPLIED. Creative = PLACEHOLDER TechNuggets gold-nugget logo (800x800 from library) - Chrome file_upload unavailable this session again, so the CBROPS card could not be uploaded. Swap in exports/course-images/cisco-cyberops-associate-cbrops-200-201-2026-card-notext.png before publishing.",
+        "google": "DRAFT created - Search campaign 'CBROPS 200-201 | Search | 2026-09-07', campaignId 281499196166155 / draftId 10212809205 (acct 238-821-4892). NOT published. Website traffic, Maximize clicks, Search network only (Display + Search Partners unchecked), locations US/IN/UK/CA/DE (all country-level; had to remove a fuzzy 'Indianapolis DMA' mis-match and re-add India country), English, EU-political-ads = No. 10 phrase-match keywords, 7 compliant headlines + 4 compliant descriptions (REPLACED the pre-filled generic assets that contained 'Pass-Ready'/'Pass-ready' and AWS/Google-Cloud mentions - all non-compliant/off-topic), display path cyberops/exam-prep. BLOCKER: the recurring Google 'Confirm it's you' re-auth wall fired at the BUDGET-save step ('Changes failed to save'); password entry is out of scope, so the $10 Campaign-total budget (Sep 7-Oct 7) could not persist. Aseem must re-auth, re-open draft 10212809205, set the $10 campaign-total budget + Sep 7-Oct 7 dates, and publish. All other steps saved.",
+        "tiktok": "skipped - ads.tiktok.com dashboard loaded but 'Create ad' redirected to the TikTok for Business login page (not logged in for ad creation; login/credentials out of scope). 9:16 asset ready at exports/cisco-cyberops-associate-cbrops-200-201-2026/welcome-promo-short.mp4."
+      },
+      "note": "No per-course Udemy coupon active for CBROPS in coupons.json - copy names no price; leads on FREE practice test + 2 full-length practice exams + generic bundles. Brief: marketing/ad-drafts/cisco-cyberops-associate-cbrops-200-201-2026.md"
     }
   ],
-  "lastRun": "2026-09-05",
+  "lastRun": "2026-09-07",
   "retiredCampaigns": [
     {
       "platform": "meta",
