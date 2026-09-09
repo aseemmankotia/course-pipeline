@@ -565,3 +565,29 @@ Exam domains: Security Concepts (20%), Security Monitoring (25%), Host-Based Ana
 2. **Google re-auth** — clear the "Confirm it's you" wall, re-open draft 10212809205, set the $10 campaign-total budget (Sep 7–Oct 7), review + publish.
 3. **TikTok login** — log into TikTok Ads Manager in Chrome to enable that platform, then create the ad from the 9:16 promo.
 4. **No active coupon** for CBROPS — copy names no price (free practice test + 2 practice exams + bundles).
+
+---
+
+## 2026-09-09 — CRISC Certification: IT Risk Management Exam Prep (isaca-crisc-2026)
+Newest live course not yet advertised. Destination for all ads: https://technuggets.academy/.
+No active per-course Udemy coupon — copy names no price; leads on FREE practice test + 2 full-length practice exams + generic bundles.
+Exam domains: Governance, IT Risk Assessment, Risk Response and Reporting, Information Technology and Security.
+
+- **Meta — DRAFT created (confirmed "In draft", NOT published).** Account 65932722. Campaign 52561605615369 "CRISC Practice Site Traffic — 2026-09-09" / ad set "CRISC Traffic Ad Set" / ad "CRISC Card Image Ad". Traffic objective, Website conversion, CTA "Learn more", dest https://technuggets.academy/. $10 LIFETIME, Sep 9–18 2026 (9 days — a 30-day window tripped Meta's ~$30 campaign-budget minimum, so shortened rather than raise the budget). Targeting (bulk-add): US/IN/UK/CA/DE — a fuzzy-matched "British Indian Ocean Territory" was added alongside India and was removed, leaving exactly the 5 intended countries. 18+, Advantage+ audience/placements. FB Page TechNuggets Academy. Compliant primary text + headline + description applied (no pass/guarantee/first-attempt language). Creative = PLACEHOLDER gold-nugget logo (Chrome file_upload unavailable this session) — swap in exports/course-images/isaca-crisc-2026-card-notext.png before publishing.
+- **Google — DRAFT created and CONFIRMED as "In progress" (no blocker this run).** Account 238-821-4892. Search campaign "CRISC | Search | 2026-09-09", campaignId 281499204378676 / draftId 10213235410. Website traffic, Maximize clicks, Search network only, locations US/IN/UK/CA/DE (country-level), English, EU-political-ads = No. 10 phrase-match keywords, 6 compliant headlines + 4 compliant descriptions REPLACING the pre-filled generic assets (which contained off-topic AWS/cloud/ML keywords and a "Pass-ready" banned phrase). Campaign-total budget $10, Sep 9–Oct 9 2026 (30 days). The recurring "Confirm it's you" re-auth wall appeared once at the budget-type step; it was safely Cancelled (no credentials entered) and the budget-type selection was retried successfully on the second attempt — the draft was independently re-verified via the campaign list showing "In progress" status. **This is ready for Aseem to open and publish directly — no re-auth needed.**
+- **TikTok — skipped.** ads.tiktok.com redirected to the TikTok for Business login page (not logged in for ad creation; entering credentials is out of scope). 9:16 asset ready: exports/isaca-crisc-2026/welcome-promo-short.mp4.
+
+### Copy used (compliance-checked: no pass/guarantee/first-attempt; no invented coupon %/price)
+- **Meta** — Primary text leads on the CRISC exam's judgment calls across governance, IT risk assessment, and response/reporting; all four exam domains; 2 full-length practice exams + FREE practice test; link on its own line (https://technuggets.academy/); CTA "Start preparing today → https://technuggets.academy/". Headline "CRISC Certification: IT Risk Management Exam Prep". Description leads with the free practice test + practice exams.
+- **Google Search** — Headlines: ISACA CRISC Certification / Free CRISC Practice Test / 2 Full Practice Exams / IT Risk Mgmt Course / Governance & Risk Course / Exam-Focused CRISC Prep. Descriptions: "Exam-focused prep for ISACA's CRISC certification plus 2 full practice exams." / "Governance, IT risk assessment, response and reporting, security." / "Free practice test at technuggets.academy. Bundle related certs & save." / "Build the enterprise risk management skills the CRISC exam tests." 10 phrase-match keywords (crisc certification, crisc exam prep, isaca crisc, it risk management certification, crisc practice test, risk management exam prep, crisc study guide, governance risk certification, crisc course, isaca risk certification). Campaign-total budget $10, Sep 9–Oct 9.
+- **TikTok** — 9:16 welcome-promo-short.mp4; caption drives to technuggets.academy, CTA "Learn more".
+
+### Needs Aseem's attention
+1. **Meta image** — Chrome file_upload unavailable; swap the gold-nugget placeholder for the CRISC text-free card (exports/course-images/isaca-crisc-2026-card-notext.png), then publish the "In draft" ad.
+2. **Google Ads** — no blocker this run; open draft 10213235410, review, and publish directly (already saved as "In progress" with $10 campaign-total budget Sep 9–Oct 9).
+3. **TikTok login** — log into TikTok Ads Manager in Chrome to enable that platform, then create the ad from the 9:16 promo.
+4. **No active coupon** for CRISC — copy names no price (free practice test + 2 practice exams + bundles).
+
+**Direct links**
+- Meta: https://adsmanager.facebook.com/adsmanager/manage/campaigns?act=65932722
+- Google Ads: https://ads.google.com/aw/campaigns?ocid=8156899860
