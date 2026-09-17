@@ -143,9 +143,21 @@
         "tiktok": "skipped — not logged in to TikTok Ads Manager in Chrome this session."
       },
       "note": "No per-course Udemy coupon active for this course in coupons.json — copy names no price; leads on FREE practice test + 2 full-length practice exams + generic bundles."
+    },
+    {
+      "slug": "cisco-dccor-350-601-data-center-core-2026",
+      "title": "Cisco 350-601 DCCOR: CCNP Data Center Core Exam Prep",
+      "date": "2026-09-17",
+      "destination": "https://technuggets.academy/",
+      "platforms": {
+        "meta": "DRAFT created & CONFIRMED 'In draft' via Ads Manager — campaign 52563455097769 ('DCCOR Practice Site Traffic — 2026-09-17'), ad set 52563455097569 ('DCCOR Traffic Ad Set'), ad 52563455097969 ('DCCOR Card Image Ad'), acct 65932722. NOT published. $10.00 Lifetime budget confirmed in the Budget column. Traffic objective, Website conversion, Learn more CTA, dest https://technuggets.academy/, 9-day schedule (Meta's ~$30 lifetime-budget minimum over 30 days, so shortened rather than raise budget), locations US/IN/UK/CA/DE, compliant primary text/headline/description (no pass/guarantee/first-attempt language). Creative = PLACEHOLDER TechNuggets gold-nugget logo — Chrome file_upload unavailable this session again, so the real DCCOR card could not be uploaded. Swap in exports/course-images/cisco-dccor-350-601-data-center-core-2026-card-notext.png before publishing.",
+        "google": "DRAFT created — Search campaign 'DCCOR | Search | 2026-09-17', campaignId 281499234584779 / draftId 10214575273 (acct 238-821-4892). NOT published. Website traffic, Maximize clicks, Search network only (Display unchecked, Search Partners on), locations Canada/Germany/India/United Kingdom/United States (all confirmed exact country-level matches — several fuzzy mismatches were caught and corrected during entry: 'United States Minor Outlying Islands', 'Indianapolis IN', 'Canada de Gomez, Argentina', and a German state were each removed and re-added correctly). English, EU-political-ads = No. Skipped Google's AI keyword/asset-generation step to keep manual control over compliant copy (the pre-filled suggestions included non-compliant 'Pass-Ready'/'Pass-ready' phrasing and off-topic AWS/Google-Cloud content). 10 phrase-match keywords, 7 compliant headlines + 4 compliant descriptions (all replaced pre-filled non-compliant/off-topic assets), display path dccor/exam-prep. CAMPAIGN TOTAL BUDGET $10, Sep 17–Oct 17 2026 (30 days, saved successfully — Search's 'Campaign total budget' option accepted $10 with no minimum). The recurring Google 'Confirm it's you' re-auth wall appeared twice (once at the budget-type toggle, once advancing from Budget to Review) but was safely cancelled both times (no credentials entered) and the underlying settings were independently re-verified intact by re-opening each section (Locations, Languages, Keywords/Ads, Budget) after each retry. Reached the final Review/Summary step showing all sections populated correctly; did not attempt to click past Review since doing so only leads toward a Publish action. Aseem should re-open draft 10214575273, let Review finish if it re-prompts for auth, and publish.",
+        "tiktok": "skipped — ads.tiktok.com dashboard initially rendered a cached/placeholder shell, but clicking 'Create ad' redirected to the TikTok for Business login page (not logged in for ad-creation actions; login/credentials out of scope). 9:16 asset ready at exports/cisco-dccor-350-601-data-center-core-2026/welcome-promo-short.mp4."
+      },
+      "note": "No per-course Udemy coupon active for DCCOR (350-601-dccor) in coupons.json — copy names no price; leads on FREE practice test + 2 full-length practice exams + generic bundles. Brief: marketing/ad-drafts/cisco-dccor-350-601-data-center-core-2026.md"
     }
   ],
-  "lastRun": "2026-09-15",
+  "lastRun": "2026-09-17",
   "retiredCampaigns": [
     {
       "platform": "meta",
