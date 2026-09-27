@@ -149,16 +149,28 @@ async function appendCurriculum(client, cid, titles, log) {
   const lectures = await appendCurriculum(client, cid, titles, (m) => console.log(m));
   console.log(`  curriculum: ${titles.length} chapter-sections created/updated (practice tests preserved)`);
 
-  let ok = 0;
+  let ok = 0, published = 0; const notReady = [];
   for (let i = 0; i < files.length; i++) {
     const m = matches[i];
     const lec = lectures[i];
     if (!m.hit) { console.log(`  ✗ ch${chapNum(m.fn)}: skipped (no asset)`); continue; }
     if (!lec || !lec.id) { console.log(`  ✗ ch${chapNum(m.fn)}: no lecture slot`); continue; }
     await attachVideo(client, cid, lec.id, m.hit.id);
-    console.log(`  ✓ ch${chapNum(m.fn)} → "${String(lec.title).slice(0, 44)}"  (asset ${m.hit.id})`);
     ok++;
+    // Publish the lecture so students can actually see the video. attachVideo only sets the
+    // asset; without this the lecture stays is_published:false and the course shows 0 published
+    // lectures / 0 video length (portfolio-wide defect fixed 2026-09-27). Guard on asset
+    // status===1 (ready) — Udemy 400-rejects publishing a still-processing asset.
+    let pubNote = 'asset not ready — left unpublished';
+    if (Number(m.hit.status) === 1) {
+      try {
+        await client.patch(`/api-2.0/users/me/taught-courses/${cid}/lectures/${lec.id}/`, { is_published: true });
+        published++; pubNote = 'published';
+      } catch (e) { pubNote = `publish FAILED (${String(e.message).slice(0, 50)})`; }
+    } else { notReady.push(chapNum(m.fn)); }
+    console.log(`  ✓ ch${chapNum(m.fn)} → "${String(lec.title).slice(0, 44)}"  (asset ${m.hit.id}, ${pubNote})`);
     await sleep(250);
   }
-  console.log(`\nDone: ${ok}/${files.length} videos attached. Practice tests untouched. Reload the Curriculum page to verify.`);
+  console.log(`\nDone: ${ok}/${files.length} videos attached, ${published} published. Practice tests untouched.`);
+  if (notReady.length) console.log(`  ⚠ asset still processing, left unpublished (re-run once ready): ch ${notReady.join(', ')}`);
 })().catch((e) => { console.error('load-curriculum failed:', String(e.message || e)); process.exit(1); });

@@ -833,3 +833,14 @@ npm run pt:load             -- --slug=<slug> --course=<cid>   # RESTORE practice
 - Validated live 2026-09-02: 12/12 lectures + video attached on PenTest+ (7322091, 3h11m),
   CISSP (7322123, 3h34m), CySA+ (7322129, 3h22m); practice tests intact in a "Practice
   Exams" section.
+- ⚠️ **PUBLISH STEP (added 2026-09-27) — critical.** `attachVideo` only sets the lecture's
+  asset; it does NOT publish the lecture. Without a publish, `is_published` stays false and
+  the course shows `num_published_lectures:0` / `content_length_video:0` — students see NO
+  video even though the shell + assets are perfect. The 2026-09-02 "validated live" check
+  only confirmed *attached*, not *published*, which is how ~50 Live courses shipped EMPTY
+  (found + fixed 2026-09-27). load-curriculum now PATCHes `{is_published:true}` per lecture
+  right after attach, guarded on asset `status===1` (Udemy 400-rejects publishing a
+  still-processing asset — leaves those unpublished and lists the chapters to re-run once
+  ready). VERIFY REMEDIATION BY `num_published_lectures`, never by "attached". One-off
+  backfill scripts from the 09-27 incident: `scripts/remediate-empty-courses.sh` (batch
+  curriculum:load) + `scripts/publish-lectures.js` (publish already-attached lectures).
