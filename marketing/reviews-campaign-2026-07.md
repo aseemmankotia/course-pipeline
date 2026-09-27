@@ -1138,3 +1138,46 @@ now more urgent):**
 3. Once courses have video: run the coupon + distribution levers ATTENDED (FREEREVIEW10 +
    LinkedIn + Monday r/AWSCertifications inside one 5-day window) and send a first
    educational announcement per course with an enrolled base.
+
+## Update — 2026-09-27 (attended, Aseem live): EMPTY-COURSE PROBLEM RESOLVED — 52/53 published
+Aseem ran the remediation attended. Root cause found + fixed:
+
+**Two-step defect.** `load-curriculum.js` attaches each chapter's video asset to a lecture
+but NEVER sets `is_published:true` on the lecture (only quizzes get published, in
+practice-tests.js). So `curriculum:load` produced 53 Live courses each holding 12 (or 9–11)
+**unpublished** lectures → `num_published_lectures:0`, `content_length_video:0`. The video
+assets themselves were fully uploaded + processed (status 1) — just not published.
+
+**What ran (all in Aseem's terminal; the automation shell is egress-blocked from udemy.com):**
+1. `scripts/remediate-empty-courses.sh` (new) — `curriculum:load --slug=…` across all 53
+   empty courses. LIVE run: ok=53/53. Attached the video assets (12 chapter mp4s each,
+   fewer for certs with 9–11 chapters). Confirmed `num_lectures` went 0→N but publish still 0.
+2. `scripts/publish-lectures.js` (new) — PATCHes `is_published:true` on every lecture that
+   has a ready Video asset, across the 53. LIVE run: 626 lectures published; 46/53 reached
+   ≥12; 7 "short".
+
+**Verification (instructor API, post-run):**
+- **52 of 53 courses fully published** with `content_length_video` now non-zero. Six of the
+  seven "short" courses (PCNSE 11, CIPP/US 11, SC-300 11, ISC2 CC 10, SC-900 9, AAISM 10)
+  are COMPLETE — published-lecture count == chapter-mp4 count in exports/; they simply have
+  9–11 chapters by design, not 12. Every video they have is live.
+- **ONE genuine remaining issue — CompTIA Network+ (N10-009), id 7305515, slug
+  `comptia-network-plus-n10-009-2026`:** 8/12 published. The other 4 lectures have video
+  assets stuck at **asset status = -1 (not finished processing / failed transcode)**, so
+  Udemy 400-rejected the publish. Retry won't help until those 4 assets re-process. FIX:
+  re-generate/re-upload the 4 Network+ chapter videos (chapters for lectures 57656103,
+  57656105 [len null], 57656119, 57656125), let them reach status 1, then re-run
+  `node scripts/publish-lectures.js` (it re-publishes only unpublished-with-ready-video).
+
+**Net:** the portfolio-wide empty-course defect that blocked the review campaign for 4+
+weeks is essentially cleared. The funnel now points at courses that actually have video.
+
+**Follow-ups:**
+- DURABLE FIX (recommended): fold the `is_published:true` publish step into
+  `load-curriculum.js` after `attachVideo`, so future `go-live`/`curriculum:load` runs don't
+  recreate empty Live courses. Note in CLAUDE.md. (Awaiting Aseem's go-ahead.)
+- Network+ 4-video reprocess (above).
+- Review levers (coupons / announcements / LinkedIn + Monday r/AWSCertifications) are now
+  unblocked for the 52 published courses — run ATTENDED per the playbook.
+- New scripts `remediate-empty-courses.sh` + `publish-lectures.js` are uncommitted pending
+  Aseem's OK.
