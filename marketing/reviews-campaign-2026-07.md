@@ -1073,3 +1073,68 @@ Mondays-only; r/comptia + r/dataengineering remain no-post per their rules.
 3. Once courses have video: run the coupon + distribution levers ATTENDED (create
    FREEREVIEW10 + LinkedIn + Monday r/AWSCertifications, all inside one 5-day window), and
    send a first educational announcement per course that has an enrolled base.
+
+## Run log — 2026-09-25 (scheduled task, unattended; Aseem absent)
+
+**Browser:** One Chrome connected; Udemy instructor session HEALTHY (taught-courses API
+returns 200, logged in). All checks read-only; every irreversible / undistributable lever
+HELD (Aseem absent for approval), consistent with 09-04 / 09-11 / 09-18.
+
+### 🚨 HEADLINE — empty-course problem is UNREMEDIATED and now WORSE (48 → 53 empty)
+Pulled the full portfolio (`/api-2.0/users/me/taught-courses/` with
+`num_published_lectures,content_length_video,is_published`): **96 courses, 94 published,
+41 with video, 53 published/LIVE showing `num_published_lectures: 0`.** Last week (09-18)
+it was 48 empty; five draft-watchlist courses flipped Live this week and are ALL empty, so
+the count rose to 53. No video-publishing remediation appears to have landed during the
+week — the same registered empties (GSEC, VCP-DCV, DCCOR, CKS, PCNSE, SC-100/200/300/500/900,
+CISSP 7322123, PenTest+ 7322091, CySA+ 7322129, the A+/AZ/AWS batch, etc.) still report 0
+published lectures. The funnel on technuggets.academy is still driving traffic to ~40
+registered empty courses. This remains the single most important thing for Aseem to fix and
+still governs the whole review campaign: any review-seeking traffic to an empty course
+invites refunds + 1★ reviews and risks the instructor account.
+
+### Step 0 — newly-LIVE this week (5) — the old DRAFT watch list flipped to Live, all EMPTY
+  - AB-100: Agentic AI Business Solutions Architect Prep — id 7343409 — 0 lec
+    → https://www.udemy.com/course/ab-100-agentic-ai-business-solutions-architect-prep-2026/
+  - CompTIA DataX (DY0-001): Expert Data Science Exam Prep — id 7343407 — 0 lec
+    → https://www.udemy.com/course/comptia-datax-dy0-001-expert-data-science-exam-prep-2026/
+  - Databricks Data Engineer Associate: Exam Prep — id 7343399 — 0 lec
+    → https://www.udemy.com/course/databricks-data-engineer-associate-exam-prep-2026/
+  - DP-100: Azure Data Scientist Associate Exam Prep — id 7343393 — 0 lec
+    → https://www.udemy.com/course/dp-100-azure-data-scientist-associate-exam-prep-2026/
+  - GH-300: GitHub Copilot Certification Exam Prep — id 7343389 — 0 lec
+    → https://www.udemy.com/course/gh-300-github-copilot-certification-exam-prep-2026/
+  **NOT onboarded.** All 5 have 0 published video — onboarding registers them into the
+  site/promo/reviews funnel = drives traffic to empty pages. Publish video FIRST, verify
+  12/12, THEN run go-live (per the standing 09-18 guidance). Onboarding also can't run
+  cleanly in-sandbox (build-practice-site EPERMs on fs.rmSync; promo needs api.anthropic.com
+  + the still-broken YouTube OAuth; register-course edits the real repo) — do it via the Mac
+  `npm run go-live` wrapper. The 8 unregistered-but-live from 09-18 (CAIP AIP-210, watsonx
+  C1000-185, SnowPro GenAI, Cisco 300-640 DCAI, ISACA AAIA, CISSP, PenTest+, CySA+) also
+  remain unregistered and empty — same hold.
+
+**Coupons — HELD (none created).** Same reasoning as 09-04/09-11/09-18: a Free:Open coupon
+has value only if distributed inside its 5-day window; all distribution channels need
+Aseem's approval (absent) — and the courses are empty, so a free seat leads to an empty
+course. Run ATTENDED, and only on courses with video confirmed published.
+
+**Educational announcements — NONE sent.** Irreversible messages to real students → need
+Aseem's approval (absent). Also inadvisable: pointing enrolled students at an empty course
+invites refunds/1★. Hold until video is published.
+
+**Social posts — NONE posted.** Irreversible public posts → need approval (absent); no fresh
+coupons; no course should be promoted while empty. r/AWSCertifications remains Mondays-only;
+r/comptia + r/dataengineering remain no-post per their rules.
+
+**Decisions / follow-ups for Aseem (ATTENDED / Mac) — priority order (UNCHANGED from 09-18,
+now more urgent):**
+1. 🚨 FIX THE EMPTY COURSES FIRST. Publish video on the 53 empty published courses via
+   `npm run curriculum:load -- --slug=<slug> --course=<id>`, then verify
+   `num_published_lectures == 12`. This outranks every review lever and is getting worse each
+   week new courses flip Live empty. (Courses already with video are fine — skip those.)
+2. Onboard the newly-live courses — 5 new this week (AB-100, DataX, Databricks DE, DP-100,
+   GH-300) + the 8 still-unregistered from 09-18 — but ONLY after their video is published.
+   Then add each to the relevant BUNDLE, `npm run sync-coupons`, rebuild + deploy.
+3. Once courses have video: run the coupon + distribution levers ATTENDED (FREEREVIEW10 +
+   LinkedIn + Monday r/AWSCertifications inside one 5-day window) and send a first
+   educational announcement per course with an enrolled base.
