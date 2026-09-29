@@ -104,8 +104,7 @@
         "tiktok": "skipped - ads.tiktok.com redirected straight to the TikTok for Business login page (not logged in in Chrome; login/credentials out of scope). 9:16 asset ready at exports/isaca-crisc-2026/welcome-promo-short.mp4."
       },
       "note": "No per-course Udemy coupon active for CRISC in coupons.json - copy names no price; leads on FREE practice test + 2 full-length practice exams + generic bundles."
-    }
-    ,
+    },
     {
       "slug": "paloalto-pcnse-network-security-engineer-2026",
       "title": "PCNSE Exam Prep: Palo Alto Networks NGFW & Panorama",
@@ -117,8 +116,7 @@
         "tiktok": "skipped — TikTok Ads Manager dashboard loaded (this session shows a Home/Log view, unlike prior 'redirected to login' runs), but clicking 'Create ad' redirected to the TikTok for Business login page (not logged in for ad-creation actions; login/credentials out of scope). 9:16 asset ready at exports/paloalto-pcnse-network-security-engineer-2026/welcome-promo-short.mp4."
       },
       "note": "No per-course Udemy coupon active for PCNSE in coupons.json — copy names no price; leads on FREE practice test + 2 full-length practice exams + generic bundles. Brief: marketing/ad-drafts/paloalto-pcnse-network-security-engineer-2026.md"
-    }
-    ,
+    },
     {
       "slug": "giac-gsec-security-essentials-2026",
       "title": "GSEC GIAC Security Essentials Exam-Focused Prep",
@@ -130,8 +128,7 @@
         "tiktok": "skipped — not logged in to TikTok Ads Manager in Chrome this session."
       },
       "note": "No per-course Udemy coupon active for GSEC in coupons.json — copy names no price; leads on FREE practice test + 2 full-length practice exams + generic bundles."
-    }
-    ,
+    },
     {
       "slug": "vmware-vcp-dcv-2v0-21-23-vsphere-8-2026",
       "title": "VCP-DCV 2V0-21.23: vSphere 8 Exam-Focused Prep",
@@ -181,9 +178,51 @@
         "tiktok": "skipped — ads.tiktok.com redirected straight to the TikTok for Business login page (not logged in in Chrome; login/credentials out of scope). 9:16 asset ready at exports/fortinet-fcp-fortigate-7-6-administrator-2026/welcome-promo-short.mp4."
       },
       "note": "No per-course Udemy coupon active for this course in coupons.json — copy names no price; leads on FREE practice test + 2 full-length practice exams + generic bundles."
+    },
+    {
+      "slug": "cisco-scor-350-701-security-core-2026",
+      "title": "Cisco 350-701 SCOR: Complete Security Core Prep",
+      "date": "2026-09-23",
+      "destination": "https://www.udemy.com/course/cisco-350-701-scor-complete-security-core-prep/",
+      "udemyUrl": "https://www.udemy.com/course/cisco-350-701-scor-complete-security-core-prep/",
+      "platforms": {
+        "meta": "DRAFT created & CONFIRMED 'In draft' (Ads list, $10.00 Lifetime) — campaign 52564607843969 ('SCOR 350-701 Udemy Traffic — 2026-09-23') / ad set 52564607844169 ('SCOR Traffic Ad Set') / ad 52564607843769 ('SCOR Card Image Ad'), acct 65932722. NOT published. Manual Traffic campaign, Website conversion, Website URL = Udemy course page, CTA Sign up. $10 LIFETIME ad-set budget, Sep 23 -> Oct 2 2026 (30 days at $10 trips Meta's $30 lifetime minimum #1885272, so shortened as in prior runs). Locations US/IN/UK/CA/DE (India securities declaration left unchecked = not securities-related), age 22-55, English (All), Advantage+ audience suggestion interests: Cisco Systems, Computer network, Computer security. REAL CREATIVE UPLOADED: exports/course-images/cisco-scor-350-701-security-core-2026-card-notext.png (first run where the actual course card got in, not the logo placeholder). Meta AI 'crop and expand', AI image generation, overlays, text improvements and translation all left OFF; only default visual touch-ups on.",
+        "google": "PARTIAL DRAFT — BLOCKED by 'Confirm it's you' re-auth (NOT published). Account 238-821-4892. Search campaign 'SCOR 350-701 | Search | 2026-09-23', campaignId 281499257869104 / draftId 10215459373. Saved server-side (verified after reload): Maximize clicks bidding, Search + Search Partners (Display off), locations Canada/Germany/India/UK/US, English, AI Max OFF, AI keyword/asset generation Skipped; keywords appear to have saved on the 2nd pass. NOT saved: responsive search ad (8 headlines/4 descriptions entered twice, lost both times), EU-political-ads = No, and the $10 campaign-total budget (Sep 23 -> Oct 23). The re-auth dialog came up on Keywords->Budget (1st pass) and Budget->Review (2nd pass); 'Cancel' lets the UI keep going but doesn't save, so a reload shows the ad/budget missing. Did not click Confirm (needs Aseem's credentials). Afterward the Ads UI hung on the loading screen.",
+        "tiktok": "skipped — dashboard shell loaded but 'Create ad' redirected to the TikTok for Business login page (not logged in; login out of scope). 9:16 asset ready: exports/cisco-scor-350-701-security-core-2026/welcome-promo-short.mp4."
+      },
+      "note": "No per-course coupon in coupons.json -> copy names no price. Picked as newest registered-live course not yet advertised (COURSES index 74)."
     }
   ],
-  "lastRun": "2026-09-21",
+  "lastRun": "2026-09-23",
+  "destinationCorrectionRun": {
+    "date": "2026-09-21",
+    "reason": "Aseem's correction: ads must click through to the course's own Udemy landing page, not technuggets.academy. Applied to all still-open (unpublished/editable) drafts per his instruction.",
+    "metaFixed": [
+      "fortinet-fcp-fortigate-7-6-administrator-2026",
+      "cncf-cks-kubernetes-security-specialist-2026",
+      "cisco-dccor-350-601-data-center-core-2026",
+      "vmware-vcp-dcv-2v0-21-23-vsphere-8-2026",
+      "giac-gsec-security-essentials-2026",
+      "paloalto-pcnse-network-security-engineer-2026",
+      "isaca-crisc-2026",
+      "cisco-cyberops-associate-cbrops-200-201-2026",
+      "oracle-oci-genai-professional-1z0-1127-2026",
+      "isc2-ccsp-cloud-security-professional-2026"
+    ],
+    "metaAlreadyCorrect": [
+      "databricks-ml-associate-2026",
+      "cisco-ccna-200-301-2026"
+    ],
+    "metaImageBlocked": {
+      "paloalto-pcnse-network-security-engineer-2026": "Website URL fixed and saved as an unpublished ad edit, but the ad's creative image is corrupted (\"Invalid Image In Ad\" on Publish) — needs the real course card re-uploaded before it can go live. Chrome file_upload has no accessible file input for Meta's media picker in this environment.",
+      "cisco-ccna-200-301-2026": "Same corrupted-placeholder-image blocker (\"Invalid Image In Ad\", #2446603) on the still-in-draft ad — Website URL was already correct here, so no edit was needed, but the ad cannot publish until the real CCNA card is uploaded."
+    },
+    "googleStatus": "Deprioritized/skipped this run for all courses — Google Ads drafts are blocked by a recurring 'Confirm it's you' re-authentication wall that requires Aseem's own login, and/or ad groups were found empty when reached by direct campaignId navigation (e.g. CCSP campaign 281499184409054 has no enabled ad groups). Aseem should re-auth in his own session and review/publish each Google draft directly; campaignIds are recorded in each course's \"google\" note above.",
+    "otherNotes": [
+      "GSEC Meta ad: an earlier session found and fixed a wrong-course destination URL anomaly (unrelated to the technuggets.academy issue) — already resolved, noted here for awareness.",
+      "Two ads (CCSP, most others) were 'In draft'/never published, so the fix is a straightforward unpublished edit. Databricks ML Associate's ad was found ACTIVE (already live) with the correct Udemy URL already in place — no live-traffic exposure to the wrong domain was found for that course."
+    ]
+  },
   "retiredCampaigns": [
     {
       "platform": "meta",

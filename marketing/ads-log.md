@@ -745,3 +745,176 @@ Course covers FortiGate deployment modes, firewall policy construction, central 
 **Direct links**
 - Meta: https://adsmanager.facebook.com/adsmanager/manage/campaigns?act=65932722
 - Google Ads: https://ads.google.com/aw/campaigns/new/search/draft?campaignId=281499256161122&ocid=8156899860&draftId=10215091753
+
+## 2026-09-21 — Destination URL correction run (all still-open drafts)
+
+Per Aseem's correction ("Viewers should get directly to Udemy page to register for advertised courses — go back and correct these in drafts as well" — scope: **all still-open drafts**), swept every Meta draft created in prior runs and fixed the ad's Website URL from `https://technuggets.academy/` to the course's own Udemy landing page. (technuggets.academy remains fine as a value-add mention in ad copy — free practice test / coupon — just not as the click-through destination.)
+
+**Meta — fixed this run** (Website URL updated to the Udemy course link, ad set date/budget also repaired where it had drifted into an "ad set has ended" state — shortened to a ~9-day window ending within Sep 2026 to keep the $10 lifetime budget viable):
+- FortiGate FCP 7.6 Administrator
+- CKS Kubernetes Security Specialist
+- DCCOR 350-601
+- VCP-DCV 2V0-21.23
+- GSEC GIAC Security Essentials
+- PCNSE (Palo Alto) — **Website URL fixed, but the ad's image is corrupted ("Invalid Image In Ad") and blocks Publish; needs the real course card re-uploaded manually before it can go live.**
+- CRISC
+- CBROPS 200-201
+- OCI GenAI 1Z0-1127
+- CCSP Certified Cloud Security Professional
+
+**Meta — already correct, no fix needed:**
+- Databricks ML Associate — ad was found **Active** (already running) with the correct Udemy URL already in place; no live exposure to the wrong domain.
+- CCNA 200-301 — Website URL was already the Udemy link; the ad is still blocked from publishing by the same corrupted-placeholder-image issue as PCNSE ("Invalid Image In Ad", #2446603) — unrelated to destination, needs a real card upload.
+
+**Google Ads — deprioritized/skipped this run.** The recurring "Confirm it's you" re-authentication wall blocks unattended saves, and at least one campaign (CCSP, id 281499184409054) was found with an empty/disabled ad group when reached directly — nothing to correct there yet. Aseem needs to re-auth in his own session and review/publish each Google draft; campaignIds are on file in ads-rotation.json per course.
+
+**Flagged for Aseem's attention:**
+1. PCNSE and CCNA 200-301 Meta ads both have a corrupted/broken placeholder image blocking Publish — swap in the real course card (`exports/course-images/<slug>-card-notext.png` or `exports/<slug>/`) via the Ads Manager UI.
+2. All Google Ads drafts across every course in this rotation remain blocked on the platform's re-auth wall — needs Aseem's own login to push through.
+3. GSEC Meta ad's earlier wrong-course-URL anomaly (from a prior session) was already resolved before this run — mentioned here only for the record.
+
+Full per-course destination/platform notes recorded in `marketing/ads-rotation.json` under `destinationCorrectionRun`.
+
+## 2026-09-23 — Cisco 350-701 SCOR: Complete Security Core Prep (cisco-scor-350-701-security-core-2026)
+Newest registered-live course not yet advertised. Destination for every ad: https://www.udemy.com/course/cisco-350-701-scor-complete-security-core-prep/ (technuggets.academy is mentioned only as a place to get the free practice test).
+No coupon for this course in coupons.json, so no price appears in the copy.
+
+- **Meta — DRAFT created and confirmed "In draft" (not published).** Account 65932722. Campaign 52564607843969 ("SCOR 350-701 Udemy Traffic — 2026-09-23") / ad set 52564607844169 ("SCOR Traffic Ad Set") / ad 52564607843769 ("SCOR Card Image Ad"). Manual Traffic campaign, Website conversion, $10.00 lifetime budget, Sep 23 → Oct 2 (a 30-day window at $10 trips Meta's $30 lifetime minimum, #1885272). US/IN/UK/CA/DE, age 22–55, English (All), audience suggestion interests Cisco Systems / Computer network / Computer security. The India securities checkbox was left unchecked (the ad isn't securities-related). CTA: Sign up.
+  - **Real creative this time:** the SCOR text-free card (`exports/course-images/cisco-scor-350-701-security-core-2026-card-notext.png`) was uploaded. Previous runs couldn't get a file into Meta's picker and fell back to the logo placeholder.
+    - *How:* before clicking Upload, patch `HTMLInputElement.prototype.click` so it intercepts `type=file` inputs, sets them visible and appends them to `document.body` instead of opening the native picker. Then click Upload, find the input with `find`, and call `file_upload` on it. Restore the original `click` right after, and hide the input again (it pushes the layout around).
+  - Meta AI crop-and-expand, image generation, overlays, text improvements and translation were all left off.
+- **Google — PARTIAL draft, blocked by the "Confirm it's you" re-auth (not published).** Account 238-821-4892. Search campaign "SCOR 350-701 | Search | 2026-09-23", campaignId 281499257869104 / draftId 10215459373.
+  - **Saved (checked after a reload):** Maximize clicks bidding; Search + Search Partners (Display off); CA/DE/IN/UK/US; English; AI Max off; AI asset generation skipped. Keywords seem to have saved on the second pass.
+  - **Not saved:** the responsive search ad, EU-political = No, and the $10 campaign-total budget (Sep 23–Oct 23).
+  - **What happened:** the re-auth dialog came up at Keywords→Budget on the first pass and at Budget→Review on the second. Clicking Cancel lets the wizard carry on, but it saves nothing, so after a reload the ad and budget were gone. I did not click Confirm (it needs Aseem's credentials). After that, the Ads UI got stuck on its loading screen.
+- **TikTok — skipped.** Clicking "Create ad" redirected to the TikTok for Business login page. The 9:16 asset is ready at `exports/cisco-scor-350-701-security-core-2026/welcome-promo-short.mp4`.
+
+### Copy used (compliance-checked: no pass/guarantee/first-attempt wording, no invented price or bundle %)
+- **Meta.**
+  - Primary text: "Studying for Cisco 350-701 SCOR, the CCNP Security core exam? This exam-focused Udemy course covers all six domains: threats and cryptography, Zero Trust, NGFW/IPS with Cisco Secure Firewall, VPNs and hardening, cloud and content security, endpoint protection, and 802.1X/ISE/TrustSec. Inside: 12 video chapters plus 2 full-length practice tests with scenario-based questions. Want to warm up first? Try a free practice test at technuggets.academy, or bundle related security certs and save. Enroll now on Udemy: https://www.udemy.com/course/cisco-350-701-scor-complete-security-core-prep/"
+  - Headline: "Cisco 350-701 SCOR Exam Prep". Description: "12 video chapters + 2 full-length practice tests". CTA: Sign up.
+- **Google Search.**
+  - Headlines: Cisco 350-701 SCOR Exam Prep / CCNP Security Core Course / 2 Full-Length Practice Tests / Free Practice Test Online / All 6 SCOR Exam Domains / ISE, NGFW, VPN and Endpoint / Exam-Focused Video Course.
+  - Descriptions: "Cisco 350-701 SCOR exam prep on Udemy: 12 video chapters + 2 full-length practice tests." / "Covers threats, crypto, Zero Trust, NGFW/IPS, VPN, cloud, content, endpoint and ISE." / "Exam-focused lessons and scenario-based questions for CCNP Security candidates." / "Try a free SCOR practice test at technuggets.academy, then enroll on Udemy."
+  - Keywords (phrase match): "350-701 scor", "scor exam", "ccnp security", "ccnp security exam", "cisco scor exam prep", "350-701 practice test", "scor practice exam", "cisco security core exam", "ccnp security course", "ccie security written". Display path: cisco-scor/exam-prep.
+- **TikTok (not posted).** Caption: "Prepping for Cisco 350-701 SCOR (CCNP Security core)? Threats, crypto, NGFW, VPN, cloud, endpoint & ISE — exam-focused video course + 2 full-length practice tests. Enroll on Udemy → https://www.udemy.com/course/cisco-350-701-scor-complete-security-core-prep/ #CCNP #CiscoSecurity #SCOR #350701 #cybersecurity"
+
+### Needs Aseem's attention
+1. **Meta:** review the "In draft" ad and publish it. The real card is already attached, so no image swap is needed.
+2. **Google:** re-authenticate in your own session, then open draft 10215459373 and re-add the responsive search ad (copy above) and the $10 campaign-total budget (Sep 23–Oct 23). Also set EU political ads = No and check the keywords. Every Google draft stays stuck on this re-auth until it's cleared.
+3. **TikTok:** log in to TikTok Ads Manager in Chrome to turn on this platform.
+
+**Direct links**
+- Meta: https://adsmanager.facebook.com/adsmanager/manage/ads?act=65932722&selected_campaign_ids=52564607843969
+- Google Ads: https://ads.google.com/aw/campaigns/new/search/draft?campaignId=281499257869104&ocid=8156899860&draftId=10215459373
+
+## 2026-09-25 — CIPP/US Certification Exam-Focused Preparation Course (iapp-cipp-us-privacy-2026)
+Newest registered-live course not yet advertised. Destination for every ad: https://www.udemy.com/course/cipp-us-certification-exam-focused-preparation-course/ (technuggets.academy mentioned only as the free-practice-test value-add). No coupon for this course in coupons.json, so no price in the copy.
+
+- **Meta — DRAFT created and confirmed "In draft" (not published).** Account 65932722. Campaign 52565105356969 ("CIPP/US Udemy Traffic — 2026-09-25") / ad set 52565105357369 ("CIPP/US Traffic Ad Set") / ad 52565105357169 ("CIPP/US Card Image Ad").
+  - Built by duplicating the SCOR draft (Traffic objective, Website conversion, landing-page-view goal, $10.00 lifetime, Sep 25 → Oct 2), then re-targeted and re-creatived.
+  - Targeting: US/IN/UK/CA/DE, age 22–55, English. Detailed targeting: Internet privacy (law & government), Computer security, job titles Chief privacy officer + Compliance Specialist (Cisco/Computer-network interests removed).
+  - Creative: the CIPP/US text-free card (`exports/course-images/iapp-cipp-us-privacy-2026-card-notext.png`) uploaded with the file-input click-intercept trick. Meta AI crop-and-expand, image generation, enhancements and translation all left off. CTA: Sign up.
+  - **Ad error:** Meta shows account security check #3858385 ("someone may have tried to access your account… your ads won't run until you authenticate"). Not touched — Aseem must click "Start authentication" himself.
+  - Near-miss: after selecting the SCOR row, the toolbar shifted and a click landed on "Publish" — the "Review draft items" dialog opened and was **cancelled**; nothing was published (SCOR still "In draft").
+- **Google — PARTIAL draft, blocked by "Confirm it's you" re-auth (not published).** Account 238-821-4892. Search campaign "CIPP/US | Search | 2026-09-25", campaignId 281499260084083 / draftId 10215569240.
+  - Entered: Maximize clicks; Search + Search Partners (Display off); CA/DE/IN/UK/US; English; EU political = No; AI Max off; AI asset generation skipped; keywords; RSA (below).
+  - Re-auth dialog appeared at Keywords→Budget; clicked Cancel (Confirm needs Aseem's credentials). $10 campaign-total budget NOT set. Per earlier runs the RSA may not have persisted — re-check.
+- **TikTok — skipped.** ads.tiktok.com redirected to the login page. 9:16 asset ready at `exports/iapp-cipp-us-privacy-2026/welcome-promo-short.mp4`.
+
+### Copy used (compliance-checked: no pass/guarantee/first-attempt wording, no invented price or bundle %)
+- **Meta.**
+  - Primary text: "Preparing for the IAPP CIPP/US exam? This exam-focused Udemy course teaches U.S. privacy law the way the exam tests it: as applied scenarios. Covers FTC Section 5, GLBA, HIPAA, FCRA, TCPA, COPPA, government access to data, workplace privacy, CCPA/CPRA and state breach notification. Inside: domain-by-domain video chapters plus 2 full-length practice tests. Want to warm up first? Try a free practice test at technuggets.academy, or bundle related certs and save. Enroll now on Udemy: https://www.udemy.com/course/cipp-us-certification-exam-focused-preparation-course/"
+  - Headline: "CIPP/US Exam-Focused Prep". Description: "U.S. privacy law video course + 2 full-length practice tests". CTA: Sign up.
+- **Google Search.**
+  - Headlines: CIPP/US Exam-Focused Prep / U.S. Privacy Law Video Course / 2 Full-Length Practice Tests / Free Practice Test Online / IAPP CIPP/US Certification / GLBA, HIPAA, FCRA & CCPA / Scenario-Based Exam Practice / Enroll on Udemy Today.
+  - Descriptions: "CIPP/US exam prep on Udemy: video course plus 2 full-length practice tests." / "Covers FTC Section 5, GLBA, HIPAA, FCRA, COPPA, workplace privacy and CCPA/CPRA." / "Scenario-based lessons built around the IAPP CIPP/US Body of Knowledge." / "Try a free CIPP/US practice test at technuggets.academy, then enroll on Udemy."
+  - Keywords (phrase): "cipp/us", "cipp us exam", "cipp us certification", "cipp/us practice test", "cipp us practice exam", "iapp cipp", "iapp certification", "cipp us course", "us privacy law certification", "privacy certification exam". Display path: cipp-us/exam-prep.
+  - Note: Google's auto "describe your product" text contained "ace the exam" — that step was skipped, so it is not in the ad.
+- **TikTok (not posted).** Caption: "Prepping for the IAPP CIPP/US? U.S. privacy law as the exam tests it — GLBA, HIPAA, FCRA, COPPA, CCPA/CPRA & more. Exam-focused video course + 2 full-length practice tests. Enroll on Udemy → https://www.udemy.com/course/cipp-us-certification-exam-focused-preparation-course/ #CIPP #privacy #IAPP #compliance #dataprivacy"
+
+### Needs Aseem's attention
+1. **Meta:** complete the account security check (#3858385, "Start authentication") — until then no Meta ad will run. Then review/publish the CIPP/US draft.
+2. **Google:** re-authenticate, open draft 10215569240, confirm the RSA + keywords stuck, set the $10 campaign-total budget (Sep 25–Oct 25).
+3. **TikTok:** log in to TikTok Ads Manager in Chrome to enable this platform.
+
+**Direct links**
+- Meta: https://adsmanager.facebook.com/adsmanager/manage/ads?act=65932722&selected_campaign_ids=52565105356969
+- Google Ads: https://ads.google.com/aw/campaigns/new/search/draft?campaignId=281499260084083&ocid=8156899860&draftId=10215569240
+
+## 2026-09-27 — CCSK v5 Exam-Focused Preparation: Cloud Security Mastery (csa-ccsk-v5-cloud-security-2026)
+Next registered-live course not yet advertised (rotation continues backward through the registry). Destination for every ad: https://www.udemy.com/course/ccsk-v5-exam-focused-preparation-cloud-security-mastery/ (technuggets.academy mentioned only as the free-practice-test value-add). No coupon for this course in coupons.json, so no price in the copy.
+
+- **Meta — DRAFT created and confirmed "In draft" (not published).** Account 65932722. Campaign 52565479575969 ("CCSK v5 Udemy Traffic — 2026-09-27") / ad set 52565479576169 ("CCSK v5 Traffic Ad Set") / ad 52565479575769 ("CCSK v5 Card Image Ad"). "Review and publish" counter rose 9 → 12.
+  - Duplicated from the CIPP/US draft (the "Add a video" recommendation was unticked). Traffic objective, Website conversion, landing-page-view goal, $10.00 lifetime, Sep 27 → Oct 4 (Meta's lifetime minimum rules out 30 days at $10).
+  - Targeting: US/IN/UK/CA/DE, age 22–55, English. Detailed targeting: Cloud computing, Information security, Computer security (CIPP/US privacy job titles/interests removed).
+  - Creative: CCSK text-free card (`exports/course-images/csa-ccsk-v5-cloud-security-2026-card-notext.png`) uploaded with the file-input click-intercept trick. Meta AI image generation, enhancements and translation all left off. CTA: Sign up. Website URL verified = Udemy course page.
+  - On closing the editor Meta showed "Publish draft items?" — **Close** was clicked, not Publish.
+  - The account security check (#3858385) from the 2026-09-25 run may still block delivery — see attention list.
+- **Google — PARTIAL draft (not published).** Account 238-821-4892. Search campaign "CCSK v5 | Search | 2026-09-27", campaignId 281499271017375 / draftId 10215957333.
+  - Saved (re-verified after reload): Clicks bidding; Search + Search Partners (Display off); CA/DE/IN/UK/US; English.
+  - Not saved: keywords, RSA, EU political = No, $10 campaign-total budget. The Chrome extension disconnected twice while I was on the Keywords-and-ads step (tab group lost); each time the unsaved step was discarded. No "Confirm it's you" wall this run. Stopped after the second disconnect rather than keep retrying.
+- **TikTok — skipped.** ads.tiktok.com redirected to the login page. 9:16 asset ready at `exports/csa-ccsk-v5-cloud-security-2026/welcome-promo-short.mp4`.
+
+### Copy used (compliance-checked: no pass/guarantee/first-attempt wording, no invented price or bundle %)
+- **Meta.**
+  - Primary text: "Preparing for the CSA CCSK v5 exam? This exam-focused Udemy course covers all 12 CCSK v5 domains, built on the CSA Security Guidance v5 and the Cloud Controls Matrix: shared responsibility, governance, risk and compliance, IAM, security monitoring, networking, workload and data security, DevSecOps, incident response, and Zero Trust. Vendor-neutral and open-book-exam ready. Inside: 12 video chapters plus 2 full-length practice tests with scenario-based questions. Want to warm up first? Try a free practice test at technuggets.academy, or bundle related cloud security certs and save. Enroll now on Udemy: https://www.udemy.com/course/ccsk-v5-exam-focused-preparation-cloud-security-mastery/"
+  - Headline: "CCSK v5 Exam-Focused Prep". Description: "12 video chapters + 2 full-length practice tests". CTA: Sign up.
+- **Google Search (to re-enter in draft 10215957333).**
+  - Headlines: CCSK v5 Exam-Focused Prep / Cloud Security Video Course / 2 Full-Length Practice Tests / Free Practice Test Online / CSA Guidance v5 and CCM / All 12 CCSK v5 Domains / Vendor-Neutral Cloud Security / Enroll on Udemy Today.
+  - Descriptions: "CCSK v5 exam prep on Udemy: 12 video chapters plus 2 full-length practice tests." / "Covers governance, IAM, workload and data security, DevSecOps, IR and Zero Trust." / "Scenario-based lessons built on the CSA Security Guidance v5 and Cloud Controls Matrix." / "Try a free CCSK practice test at technuggets.academy, then enroll on Udemy."
+  - Keywords (phrase): "ccsk v5", "ccsk exam", "ccsk certification", "ccsk practice test", "ccsk exam prep", "certificate of cloud security knowledge", "csa ccsk", "cloud security certification", "ccsk course", "cloud controls matrix training". Display path: ccsk-v5/exam-prep. Final URL: the Udemy course page.
+  - Note: Google pre-filled its own headlines ("Udemy", "IT Certifications", "Domain 9: Data Security0"). Replace those when re-entering.
+- **TikTok (not posted).** Caption: "Prepping for the CSA CCSK v5? Vendor-neutral cloud security across all 12 domains — governance, IAM, workloads, data security & Zero Trust. Exam-focused video course + 2 full-length practice tests. Enroll on Udemy → https://www.udemy.com/course/ccsk-v5-exam-focused-preparation-cloud-security-mastery/ #CCSK #CloudSecurity #CSA #cybersecurity #certification"
+
+### Needs Aseem's attention
+1. **Meta:** if the account security check (#3858385) is still open, complete it, then review and publish the CCSK draft.
+2. **Google:** open draft 10215957333 and enter the keywords and RSA above. Then set EU political = No and the $10 campaign-total budget (Sep 27–Oct 27).
+3. **TikTok:** log in to TikTok Ads Manager in Chrome to enable this platform.
+
+**Direct links**
+- Meta: https://adsmanager.facebook.com/adsmanager/manage/ads?act=65932722&selected_campaign_ids=52565479575969
+- Google Ads: https://ads.google.com/aw/campaigns/new/search/draft?campaignId=281499271017375&ocid=8156899860&draftId=10215957333
+
+## 2026-09-28 — BOOK: Professional ML Engineer Exam Prep (google-cloud-professional-ml-engineer-2026)
+First run of the book-ads rotation (book-ads-rotation.json was created this run). Chosen from the most recently published cohort (2026-09-14). NCA-ADS was published the same day, but it wasn't in Amazon search results or on page 1 of the KDP Bookshelf, so it was deferred. The PMLE book is Live on KDP.
+- eBook ASIN B0HJQ9CJNY. Paperback ASIN B0HJNTJZS9.
+- Amazon page checked: 264 pages, Kindle $9.99, Paperback $24.99.
+- Destination for every ad: https://www.amazon.com/dp/B0HJNTJZS9 (the paperback page, which also offers the Kindle format).
+
+- **Meta — DRAFT created, confirmed "In draft" (not published).** Account 65932722.
+  - IDs: campaign 52565719475369 ("BOOK PMLE Amazon Traffic — 2026-09-28"), ad set 52565719474969 ("PMLE Book Traffic Ad Set"), ad 52565719475169 ("PMLE Book Cover Image Ad").
+  - Built by duplicating the CCSK draft with recommendations (music and video) unticked and "show existing reactions" unticked.
+  - Settings: Traffic, Website, landing-page views. $10.00 lifetime, Sep 28 → Oct 5.
+  - Audience: US/IN/UK/CA/DE, age 22–55, English. Interests: Artificial intelligence, Data science, Machine learning, Cloud computing. The security interests were removed.
+  - Creative: cover-ebook.jpg, uploaded with the file-input click-intercept trick. Crops are 1:1 and 1.91:1, and vertical uses the original. The Meta-AI vertical expansion was avoided.
+  - All Advantage+ enhancements are OFF: visual touch-ups, animation, flex media, overlays, music, text improvements, AI images, and translation (0 languages). CTA is Shop now.
+  - "Publish draft items?" came up on close, and **Close** was clicked.
+  - ⚠ FOUND: the duplicated ad carried unselected Meta AI text suggestions from the CCSK draft, including "Pass the CSA CCSK v5 exam with ease!" and "Get ready to pass…". They are NOT applied ("Apply all 0 of 5"). But they exist on the CCSK (and likely the CIPP/US and SCOR) drafts. Never tick "Apply all" on those.
+- **Google — PARTIAL draft (not published).** Account 238-821-4892. "BOOK PMLE | Search | 2026-09-28", campaignId 281499270230347 / draftId 10216274719.
+  - Saved (checked after reload): Clicks bidding; Search Partners on and Display off; CA/DE/IN/UK/US; English; EU political = No; AI Max off; text customization off; AI asset generation skipped.
+  - NOT saved: keywords, RSA, and the $10 campaign-total budget. "Confirm it's you" came up at Keywords→Budget. I clicked Cancel (Confirm needs Aseem's credentials), and the step was discarded on reload.
+  - Also note: Google pre-filled the RSA descriptions with Amazon's own boilerplate ("Free shipping on millions of items… Prime"). Replace those when re-entering.
+- **TikTok — skipped.** ads.tiktok.com redirected to login. There is also no video asset for books.
+
+### Copy used (compliance-checked)
+No pass/guarantee/first-attempt wording, prices were verified on Amazon, and the book is described as independent and not affiliated with Google Cloud.
+- **Meta**
+  - Primary text: "Studying for the Google Cloud Professional Machine Learning Engineer exam? This 264-page independent study guide turns the exam objectives into 12 focused chapters: BigQuery ML vs. AutoML vs. custom training, Dataflow and Pub/Sub pipelines, Vertex AI Feature Store, GPU/TPU and distributed training, and diagnosing overfitting. Every chapter ends with practice questions and a cheat sheet, and the book adds full-length practice exams plus rapid-review flashcards: 184+ questions in all, each with a full answer rationale. Kindle eBook $9.99 | Paperback $24.99. Independent guide, not affiliated with Google Cloud. Get the study guide on Amazon."
+  - Headline: "Professional ML Engineer Study Guide". Description: "184+ practice questions + full-length exams". CTA: Shop now.
+- **Google Search (to re-enter in draft 10216274719)**
+  - Headlines: Professional ML Engineer Prep / Independent PMLE Study Guide / 184+ Practice Questions / Full-Length Practice Exams / Cheat Sheets + Flashcards / Vertex AI, BigQuery ML & More / eBook $9.99, Paperback $24.99 / Get the Study Guide on Amazon / 12 Exam-Aligned Chapters.
+  - Descriptions: "264-page independent study guide for the Google Cloud Professional ML Engineer exam." / "12 chapters, 184+ practice questions with full rationale, cheat sheets and flashcards." / "Covers BigQuery ML, AutoML, Vertex AI, Feature Store, pipelines and distributed training." / "Kindle eBook and paperback. Get the study guide on Amazon today."
+  - Keywords (phrase): "google professional machine learning engineer", "professional machine learning engineer exam", "google ml engineer certification", "pmle study guide", "pmle exam prep", "google cloud ml engineer book", "machine learning engineer certification book", "vertex ai certification", "gcp machine learning certification", "professional ml engineer practice exam".
+  - Path: pmle/study-guide. Final URL: https://www.amazon.com/dp/B0HJNTJZS9. Budget: $10 campaign total, Sep 28–Oct 28.
+
+### Needs Aseem's attention
+1. **Meta:** review and publish the PMLE draft. If account security check #3858385 is still open, complete it first.
+2. **Meta (compliance):** the CCSK, CIPP/US and SCOR drafts hold unapplied AI text suggestions with "pass" wording. Don't click "Apply all" on them.
+3. **Google:** re-authenticate. Then re-enter the keywords and RSA above and set the $10 campaign-total budget.
+4. **TikTok:** log in to TikTok Ads Manager in Chrome if you want this platform in the rotation. It would still need an image/carousel ad type, since books have no video.
+5. **NCA-ADS book:** its KDP status and ASIN couldn't be confirmed on Amazon. Check that it's actually live.
+
+**Direct links**
+- Meta: https://adsmanager.facebook.com/adsmanager/manage/ads?act=65932722&selected_campaign_ids=52565719475369
+- Google Ads: https://ads.google.com/aw/campaigns/new/search/draft?campaignId=281499270230347&ocid=8156899860&draftId=10216274719
