@@ -46,6 +46,9 @@ steps.push(`node scripts/register-course.js --slug=${slug} --udemy=${udemy}` +
   (args['announce-live'] ? ' --announce-live' : ''));
 // 2. Rebuild the practice site (only live courses; the freshly-registered one is now included)
 if (!args['no-site']) steps.push(`node scripts/build-practice-site.js`);
+// 2b. Course materials GitHub repo — generate the tree, then create/push it.
+steps.push(`node scripts/build-course-repo.js --slug=${slug}`);
+steps.push(`node scripts/push-course-repo.js --slug=${slug} --udemy=${udemy}`);
 // 3. Promo Short: render this course's 9:16 Short, then upload pending Shorts of LIVE courses
 if (args.promo) {
   steps.push(`node scripts/promo-all.js --slug=${slug}`);
