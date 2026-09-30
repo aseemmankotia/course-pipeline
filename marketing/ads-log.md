@@ -918,3 +918,64 @@ No pass/guarantee/first-attempt wording, prices were verified on Amazon, and the
 **Direct links**
 - Meta: https://adsmanager.facebook.com/adsmanager/manage/ads?act=65932722&selected_campaign_ids=52565719475369
 - Google Ads: https://ads.google.com/aw/campaigns/new/search/draft?campaignId=281499270230347&ocid=8156899860&draftId=10216274719
+
+### Amazon Ads (added 2026-09-28, per Aseem: "just create ads on amazon itself")
+- **Sponsored Products — saved as DRAFT, not launched.**
+  - Account: Amazon Ads "Sponsored ads - Author", US.
+  - Campaign "BOOK PMLE - SP Manual KW - 2026-09-28", draft A10438541KJOQ9FUAXLQ8.
+  - Link: https://advertising.amazon.com/cb/sp/drafts/A10438541KJOQ9FUAXLQ8?entityId=ENTITY13DGRBHUBCMA7
+- Products: Kindle B0HJQ9CJNY + paperback B0HJNTJZS9 (added as variations).
+- Ad format: Custom text (148/150 chars): "Prep for the Google Cloud Professional ML Engineer exam: 12 focused chapters, 184+ practice questions with full rationale, cheat sheets, mock exams."
+- Targeting: manual keyword targeting with 12 keywords in Phrase + Exact (24 targets).
+  - Keywords: professional machine learning engineer, google professional machine learning engineer, google cloud machine learning, pmle study guide, pmle exam, google cloud certification, gcp machine learning, vertex ai, machine learning engineer certification, google cloud certification study guide, mlops, bigquery ml.
+  - Bids: Amazon's suggested ~$0.94–$1.14 where available, otherwise $0.50.
+  - The placeholder "keyword group" auto-target was removed.
+- Bidding: Dynamic bids – down only. "Increase bids for high-traffic days" is OFF.
+- Budget: $1.00/day (Amazon's minimum), Sep 28 → Oct 7 ≈ $10 total.
+  - Sponsored Products has no lifetime budget option. Amazon may spend somewhat over $1 on individual days.
+  - Suggested bids are about $1, so expect roughly one click a day. Consider lowering bids to ~$0.50–0.60 if you want more clicks for the money.
+- Additional countries (global beta): not included, US only.
+- **To go live:** open the draft and click "Launch campaign".
+
+## 2026-09-29 — BOOK: NCA-ADS Exam Prep (nvidia-nca-ads-accelerated-data-science-2026)
+Picked from the most recent published cohort (2026-09-14). This book was deferred on 09-28 because its ASIN couldn't be confirmed. The KDP Bookshelf (50/page, read-only) now shows it **Live**.
+- eBook ASIN B0HJQH6SQ3. Paperback ASIN B0HJNVM8CT.
+- Amazon page checked: 252 pages, Kindle $9.99, Paperback $24.99.
+- Destination for every ad: https://www.amazon.com/dp/B0HJNVM8CT.
+- All live-book ASINs were recorded in book-ads-rotation.json `_notes.kdp_asins_2026-09-29`. Next up: Oracle 1Z0-1127-25 (B0HJQ4TNCT / B0HJNWW8QW).
+
+- **Meta — DRAFT created, confirmed "In draft" (not published, no ad errors).** Account 65932722.
+  - IDs: campaign 52565845224569 ("BOOK NCA-ADS Amazon Traffic — 2026-09-29"), ad set 52565845224769 ("NCA-ADS Book Traffic Ad Set"), ad 52565845224969 ("NCA-ADS Book Cover Image Ad").
+  - Built by duplicating the PMLE book draft, with "Add music to Reels" and "show existing reactions" unticked.
+  - Settings: Traffic, Website, landing-page views. $10.00 lifetime, Sep 29 → Oct 5 (the end date edit to Oct 6 didn't take).
+  - Audience: US/IN/UK/CA/DE, 22–55, English. Interests: AI, Cloud computing, Data science, Machine learning, plus **Nvidia (computer hardware)** (added).
+  - Creative: NCA-ADS cover-ebook.jpg, uploaded via the click-intercept trick. Crops: 1:1 and 1.91:1; vertical = Original (Meta warns it won't show on one placement).
+  - AI off: 0 AI images, all enhancements off, 0 translation languages. Meta's AI headline suggestions (e.g. "Ace Google Cloud ML Exam with Ease") were left **unapplied (0 of 5)**. CTA: Shop now.
+  - Browser add-on: a mis-click briefly selected "Call" (prefilled phone number). It was reset to **None**, so check this when reviewing.
+  - "Publish draft items?" came up three times, and **Close** was clicked each time.
+- **Google — PARTIAL draft (not published).** Account 238-821-4892. "BOOK NCA-ADS | Search | 2026-09-29", campaignId 281499272643106 / draftId 10216143332.
+  - Saved: Clicks bidding; Search Partners on, Display off; CA/DE/IN/UK/US; English; EU political = No; AI Max, text customization and URL expansion off; AI asset generation skipped.
+  - NOT saved: keywords, RSA, and the $10 budget. All were fully entered (the ad was "Done"), but "Confirm it's you" appeared at Keywords→Budget. I clicked Cancel, and a reload showed the Keywords step empty.
+  - Tip for location entry: type the country and press Enter. Clicking "Include" mis-targets rows (it added NRW/Indianapolis, which I removed).
+- **TikTok — skipped.** ads.tiktok.com redirects to login. There's also no video asset for books.
+
+### Copy used (compliance-checked)
+No pass/guarantee/first-attempt wording, prices were verified on Amazon, and the copy says it's independent and not affiliated with NVIDIA.
+- **Meta**
+  - Primary text: "Studying for the NVIDIA-Certified Associate: Accelerated Data Science (NCA-ADS) exam? This 252-page independent study guide turns the exam objectives into 12 focused chapters: cudf.pandas and native cuDF, GPU data cleaning, joins and group-bys, scaling ETL with Dask and dask-cuDF, cuML model training and tuning, and GPU feature engineering. Every chapter ends with practice questions and a cheat sheet, and the book adds full-length practice exams plus rapid-review flashcards: 184+ questions in all, each with a full answer rationale. Kindle eBook $9.99 | Paperback $24.99. Independent guide, not affiliated with NVIDIA. Get the study guide on Amazon."
+  - Headline: "NCA-ADS Accelerated Data Science Study Guide". Description: "184+ practice questions + full-length exams". CTA: Shop now.
+- **Google Search (to re-enter in draft 10216143332)**
+  - Headlines: NCA-ADS Exam Prep Book / Independent NCA-ADS Guide / 184+ Practice Questions / Full-Length Practice Exams / Cheat Sheets + Flashcards / cuDF, Dask & cuML Covered / eBook $9.99, Paperback $24.99 / Get the Study Guide on Amazon / 12 Exam-Aligned Chapters / NVIDIA Data Science Exam Book.
+  - Descriptions: "252-page independent study guide for the NVIDIA NCA-ADS Accelerated Data Science exam." / "12 chapters, 184+ practice questions with full rationale, cheat sheets and flashcards." / "Covers cudf.pandas, cuDF, Dask-cuDF, cuML, GPU feature engineering and model tuning." / "Kindle eBook and paperback. Not affiliated with NVIDIA. Get the study guide on Amazon."
+  - Keywords (phrase): "nca-ads study guide", "nca-ads exam", "nca-ads practice exam", "nvidia accelerated data science certification", "nvidia certified associate accelerated data science", "nvidia data science certification book", "nvidia certification study guide", "rapids cudf certification", "gpu data science exam prep", "nca ads practice test book".
+  - Path: nca-ads/study-guide. Final URL: https://www.amazon.com/dp/B0HJNVM8CT. Budget: $10 campaign total, Sep 29–Oct 29.
+  - Google pre-filled Amazon boilerplate descriptions ("Free shipping… Prime"), which I replaced. Replace them again when re-entering.
+
+### Needs Aseem's attention
+1. **Meta:** review the NCA-ADS draft (confirm Browser add-on = None), then publish. If security check #3858385 is still open, complete it first.
+2. **Google:** this is the 4th run in a row blocked by "Confirm it's you". Complete the re-auth once in Chrome, then re-enter the keywords/RSA above and set the $10 total budget.
+3. **TikTok:** log in if you want TikTok in the rotation. It still needs an image ad type, since books have no video.
+
+**Direct links**
+- Meta: https://adsmanager.facebook.com/adsmanager/manage/ads?act=65932722&selected_campaign_ids=52565845224569
+- Google Ads: https://ads.google.com/aw/campaigns/new/search/draft?campaignId=281499272643106&ocid=8156899860&draftId=10216143332

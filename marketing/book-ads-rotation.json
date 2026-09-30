@@ -23,12 +23,98 @@
         },
         "tiktok": {
           "status": "skipped (not logged in; no video asset)"
+        },
+        "amazon": {
+          "status": "draft",
+          "draftId": "A10438541KJOQ9FUAXLQ8",
+          "type": "Sponsored Products, manual keyword",
+          "budget": "$1/day, Sep 28-Oct 7"
+        }
+      }
+    },
+    {
+      "slug": "nvidia-nca-ads-accelerated-data-science-2026",
+      "title": "NCA-ADS Exam Prep",
+      "asins": {
+        "ebook": "B0HJQH6SQ3",
+        "paperback": "B0HJNVM8CT"
+      },
+      "amazonUrl": "https://www.amazon.com/dp/B0HJNVM8CT",
+      "date": "2026-09-29",
+      "platforms": {
+        "meta": {
+          "status": "draft",
+          "campaignId": "52565845224569",
+          "adSetId": "52565845224769",
+          "adId": "52565845224969"
+        },
+        "google": {
+          "status": "partial-draft (re-auth wall at Budget; keywords+RSA+budget not saved)",
+          "campaignId": "281499272643106",
+          "draftId": "10216143332"
+        },
+        "tiktok": {
+          "status": "skipped (not logged in; no video asset)"
         }
       }
     }
   ],
-  "lastRun": "2026-09-28",
+  "lastRun": "2026-09-29",
   "_notes": {
-    "nvidia-nca-ads-accelerated-data-science-2026": "2026-09-28: not found in Amazon search and not on KDP Bookshelf page 1 \u2014 ASIN unconfirmed; retry next run"
+    "nvidia-nca-ads-accelerated-data-science-2026": "2026-09-29: resolved - Live on KDP (eBook B0HJQH6SQ3, paperback B0HJNVM8CT); advertised this run",
+    "kdp_asins_2026-09-29": {
+      "oracle-oci-genai-professional-1z0-1127-2026": {
+        "ebook": "B0HJQ4TNCT",
+        "paperback": "B0HJNWW8QW"
+      },
+      "aws-machine-learning-engineer-associate-mla-c01": {
+        "ebook": "B0HJNN5SVL",
+        "paperback": "B0HJP2K1H3"
+      },
+      "nvidia-ncp-aio-ai-operations-2026": {
+        "ebook": "B0HJNTHZ5R",
+        "paperback": "B0HJNY53TB"
+      },
+      "isaca-cism-2026": {
+        "ebook": "B0HJBL18YR",
+        "paperback": "B0HJBLWPJN"
+      },
+      "isaca-crisc-2026": {
+        "ebook": "B0HJBDSWLK",
+        "paperback": "B0HJBYXL3D"
+      },
+      "nvidia-ncp-aii-ai-infrastructure-professional-2026": {
+        "ebook": "B0HJHJB6NM",
+        "paperback": "B0HJFNVHLN"
+      },
+      "nvidia-nca-genm-generative-ai-multimodal-2026": {
+        "ebook": "B0HJH2N2HC",
+        "paperback": "B0HJHT66J1"
+      },
+      "isc2-cissp-2026": {
+        "ebook": "B0HJBFSSK7",
+        "paperback": "B0HJBM596H"
+      },
+      "nvidia-nca-aiio-refresh-2026": {
+        "ebook": "B0HJDYM6CJ",
+        "paperback": "B0HJGV1MMR"
+      },
+      "nvidia-ncp-genl-generative-ai-llm-2026": {
+        "ebook": "B0HJDKCRW2",
+        "paperback": "B0HJGNPNZ1"
+      },
+      "isc2-ccsp-cloud-security-professional-2026": {
+        "ebook": "B0HH7G8R6W",
+        "paperback": "B0HJBN1R76"
+      },
+      "nvidia-ncp-aai-agentic-ai-2026": {
+        "ebook": "B0HJD9P5JZ",
+        "paperback": "B0HJGKMMFJ"
+      },
+      "comptia-security-plus-sy0-701": {
+        "ebook": "B0GXSSS6TY",
+        "paperback": "B0HJBVVPFF"
+      }
+    }
   }
 }

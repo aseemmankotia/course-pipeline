@@ -345,6 +345,15 @@ function quarantineLegacyMedia() {
           const src = path.join(promoDir, f);
           if (fs.existsSync(src)) fs.renameSync(src, path.join(outDir, f));
         }
+        // Auto-stage promos where promo-all.js --upload looks, so they are never
+        // orphaned in exports/ (the uploader reads render/promo/<slug>-*.mp4).
+        for (const [srcName, dstName] of [
+          ['welcome-promo.mp4', `${course.slug}-promo.mp4`],
+          ['welcome-promo-short.mp4', `${course.slug}-short.mp4`],
+        ]) {
+          const from = path.join(outDir, srcName);
+          if (fs.existsSync(from)) fs.copyFileSync(from, path.join(promoDir, dstName));
+        }
       }
     }
 
@@ -352,6 +361,11 @@ function quarantineLegacyMedia() {
     // (Udemy has no public authoring API, so shell creation stays a browser step).
     if (!SKIP.has('artifacts')) {
       run('shell-spec (drives the Udemy build)', process.execPath, ['scripts/make-shell-spec.js', `--slug=${course.slug}`], { allowFail: true });
+    }
+
+    // 10. course materials repo — generated locally now; created+pushed in Phase B by go-live.
+    if (!SKIP.has('repo')) {
+      run('course materials repo', process.execPath, ['scripts/build-course-repo.js', `--slug=${course.slug}`], { allowFail: true });
     }
   }
 
