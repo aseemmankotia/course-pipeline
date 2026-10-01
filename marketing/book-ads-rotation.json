@@ -57,9 +57,34 @@
           "status": "skipped (not logged in; no video asset)"
         }
       }
+    },
+    {
+      "slug": "oracle-oci-genai-professional-1z0-1127-2026",
+      "title": "1Z0-1127-25 Exam Prep",
+      "asins": {
+        "ebook": "B0HJQ4TNCT",
+        "paperback": "B0HJNWW8QW"
+      },
+      "amazonUrl": "https://www.amazon.com/dp/B0HJNWW8QW",
+      "date": "2026-10-01",
+      "platforms": {
+        "meta": {
+          "status": "draft",
+          "campaignId": "52566334464369",
+          "adSetId": "52566334464569",
+          "adId": "52566334464769"
+        },
+        "google": {
+          "status": "skipped (account at 25-campaign-draft limit; creating a new draft requires discarding an existing one)"
+        },
+        "tiktok": {
+          "status": "skipped (not logged in; no video asset)"
+        }
+      },
+      "notes": "Amazon showed Kindle $12.99 (kdp.json says $9.99); prices omitted from copy."
     }
   ],
-  "lastRun": "2026-09-29",
+  "lastRun": "2026-10-01",
   "_notes": {
     "nvidia-nca-ads-accelerated-data-science-2026": "2026-09-29: resolved - Live on KDP (eBook B0HJQH6SQ3, paperback B0HJNVM8CT); advertised this run",
     "kdp_asins_2026-09-29": {

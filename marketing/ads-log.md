@@ -979,3 +979,43 @@ No pass/guarantee/first-attempt wording, prices were verified on Amazon, and the
 **Direct links**
 - Meta: https://adsmanager.facebook.com/adsmanager/manage/ads?act=65932722&selected_campaign_ids=52565845224569
 - Google Ads: https://ads.google.com/aw/campaigns/new/search/draft?campaignId=281499272643106&ocid=8156899860&draftId=10216143332
+
+## 2026-10-01 — BOOK: 1Z0-1127-25 Exam Prep (oracle-oci-genai-professional-1z0-1127-2026)
+Next in rotation after NCA-ADS (published 2026-09-14, not yet advertised). Live on Amazon.
+- eBook ASIN B0HJQ4TNCT. Paperback ASIN B0HJNWW8QW.
+- Amazon page checked: 242 pages. Paperback $24.99, but **Kindle shows $12.99**, not the $9.99 in kdp.json. Because the prices don't match, the copy leaves prices out.
+- Destination for every ad: https://www.amazon.com/dp/B0HJNWW8QW.
+
+- **Meta — DRAFT created, confirmed "In draft" (not published, no ad errors).** Account 65932722.
+  - IDs: campaign 52566334464369 ("BOOK OCI 1Z0-1127 Amazon Traffic — 2026-10-01"), ad set 52566334464569 ("OCI 1Z0-1127 Book Traffic Ad Set"), ad 52566334464769 ("OCI 1Z0-1127 Book Cover Image Ad").
+  - Built by duplicating the NCA-ADS book draft with "Add music to Reels" and "show existing reactions" unticked.
+  - Settings: Traffic, Website, landing-page views. $10.00 lifetime, Oct 1 → Oct 5.
+  - Audience: US/IN/UK/CA/DE, 22–55, English. Interests: Oracle Corporation (software), Oracle Database (software), AI, Cloud computing, Data science, Machine learning. Nvidia was removed.
+  - Creative: the 1Z0-1127 cover-ebook.jpg, uploaded via the click-intercept trick. Crops: 1:1 and 1.91:1. Vertical = Original (the Meta-AI-adjusted 9:16 was avoided).
+  - AI off: 0 AI images, all enhancements off, 0 translation languages, Browser add-on = None, CTA Shop now.
+  - The Meta AI text panel still holds **stale NCA-ADS suggestions**. They are unapplied ("Apply all 0 of 4" primary, "0 of 5" headline). Don't tick Apply all.
+  - "Publish draft items?" came up and **Close** was clicked. A stray hover click on "Duplicate ad" opened a dialog, which was cancelled; still 1 ad.
+  - Pre-existing on the duplicated ad set: "Multi-advertiser ads" ticked, and Meta's India notice to declare whether the ads relate to securities.
+- **Google — SKIPPED.** The account is at Google's limit of **25 campaign drafts**. The new-campaign flow only offers "continue an existing draft" or "discard and replace an existing draft". Discarding is a deletion this task doesn't authorize, so no draft was created.
+- **TikTok — skipped.** ads.tiktok.com redirects to login. There's also no video asset for books.
+
+### Copy used (compliance-checked)
+No pass/guarantee/first-attempt wording, no prices, and the copy says it's independent and not affiliated with Oracle.
+- **Meta**
+  - Primary text: "Studying for the Oracle Cloud Infrastructure 2025 Generative AI Professional (1Z0-1127-25) exam? This 242-page independent study guide turns the exam objectives into 12 focused chapters: transformer and embedding fundamentals, decoding parameters and prompt engineering, prompting vs. RAG vs. fine-tuning (LoRA, T-Few), OCI Generative AI via console, API and SDK, dedicated AI clusters, vector search with Oracle Database 23ai, LangChain RAG pipelines, and OCI Generative AI Agents. Every chapter ends with practice questions and a cheat sheet, and the book adds full-length practice exams plus rapid-review flashcards: 184+ questions in all, each with a full answer rationale. Available as a Kindle eBook and paperback. Independent guide, not affiliated with Oracle. Get the study guide on Amazon."
+  - Headline: "1Z0-1127-25 OCI Generative AI Study Guide". Description: "184+ practice questions + full-length exams". CTA: Shop now.
+- **Google Search (ready to enter once a draft slot is free)**
+  - Headlines: 1Z0-1127-25 Exam Prep Book / Independent OCI GenAI Guide / 184+ Practice Questions / Full-Length Practice Exams / Cheat Sheets + Flashcards / RAG, LoRA & OCI Agents / Get the Study Guide on Amazon / 12 Exam-Aligned Chapters / OCI Generative AI Study Guide.
+  - Descriptions: "242-page independent study guide for the OCI 2025 Generative AI Professional exam." / "12 chapters, 184+ practice questions with full rationale, cheat sheets and flashcards." / "Covers LLM basics, prompting, RAG, fine-tuning, OCI GenAI SDK, 23ai vector search, Agents." / "Kindle eBook and paperback. Not affiliated with Oracle. Get the study guide on Amazon."
+  - Keywords (phrase): "1z0-1127-25", "1z0-1127 study guide", "1z0-1127 exam", "oci generative ai professional", "oracle generative ai certification", "oci generative ai certification book", "oracle cloud ai certification", "1z0-1127 practice exam", "oci genai exam prep", "oracle generative ai study guide".
+  - Path: 1z0-1127/study-guide. Final URL: https://www.amazon.com/dp/B0HJNWW8QW.
+
+### Needs Aseem's attention
+1. **Meta:** review and publish the OCI draft. Check the India "securities" declaration and decide on Multi-advertiser ads.
+2. **Google:** delete stale drafts (several earlier partial book/course drafts) to free slots under the 25-draft cap. Re-auth ("Confirm it's you") was the blocker on earlier runs too.
+3. **Kindle price:** Amazon shows $12.99 for B0HJQ4TNCT vs the $9.99 planned in kdp.json. Check KDP pricing.
+4. **TikTok:** still not logged in.
+
+**Direct links**
+- Meta: https://adsmanager.facebook.com/adsmanager/manage/ads?act=65932722&selected_campaign_ids=52566334464369
+- Google Ads drafts: https://ads.google.com/aw/campaigns?ocid=8156899860
