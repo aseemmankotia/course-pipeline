@@ -10,7 +10,7 @@ Databricks GenAI Engineer, NVIDIA NCA-GENL, Salesforce Agentforce Specialist,
 Claude Certified Developer (CCDV-F). (Agentforce → r/salesforce, r/AgentforceAI;
 CCDV-F → r/ClaudeAI, r/LLMDevs — both now live, added 2026-07-29.)
 Week-6 go-lives added 2026-08-02: CompTIA Security+ SY0-701, AWS SAA-C04,
-Microsoft AI-300, Google Cloud GenAI Leader, NVIDIA NCP-AIO, Microsoft AI-103, AWS Certified Solutions Architect - Associate (added 2026-08-02), NVIDIA-Certified Associate: Accelerated Data Science (added 2026-08-07), NVIDIA-Certified Professional: OpenUSD Development (added 2026-08-07), AIPMM Certified Digital Product Manager (added 2026-08-07), AIPMM Certified Product Manager (added 2026-08-07), NVIDIA-Certified Professional: Agentic AI (added 2026-08-07), NVIDIA-Certified Professional: Generative AI and LLMs (added 2026-08-07), AWS Certified Machine Learning Engineer - Associate (added 2026-08-07), Google Cloud Professional Machine Learning Engineer (added 2026-08-07), NVIDIA-Certified Professional: AI Infrastructure (added 2026-08-09), NVIDIA-Certified Professional: Accelerated Data Science (added 2026-08-09), NVIDIA-Certified Associate: Generative AI Multimodal (added 2026-08-09), PMI Certified Professional in Managing AI (added 2026-08-14), GSDC Certified Forward Deployed Engineer (added 2026-08-14), AWS Certified Data Engineer - Associate (added 2026-08-14), Google Cloud Certified - Associate Cloud Engineer (added 2026-08-14), Microsoft Certified: Fabric Analytics Engineer Associate (added 2026-08-16), Google Cloud Certified - Professional Data Engineer (added 2026-08-16), Microsoft Certified: AI Business Professional (added 2026-08-20), Microsoft Certified: AI Transformation Leader (added 2026-08-20), AWS Certified Developer - Associate (added 2026-08-20), Google Cloud Certified - Professional Cloud Architect (added 2026-08-22), HashiCorp Certified: Terraform Associate (004) (added 2026-08-22), Microsoft Certified: Azure Solutions Architect Expert (added 2026-08-22), AWS Certified SysOps Administrator - Associate (added 2026-08-22), CompTIA Network+ (added 2026-08-22), CompTIA A+ (Core 1) (added 2026-08-23), CompTIA A+ (Core 2) (added 2026-08-23), Microsoft Certified: Azure Administrator Associate (added 2026-08-23), Microsoft Certified: Azure Developer Associate (added 2026-08-23), NVIDIA-Certified Professional: AI Networking (added 2026-08-27), AWS Certified Cloud Practitioner (added 2026-08-27), Cisco Certified Network Associate (CCNA) (added 2026-08-27), Microsoft Certified: Azure AI Fundamentals (added 2026-08-27), NVIDIA-Certified Associate: AI Infrastructure and Operations (added 2026-08-27), Microsoft Certified: Azure Fundamentals (added 2026-08-27), Oracle Cloud Infrastructure 2025 AI Foundations Associate (added 2026-08-29), Databricks Certified Machine Learning Associate (added 2026-08-29), NVIDIA-Certified Professional: AI Rack and Interconnect (added 2026-08-30), ISC2 Certified Cloud Security Professional (CCSP) (added 2026-08-30), Google Cloud Certified - Professional Cloud Security Engineer (added 2026-08-30), Oracle Cloud Infrastructure 2025 Generative AI Professional (added 2026-09-02), Databricks Certified Machine Learning Professional (added 2026-09-02), ISACA Advanced in AI Security Management (added 2026-09-05), Microsoft Certified: Security Operations Analyst Associate (added 2026-09-05), Microsoft Certified: Security, Compliance, and Identity Fundamentals (added 2026-09-05), Certified Information Security Manager (added 2026-09-05), ISC2 Certified in Cybersecurity (added 2026-09-07), Certified Ethical Hacker (CEH v13) (added 2026-09-07), Cisco Certified CyberOps Associate (added 2026-09-07), Microsoft Certified: Identity and Access Administrator Associate (added 2026-09-08), Systems Security Certified Practitioner (added 2026-09-08), Microsoft Certified: Azure Security Engineer Associate (added 2026-09-08), Certified Information Systems Auditor (added 2026-09-08), Certified in Risk and Information Systems Control (added 2026-09-08), Microsoft Certified: Cybersecurity Architect Expert (added 2026-09-10), Certificate of Cloud Security Knowledge (added 2026-09-10), Certified Information Privacy Professional/United States (added 2026-09-10), Implementing and Operating Cisco Security Core Technologies (added 2026-09-10), Palo Alto Networks Certified Network Security Engineer (added 2026-09-10), FCP - FortiGate 7.6 Administrator (added 2026-09-13), Implementing Cisco Data Center Core Technologies (added 2026-09-13), VMware Certified Professional - Data Center Virtualization (vSphere 8) (added 2026-09-13), GIAC Security Essentials (added 2026-09-13).
+Microsoft AI-300, Google Cloud GenAI Leader, NVIDIA NCP-AIO, Microsoft AI-103, AWS Certified Solutions Architect - Associate (added 2026-08-02), NVIDIA-Certified Associate: Accelerated Data Science (added 2026-08-07), NVIDIA-Certified Professional: OpenUSD Development (added 2026-08-07), AIPMM Certified Digital Product Manager (added 2026-08-07), AIPMM Certified Product Manager (added 2026-08-07), NVIDIA-Certified Professional: Agentic AI (added 2026-08-07), NVIDIA-Certified Professional: Generative AI and LLMs (added 2026-08-07), AWS Certified Machine Learning Engineer - Associate (added 2026-08-07), Google Cloud Professional Machine Learning Engineer (added 2026-08-07), NVIDIA-Certified Professional: AI Infrastructure (added 2026-08-09), NVIDIA-Certified Professional: Accelerated Data Science (added 2026-08-09), NVIDIA-Certified Associate: Generative AI Multimodal (added 2026-08-09), PMI Certified Professional in Managing AI (added 2026-08-14), GSDC Certified Forward Deployed Engineer (added 2026-08-14), AWS Certified Data Engineer - Associate (added 2026-08-14), Google Cloud Certified - Associate Cloud Engineer (added 2026-08-14), Microsoft Certified: Fabric Analytics Engineer Associate (added 2026-08-16), Google Cloud Certified - Professional Data Engineer (added 2026-08-16), Microsoft Certified: AI Business Professional (added 2026-08-20), Microsoft Certified: AI Transformation Leader (added 2026-08-20), AWS Certified Developer - Associate (added 2026-08-20), Google Cloud Certified - Professional Cloud Architect (added 2026-08-22), HashiCorp Certified: Terraform Associate (004) (added 2026-08-22), Microsoft Certified: Azure Solutions Architect Expert (added 2026-08-22), AWS Certified SysOps Administrator - Associate (added 2026-08-22), CompTIA Network+ (added 2026-08-22), CompTIA A+ (Core 1) (added 2026-08-23), CompTIA A+ (Core 2) (added 2026-08-23), Microsoft Certified: Azure Administrator Associate (added 2026-08-23), Microsoft Certified: Azure Developer Associate (added 2026-08-23), NVIDIA-Certified Professional: AI Networking (added 2026-08-27), AWS Certified Cloud Practitioner (added 2026-08-27), Cisco Certified Network Associate (CCNA) (added 2026-08-27), Microsoft Certified: Azure AI Fundamentals (added 2026-08-27), NVIDIA-Certified Associate: AI Infrastructure and Operations (added 2026-08-27), Microsoft Certified: Azure Fundamentals (added 2026-08-27), Oracle Cloud Infrastructure 2025 AI Foundations Associate (added 2026-08-29), Databricks Certified Machine Learning Associate (added 2026-08-29), NVIDIA-Certified Professional: AI Rack and Interconnect (added 2026-08-30), ISC2 Certified Cloud Security Professional (CCSP) (added 2026-08-30), Google Cloud Certified - Professional Cloud Security Engineer (added 2026-08-30), Oracle Cloud Infrastructure 2025 Generative AI Professional (added 2026-09-02), Databricks Certified Machine Learning Professional (added 2026-09-02), ISACA Advanced in AI Security Management (added 2026-09-05), Microsoft Certified: Security Operations Analyst Associate (added 2026-09-05), Microsoft Certified: Security, Compliance, and Identity Fundamentals (added 2026-09-05), Certified Information Security Manager (added 2026-09-05), ISC2 Certified in Cybersecurity (added 2026-09-07), Certified Ethical Hacker (CEH v13) (added 2026-09-07), Cisco Certified CyberOps Associate (added 2026-09-07), Microsoft Certified: Identity and Access Administrator Associate (added 2026-09-08), Systems Security Certified Practitioner (added 2026-09-08), Microsoft Certified: Azure Security Engineer Associate (added 2026-09-08), Certified Information Systems Auditor (added 2026-09-08), Certified in Risk and Information Systems Control (added 2026-09-08), Microsoft Certified: Cybersecurity Architect Expert (added 2026-09-10), Certificate of Cloud Security Knowledge (added 2026-09-10), Certified Information Privacy Professional/United States (added 2026-09-10), Implementing and Operating Cisco Security Core Technologies (added 2026-09-10), Palo Alto Networks Certified Network Security Engineer (added 2026-09-10), FCP - FortiGate 7.6 Administrator (added 2026-09-13), Implementing Cisco Data Center Core Technologies (added 2026-09-13), VMware Certified Professional - Data Center Virtualization (vSphere 8) (added 2026-09-13), GIAC Security Essentials (added 2026-09-13), Certified Artificial Intelligence Practitioner (added 2026-09-30), CompTIA Cybersecurity Analyst (CySA+) (added 2026-09-30), Databricks Certified Data Engineer Associate (added 2026-09-30), Cisco Certified Specialist - Data Center AI Infrastructure (added 2026-09-30), Microsoft Certified: Azure Data Scientist Associate (added 2026-09-30), Advanced in AI Audit (added 2026-09-30), ISC2 Certified Information Systems Security Professional (CISSP) (added 2026-09-30), IBM Certified watsonx Generative AI Engineer - Associate (added 2026-09-30), Microsoft Certified: Agentic AI Business Solutions Architect (added 2026-09-30), SnowPro Specialty: Gen AI (added 2026-09-30).
 
 ---
 
@@ -1181,3 +1181,87 @@ weeks is essentially cleared. The funnel now points at courses that actually hav
   unblocked for the 52 published courses — run ATTENDED per the playbook.
 - New scripts `remediate-empty-courses.sh` + `publish-lectures.js` are uncommitted pending
   Aseem's OK.
+
+## Run log — 2026-10-02 (scheduled task, unattended; Aseem absent)
+
+**Browser:** TWO Chrome browsers now connected to the account (previously one).
+"Browser 1" (Windows) was unresponsive (machine asleep/closed). "Browser 2"
+(macOS, the connected course-pipeline Mac) responded and the Udemy **instructor
+session is HEALTHY** — `contexts/me` returns isLoggedIn:true as "Aseem Mankotia",
+taught-courses API 200. Unattended, so could not ask which browser to use; all
+work this run was read-only, so selected the responsive one. Every irreversible /
+undistributable lever HELD (Aseem absent for approval), consistent with
+09-04/09-11/09-18/09-25.
+
+### ✅ HEADLINE — empty-course defect is CLEARED and HOLDING (was 53 empty → now 2)
+Pulled the full portfolio (`/api-2.0/users/me/taught-courses/` with
+`num_published_lectures,content_length_video,is_published,url`): **99 taught,
+96 published, 3 draft, 94 published WITH video, only 2 published empty.** The
+09-27 attended remediation (curriculum:load across all 53 + publish-lectures.js)
+stuck and now covers the whole back-catalog. Crucially, **every REGISTERED/
+promoted course on technuggets.academy now has video (registered-but-empty = 0),**
+so the funnel is no longer driving traffic to empty courses — the month-long
+blocker on the review campaign is gone.
+
+Network+ N10-009 (7305515) is the one known partial from 09-27 — still **8/12
+published** (the 4 chapter videos stuck at asset status -1 / failed transcode were
+not re-processed this week). Registered & live with 8 real lectures, not empty.
+The "short" courses (PCNSE 11, CIPP/US 11, SC-300 11, ISC2 CC 10, SC-900 9,
+AAISM 10, etc.) are complete-by-design (9–11 chapters), all with video.
+
+### Step 0 — newly-live courses (a new CRYPTO/BLOCKCHAIN batch; all EMPTY)
+Only 2 live courses are unregistered, and BOTH are brand-new and EMPTY (0 video):
+  - EC-Council C|BP: Certified Blockchain Professional Prep — id 7358077 — 0 lec
+    → https://www.udemy.com/course/ec-council-cbp-certified-blockchain-professional-prep-2026/
+  - ECES 212-81: Applied Cryptography Exam Prep — id 7358063 — 0 lec
+    → https://www.udemy.com/course/eces-212-81-applied-cryptography-exam-prep-2026/
+  Plus one crypto DRAFT not yet live: CCFC Chainalysis Crypto Fundamentals (7358071).
+  (Also still draft: the old "AI Unlocked" 7159077 — now shows Draft, no longer
+  Banned — and "Advanced IoT Architecture" 7148503.)
+
+⚠️ **The empty-at-launch defect RECURRED on this new batch** — i.e. the 09-27
+"durable fix" (fold `is_published:true` into `load-curriculum.js`) was NOT applied,
+so newly-created courses are still going Live with 0 published lectures. **NOT
+onboarded** (onboarding registers them into the site/promo/reviews funnel = drives
+traffic to empty pages; also can't run cleanly in-sandbox). Publish video FIRST
+(curriculum:load + publish-lectures.js), verify, THEN `npm run go-live`.
+
+The whole 09-18/09-25 backlog (CISSP, PenTest+, CySA+, CAIP AIP-210, watsonx,
+SnowPro, DCAI, AAIA, AB-100, DataX, Databricks DE, DP-100, GH-300, A+ Core 1/2,
+AZ-104, AZ-204, GSEC/VCP-DCV/DCCOR/CKS/FCP, etc.) is now REGISTERED and video-
+published — Step 0 is caught up except the 2 new empties above.
+
+### Review base snapshot (this is a reviews campaign — where it actually stands)
+96 published courses, **590 subscribers, 34 total reviews across just 14 courses**
+(most courses still at 0). Top: NCP-AII 6rev/3.98★, AI-901 5rev/3.87★, SecAI+ &
+NCA-AIIO 3rev/5★. Base is far below the ~10–15/course trust threshold — a direct
+consequence of distribution being held for 4+ weeks while the empty-course issue
+blocked promotion.
+
+### Levers this run — ALL HELD (unattended)
+- **Coupons — HELD (none created).** Distribution channels all need Aseem's approval
+  (absent), so a Free:Open coupon would expire unused inside its 5-day window — and
+  creating ~94 of them would BURN the limited monthly free-coupon budget per course
+  on undistributable coupons. Run ATTENDED (create + distribute same day).
+- **Educational announcements — NONE sent.** Irreversible messages to real students →
+  need approval (absent).
+- **Social posts — NONE posted.** Irreversible public posts → need approval (absent);
+  no fresh coupons to post. r/AWSCertifications Mondays-only; r/comptia + r/dataengineering no-post.
+
+Repo untouched except this log (no onboarding/deploy/promo run in-sandbox).
+
+### Decisions / follow-ups for Aseem (ATTENDED) — priority order
+1. ✅ **The review campaign is finally UNBLOCKED** (courses have video, funnel is clean)
+   but has sat idle 4+ weeks on distribution approval. Run the levers ATTENDED —
+   FREEREVIEW10 coupons + LinkedIn + Monday r/AWSCertifications inside one 5-day window
+   across the 94 video-published courses — or grant standing approval so the weekly
+   scheduled task can run them. Review base (34 rev / 14 courses) needs this.
+2. **2 new crypto courses launched EMPTY** (C|BP 7358077, ECES 212-81 7358063): publish
+   video (`curriculum:load` + `publish-lectures.js`), verify, THEN `npm run go-live`.
+   And APPLY the durable fix — fold `is_published:true` into `load-curriculum.js` — so
+   new courses stop going Live empty (it recurred this week).
+3. **Network+ N10-009** still 8/12: re-generate/re-upload the 4 failed-transcode chapter
+   videos (lectures 57656103, 57656105, 57656119, 57656125), let them reach asset status 1,
+   then re-run `node scripts/publish-lectures.js`.
+4. **Two Chrome browsers now connected** — Browser 1 (Windows) was asleep/unresponsive;
+   confirm which machine should be the standing instructor-session browser for this task.
