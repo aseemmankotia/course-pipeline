@@ -1019,3 +1019,30 @@ No pass/guarantee/first-attempt wording, no prices, and the copy says it's indep
 **Direct links**
 - Meta: https://adsmanager.facebook.com/adsmanager/manage/ads?act=65932722&selected_campaign_ids=52566334464369
 - Google Ads drafts: https://ads.google.com/aw/campaigns?ocid=8156899860
+
+## 2026-10-03 — BOOK: MLA-C01 Exam Prep (aws-machine-learning-engineer-associate-mla-c01) — BLOCKED, no drafts created
+Next in rotation: the 2026-09-14 cohort is fully advertised, so this is the most recent unadvertised book (published 2026-09-13).
+- eBook ASIN B0HJNN5SVL. Paperback ASIN B0HJP2K1H3, confirmed live: the Amazon page title is "MLA-C01 Exam Prep: Independent Study Guide for the AWS Certified Machine Learning Engineer - Associate Exam…", ISBN 9798173994769.
+- Destination for every ad: https://www.amazon.com/dp/B0HJP2K1H3.
+- The Amazon page body never rendered, so pages and prices are unverified and prices are omitted from the copy.
+- **All platforms skipped.** The Claude in Chrome connection kept failing: 3 navigate/get_page_text timeouts (180s), "extension not connected", and the Ads Manager tab showed a Chrome error page. Per the stop rule, no Meta/Google/TikTok work was attempted.
+- The book was **not** added to `advertised`, so the next run retries it first.
+
+### Copy prepared for next run (compliance-checked: no pass/guarantee/first-attempt, no prices, says independent and not affiliated with AWS)
+- **Meta**
+  - Primary text: "Studying for the AWS Certified Machine Learning Engineer – Associate (MLA-C01) exam? This independent study guide turns the exam objectives into 12 focused chapters: choosing AWS storage and streaming services for ML data ingestion, feature engineering with SageMaker Data Wrangler, Processing and Feature Store, detecting bias with SageMaker Clarify, choosing between built-in algorithms, JumpStart, Bedrock and custom training, SageMaker automatic model tuning and managed spot training, and picking the right evaluation metrics. Every chapter ends with practice questions and a cheat sheet, and the book adds full-length practice exams plus rapid-review flashcards: 183+ questions in all, each with a full answer rationale. Available as a Kindle eBook and paperback. Independent guide, not affiliated with Amazon Web Services. Get the study guide on Amazon."
+  - Headline: "MLA-C01 AWS ML Engineer Study Guide". Description: "183+ practice questions + full-length exams". CTA: Shop now.
+  - Interests: Amazon Web Services, Cloud computing, Machine learning, AI, Data science.
+- **Google Search**
+  - Headlines: MLA-C01 Exam Prep Book / Independent MLA-C01 Guide / 183+ Practice Questions / Full-Length Practice Exams / Cheat Sheets + Flashcards / SageMaker, Bedrock & More / Get the Study Guide on Amazon / 12 Exam-Aligned Chapters / AWS ML Engineer Study Guide.
+  - Descriptions: "Independent study guide for the AWS Certified Machine Learning Engineer – Associate exam." / "12 chapters, 183+ practice questions with full rationale, cheat sheets and flashcards." / "Covers data ingestion, SageMaker feature engineering, Clarify, training, tuning, metrics." / "Kindle eBook and paperback. Not affiliated with AWS. Get the study guide on Amazon."
+  - Keywords (phrase): "mla-c01", "mla-c01 study guide", "mla-c01 exam", "mla-c01 practice exam", "aws machine learning engineer associate", "aws ml engineer certification book", "aws machine learning certification study guide", "sagemaker certification", "aws certified machine learning engineer", "mla-c01 exam prep".
+  - Path: mla-c01/study-guide. Final URL: https://www.amazon.com/dp/B0HJP2K1H3.
+
+### Needs Aseem's attention
+1. **Chrome extension:** reconnect Claude in Chrome (open the side panel and sign in) so the next run can reach Ads Manager.
+2. Items still open from 2026-10-01:
+   - Google is at the 25-draft cap; delete stale drafts to free slots.
+   - Meta drafts for PMLE, NCA-ADS and OCI are awaiting publish.
+   - Kindle price for OCI shows $12.99 on Amazon vs $9.99 in kdp.json.
+   - TikTok is still not logged in.

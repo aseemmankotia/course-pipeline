@@ -84,7 +84,7 @@
       "notes": "Amazon showed Kindle $12.99 (kdp.json says $9.99); prices omitted from copy."
     }
   ],
-  "lastRun": "2026-10-01",
+  "lastRun": "2026-10-03",
   "_notes": {
     "nvidia-nca-ads-accelerated-data-science-2026": "2026-09-29: resolved - Live on KDP (eBook B0HJQH6SQ3, paperback B0HJNVM8CT); advertised this run",
     "kdp_asins_2026-09-29": {
@@ -140,6 +140,7 @@
         "ebook": "B0GXSSS6TY",
         "paperback": "B0HJBVVPFF"
       }
-    }
+    },
+    "2026-10-03": "MLA-C01 (aws-machine-learning-engineer-associate-mla-c01) picked; Amazon B0HJP2K1H3 confirmed live; run blocked by Chrome extension disconnect - no drafts; NOT marked advertised so next run retries it."
   }
 }
