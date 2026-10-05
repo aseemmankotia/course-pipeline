@@ -329,6 +329,28 @@ function wrapAudio(mp3, outMp4) {
         }
       }
     }
+    // Per-chapter FAILOVER: if the free edge endpoint could not synthesize this
+    // chapter after every retry, and a paid fallback is configured
+    // (TTS_FALLBACK=elevenlabs + ELEVENLABS_API_KEY/VOICE_ID in .env), narrate
+    // just this chapter with the fallback instead of failing the whole batch.
+    // The fallback produces no word-timing sidecar, so the renderer uses its
+    // even-timing path for this chapter (same as a full ElevenLabs run); a later
+    // edge run upgrades it to audio-aligned slides if the free endpoint recovers.
+    // OFF by default: with no fallback configured, behavior is unchanged.
+    const fbReady = ENGINE === 'edge'
+      && String(ENV.TTS_FALLBACK || '').toLowerCase() === 'elevenlabs'
+      && ENV.ELEVENLABS_API_KEY && ENV.ELEVENLABS_VOICE_ID;
+    if (lastErr && fbReady) {
+      console.log(`   \u21aa ch${n}: edge-tts failed after ${MAX_TRIES} tries \u2014 failing over to ElevenLabs for this chapter\u2026`);
+      try {
+        await ttsElevenLabs(textFile, mp3);
+        try { fs.rmSync(wordsJson, { force: true }); } catch (e) {}
+        lastErr = null;
+        console.log(`   \u2713 ch${n}: narrated via ElevenLabs fallback (no word-timing sidecar \u2014 slides use even timing)`);
+      } catch (e) {
+        lastErr = new Error(`edge failed; ElevenLabs fallback also failed: ${e.message}`);
+      }
+    }
     if (lastErr) throw new Error(`ch${n}: TTS failed after ${MAX_TRIES} attempts — ${lastErr.message}`);
 
     wrapAudio(mp3, outMp4);

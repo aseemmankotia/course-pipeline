@@ -70,6 +70,84 @@ function run(label, cmd, cmdArgs, opts = {}) {
   return r.status === 0;
 }
 
+// Fail-fast narration preflight: verify the narration toolchain BEFORE the
+// expensive per-course script generation, so a broken interpreter or a down
+// free-TTS endpoint aborts in seconds with a clear fix instead of burning ~40min
+// of generation per course and only then dying at the TTS step (a jobs=2 throttle
+// wiped all 4 Batch-10 courses after 96min on 2026-10-04).
+function envVal(k) {
+  if (process.env[k]) return process.env[k];
+  try {
+    for (const line of fs.readFileSync(path.join(ROOT, '.env'), 'utf8').split(/\r?\n/)) {
+      const m = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)\s*$/);
+      if (m && m[1] === k) return m[2].replace(/^["']|["']$/g, '');
+    }
+  } catch (e) {}
+  return '';
+}
+function narrationPreflight() {
+  if (SKIP.has('voice') || SKIP.has('heygen')) return;
+  if (String(envVal('TTS_ENGINE') || 'edge').toLowerCase() !== 'edge') return; // paid engine: no edge probe needed
+  const usesEdge = COURSES.some(c => {
+    try { return (JSON.parse(fs.readFileSync(path.join(ROOT, c.config), 'utf8')).narration_mode || 'tts') !== 'heygen'; }
+    catch (e) { return true; }
+  });
+  if (!usesEdge) return;
+
+  const ver = spawnSync(PYTHON, ['--version'], { encoding: 'utf8' });
+  if (ver.status !== 0) {
+    console.error(`\n❌ Preflight: Python '${PYTHON}' failed to launch — narration cannot run.`);
+    console.error('   ' + ((ver.stderr || '').trim() || (ver.error && ver.error.message) || 'unknown error'));
+    console.error('   Likely a stale/dangling .venv (e.g. after a Homebrew python upgrade moved the base interpreter).');
+    console.error('   Fix: rm -rf .venv && python3 -m venv .venv && .venv/bin/pip install --upgrade pip edge-tts Pillow tabulate');
+    process.exit(1);
+  }
+
+  const probe = [
+    'import sys, asyncio',
+    'try:',
+    '    import edge_tts',
+    'except Exception as e:',
+    '    sys.stderr.write("IMPORT_FAIL: %s" % e); sys.exit(3)',
+    'async def go():',
+    '    c = edge_tts.Communicate("Narration preflight connectivity check.", voice="en-US-AriaNeural", rate="+4%", boundary="WordBoundary")',
+    '    audio = bytearray(); wb = 0',
+    '    async for ch in c.stream():',
+    '        t = ch.get("type")',
+    '        if t == "audio": audio.extend(ch["data"])',
+    '        elif t == "WordBoundary": wb += 1',
+    '    if len(audio) == 0: sys.stderr.write("NO_AUDIO"); sys.exit(4)',
+    '    sys.stderr.write("OK audio=%d wb=%d" % (len(audio), wb))',
+    'asyncio.run(go())',
+  ].join('\n');
+  const r = spawnSync(PYTHON, ['-c', probe], { encoding: 'utf8', timeout: 45000 });
+  if (r.status === 0) {
+    console.log(`✅ Preflight: narration toolchain OK — ${((ver.stdout || ver.stderr || '').trim())}, edge-tts reachable.`);
+    return;
+  }
+
+  const err = ((r.stderr || '') + (r.error ? ' ' + r.error.message : '')).trim();
+  let cause = err.slice(-300);
+  if (err.includes('IMPORT_FAIL')) cause = `edge_tts not installed in ${PYTHON} — run: .venv/bin/pip install edge-tts`;
+  else if (/403|Invalid response status|Handshake/i.test(err)) cause = '403 Sec-MS-GEC handshake break (Microsoft rotated the token) — retry later or patch edge-tts';
+  else if (/429|throttl/i.test(err)) cause = 'throttled (429) — re-run with --jobs=1 or wait a few minutes';
+  else if (/NO_AUDIO/.test(err)) cause = 'endpoint connected but returned no audio (service degraded) — retry later';
+  else if (/name resolution|Cannot connect|ENOTFOUND|ETIMEDOUT/i.test(err)) cause = 'cannot reach speech.platform.bing.com (network/DNS)';
+
+  const fbReady = String(envVal('TTS_FALLBACK') || '').toLowerCase() === 'elevenlabs'
+    && envVal('ELEVENLABS_API_KEY') && envVal('ELEVENLABS_VOICE_ID');
+  if (fbReady) {
+    console.warn(`\n⚠ Preflight: free edge-tts is not working right now (${cause}).`);
+    console.warn('   A paid fallback is configured (TTS_FALLBACK=elevenlabs) — continuing; chapters edge cannot do will fail over.');
+    return;
+  }
+  console.error(`\n❌ Preflight: free edge-tts narration is not working right now.`);
+  console.error(`   ${cause}`);
+  console.error(`   Diagnose: ${PYTHON} scripts/tts-probe.py`);
+  console.error('   (Set TTS_FALLBACK=elevenlabs + ELEVENLABS_API_KEY/VOICE_ID in .env to let runs fail over instead of aborting.)');
+  process.exit(1);
+}
+
 function editorialNeeded(course) {
   if (!course.editorial) return false;
   const stateFile = path.join(ROOT, 'generated', course.slug, 'state.json');
@@ -128,6 +206,7 @@ function quarantineLegacyMedia() {
 (async () => {
   console.log(`🚀 Autopilot — ${COURSES.length} course(s): ${COURSES.map(c => c.slug).join(', ')}`);
   quarantineLegacyMedia();
+  narrationPreflight();
 
   for (const course of COURSES) {
     const gen = path.join(ROOT, 'generated', course.slug);
